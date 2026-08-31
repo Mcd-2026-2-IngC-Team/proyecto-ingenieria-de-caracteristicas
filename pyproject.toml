@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "loguru",
+    "marimo>=0.24.0",
     "pip",
     "pytest",
     "python-dotenv",
