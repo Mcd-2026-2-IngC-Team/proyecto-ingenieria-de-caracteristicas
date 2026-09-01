@@ -70,12 +70,13 @@ def _(FilePolicy, OnExists, download_config):
 
 @app.cell
 def _(Path, dataset):
+    output_dir = Path(dataset["output"]["directory"])
     destination = (
-            Path(dataset["output"]["directory"])
+            output_dir
             / dataset["output"]["filename"]
         )
     print(destination)
-    return (destination,)
+    return destination, output_dir
 
 
 @app.cell
@@ -86,6 +87,13 @@ def _(HttpClient, dataset, destination, policy):
         url=dataset["url"],
         destination=destination,
     )
+    return
+
+
+@app.cell
+def _(output_dir):
+    for file in output_dir.iterdir():
+        print(file)
     return
 
 
