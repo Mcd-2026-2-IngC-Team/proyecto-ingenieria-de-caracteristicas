@@ -17,7 +17,9 @@ requirements:
 	uv sync
 	
 
-
+.PHONY: nb
+nb:
+	uv run marimo export ipynb $(NOTEBOOK)-marimo.py -o $(NOTEBOOK).ipynb --include-outputs
 
 .PHONY: clean
 clean:

@@ -28,10 +28,17 @@ def _():
 
     from project_name.clients.http import HttpClient
     from project_name.clients.inegi import InegiClient
-    from project_name.config import load_params
+    from project_name.config import load_params, load_dataset_config
     from project_name.policies.file import FilePolicy, OnExists
 
-    return FilePolicy, HttpClient, OnExists, Path, load_params
+    return (
+        FilePolicy,
+        HttpClient,
+        OnExists,
+        Path,
+        load_dataset_config,
+        load_params,
+    )
 
 
 @app.cell
@@ -42,58 +49,29 @@ def _(load_params):
 
 
 @app.cell
-def _(params):
-    defaults = params["defaults"]["download"]
-    dataset = params["sources"]["inegi"]["datasets"]["denue_sonora_2024_05"]
-    print(defaults)
-    print(dataset)
-    return dataset, defaults
+def _(Path, load_dataset_config, params):
+    dataset = load_dataset_config(
+        params,
+        source="inegi",
+        dataset="denue_sonora_2024_05",
+    )
+
+    raw_file = (
+        Path(dataset["raw"]["directory"])
+        / dataset["raw"]["filename"]
+    )
+    return dataset, raw_file
 
 
 @app.cell
-def _(dataset, defaults):
-    download_config = {
-            **defaults,
-            **dataset.get("download", {}),
-        }
-    print(download_config)
-    return (download_config,)
+def _(FilePolicy, HttpClient, OnExists, dataset, raw_file):
+    policy = FilePolicy(on_exists=OnExists(dataset["download"]["on_exists"]))
 
-
-@app.cell
-def _(FilePolicy, OnExists, download_config):
-    policy = FilePolicy(
-            on_exists=OnExists(download_config["on_exists"])
-        )
-    return (policy,)
-
-
-@app.cell
-def _(Path, dataset):
-    output_dir = Path(dataset["output"]["directory"])
-    destination = (
-            output_dir
-            / dataset["output"]["filename"]
-        )
-    print(destination)
-    return destination, output_dir
-
-
-@app.cell
-def _(HttpClient, dataset, destination, policy):
     client = HttpClient(file_policy=policy)
-
     client.download(
         url=dataset["url"],
-        destination=destination,
+        destination=raw_file,
     )
-    return
-
-
-@app.cell
-def _(output_dir):
-    for file in output_dir.iterdir():
-        print(file)
     return
 
 
