@@ -1,0 +1,20 @@
+logging:
+  level: "INFO"
+  file: "logs/project_name.log"
+  console: false
+
+sources:
+  inegi:
+    name: "Instituto Nacional de Estadística y Geografía"
+    datasets:
+      denue_sonora_2024_05:
+        name: "DENUE Sonora — mayo 2024"
+        url: "https://www.inegi.org.mx/contenidos/masiva/denue/2024_05/denue_26_0524_csv.zip"
+        output:
+          directory: "data/raw/inegi/denue"
+          filename: "denue_sonora_2024_05.zip"
+
+defaults:
+  download:
+    on_exists: "skip"
+

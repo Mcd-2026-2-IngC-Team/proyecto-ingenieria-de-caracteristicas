@@ -16,11 +16,13 @@ classifiers = [
     
 ]
 dependencies = [
+    "httpx2>=2.12.0",
     "loguru",
     "marimo>=0.24.0",
     "pip",
     "pytest",
     "python-dotenv",
+    "pyyaml>=6.0.3",
     "ruff",
     "tqdm",
     "typer",
@@ -39,4 +41,9 @@ extend-select = ["I"]  # Add import sorting
 [tool.ruff.lint.isort]
 known-first-party = ["project_name"]
 force-sort-within-sections = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.5",
+]
 

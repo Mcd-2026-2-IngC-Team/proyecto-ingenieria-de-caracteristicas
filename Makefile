@@ -19,26 +19,25 @@ requirements:
 
 
 
-## Delete all compiled Python files
 .PHONY: clean
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
+	rm -rf data/raw/*
+	rm -rf data/interim/*
+	rm -rf data/processed/*
+	rm -rf data/external/*
+	rm -rf logs/*
 
-
-## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
 lint:
-	ruff format --check
-	ruff check
+	uv run ruff format --check
+	uv run ruff check
 
-## Format source code with ruff
 .PHONY: format
 format:
-	ruff check --fix
-	ruff format
-
-
+	uv run ruff check --fix
+	uv run ruff format
 
 ## Run tests
 .PHONY: test
