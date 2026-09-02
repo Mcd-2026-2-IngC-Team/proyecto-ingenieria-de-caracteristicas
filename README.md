@@ -1,61 +1,47 @@
 # project_name
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+Descarga los datos del DENUE (directorio nacional de unidades económicas) del INEGI
+para Sonora y los convierte en un dataset pequeño con ingeniería de características.
+Está construido como un pipeline de jobs: descargar datos crudos, extraerlos y
+transformarlos, y dejar el resultado en `data/processed/`.
 
-A short description of the project.
-
-## Project Organization
+## Instalación
 
 ```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         project_name and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── project_name   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes project_name a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
+cp params-example.yml params.yml
+uv sync
 ```
 
---------
+`params.yml` (ignorado por git) declara las fuentes de datos: URLs y rutas
+`raw`/`interim`/`processed`. `params-example.yml` es la plantilla versionada.
 
+## Uso
+
+```
+make ingest   # descarga el zip crudo del DENUE a data/raw/
+make process  # lo extrae y transforma hacia data/processed/
+make test     # corre la suite de pruebas
+make lint     # ruff check + format --check
+make format   # ruff check --fix + format
+```
+
+## Estructura
+
+```
+params.yml                 <- configuración de fuentes de datos (ignorado por git; ver params-example.yml)
+project_name/
+├── config.py               <- carga params.yml, configura el logging
+├── constants.py             <- rutas del directorio data/
+├── features.py               <- transformaciones con pandas (columnas crudas del DENUE -> features)
+├── logging.py                <- decorador @log_execution (inicio/fin/error + tiempo)
+├── clients/                   <- cliente HTTP de descarga + un wrapper delgado para INEGI
+├── policies/                   <- FilePolicy: skip/overwrite/error ante archivos existentes
+└── jobs/
+    ├── ingest_denue_sonora_job.py    <- descarga el zip crudo
+    └── process_denue_sonora_job.py    <- zip crudo -> csv interim -> csv processed
+
+notebooks/    
+tests/       
+data/         <- raw / interim / processed / external, según las rutas de params.yml
+logs/         <- logs de los jobs (project_name.log)
+```

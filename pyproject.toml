@@ -16,11 +16,16 @@ classifiers = [
     
 ]
 dependencies = [
+    "httpx2>=2.12.0",
     "loguru",
     "marimo>=0.24.0",
+    "matplotlib>=3.11.1",
+    "nbformat>=5.11.1",
+    "pandas>=3.0.5",
     "pip",
     "pytest",
     "python-dotenv",
+    "pyyaml>=6.0.3",
     "ruff",
     "tqdm",
     "typer",
@@ -39,4 +44,10 @@ extend-select = ["I"]  # Add import sorting
 [tool.ruff.lint.isort]
 known-first-party = ["project_name"]
 force-sort-within-sections = true
+
+[dependency-groups]
+dev = [
+    "pandas-stubs>=3.0.5.260730",
+    "ruff>=0.16.5",
+]
 

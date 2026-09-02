@@ -5,6 +5,12 @@ data/*/*
 !data/*/
 !data/*/.gitkeep
 
+logs/*
+!logs/.gitkeep
+
+# Configuration files
+params.yml
+
 # Mac OS-specific storage files
 .DS_Store
 
@@ -193,3 +199,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+notebooks/__marimo__
