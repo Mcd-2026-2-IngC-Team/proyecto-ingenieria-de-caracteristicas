@@ -47,6 +47,7 @@ force-sort-within-sections = true
 
 [dependency-groups]
 dev = [
+    "pandas-stubs>=3.0.5.260730",
     "ruff>=0.16.5",
 ]
 

@@ -20,7 +20,7 @@ sources:
 
         processed:
           directory: "data/processed/inegi/denue"
-          filename: "denue_sonora_2024_05.parquet"
+          filename: "denue_sonora_2024_05.csv"
 
 defaults:
   download:

@@ -8,13 +8,6 @@ from project_name.policies.file import FilePolicy, OnExists
 
 @log_execution
 def ingest_denue_sonora(params: dict) -> None:
-    params = load_params()
-
-    load_logging(
-        level=params["logging"]["level"],
-        log_file=Path(params["logging"]["file"]),
-    )
-
     dataset = load_dataset_config(
         params,
         source="inegi",

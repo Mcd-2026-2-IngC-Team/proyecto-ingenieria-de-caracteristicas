@@ -68,6 +68,16 @@ create_environment:
 data: requirements
 	$(PYTHON_INTERPRETER) project_name/dataset.py
 
+## Download DENUE Sonora raw data
+.PHONY: ingest
+ingest:
+	uv run python -m project_name.jobs.ingest_denue_sonora_job
+
+## Process DENUE Sonora data into data/processed
+.PHONY: process
+process:
+	uv run python -m project_name.jobs.process_denue_sonora_job
+
 
 #################################################################################
 # Self Documenting Commands                                                     #
