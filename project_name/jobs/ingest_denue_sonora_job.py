@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict
 
 from project_name.clients.http import HttpClient
 from project_name.config import load_dataset_config, load_logging, load_params
@@ -8,7 +7,7 @@ from project_name.policies.file import FilePolicy, OnExists
 
 
 @log_execution
-def ingest_denue_sonora(params: Dict) -> None:
+def ingest_denue_sonora(params: dict) -> None:
     params = load_params()
 
     load_logging(
