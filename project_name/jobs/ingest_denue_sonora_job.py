@@ -24,7 +24,7 @@ def ingest_denue_sonora(params: Dict) -> None:
 
     policy = FilePolicy(on_exists=OnExists(dataset["download"]["on_exists"]))
 
-    destination = Path(dataset["output"]["directory"]) / dataset["output"]["filename"]
+    destination = Path(dataset["raw"]["directory"]) / dataset["raw"]["filename"]
 
     client = HttpClient(file_policy=policy)
 
