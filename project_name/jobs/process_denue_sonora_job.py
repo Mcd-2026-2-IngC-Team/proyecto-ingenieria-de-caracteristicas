@@ -22,9 +22,13 @@ def process_denue_sonora(params: dict) -> None:
     interim_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("Extracting {} → {}", raw_file, interim_dir)
+    interim_root = interim_dir.resolve()
     with zipfile.ZipFile(raw_file, "r") as archive:
+        for member in archive.infolist():
+            extracted_path = (interim_root / member.filename).resolve()
+            if interim_root not in extracted_path.parents and extracted_path != interim_root:
+                raise ValueError(f"Unsafe path in zip: {member.filename}")
         archive.extractall(interim_dir)
-
     csv_file = next((interim_dir / "conjunto_de_datos").glob("*.csv"))
     logger.info("Found data file: {}", csv_file)
 
