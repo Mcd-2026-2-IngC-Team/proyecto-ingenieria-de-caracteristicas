@@ -85,6 +85,21 @@ backup:
 	mkdir -p "$(DEST)"
 	tar -czf "$(DEST)/data_$$(date +%Y%m%d_%H%M%S).tar.gz" data
 
+# Target-specific (unconditional `=`, not `?=`) so DEST doesn't inherit the
+# global default from `backup` above; command-line overrides still win either way.
+# e.g make extract-images SOURCE=data/external/dataset_facebook-posts-scraper_04-07-2024-to-12-31-2024.csv
+extract-images: SOURCE = data/external/dataset_facebook-posts-scraper_04-07-2024-to-12-31-2024.csv
+extract-images: DEST = data/external/facebook/images
+extract-images: COLUMN = media/0/photo_image/uri
+extract-images: ID_COLUMN = postId
+extract-images: ON_EXISTS = skip
+
+## Download images referenced by a CSV column (override SOURCE/DEST/COLUMN/ID_COLUMN)
+.PHONY: extract-images
+extract-images:
+	uv run python -m project_name.jobs.extract_images_job \
+		--source "$(SOURCE)" --dest "$(DEST)" --column "$(COLUMN)" --id-column "$(ID_COLUMN)" --on-exists "$(ON_EXISTS)"
+
 
 #################################################################################
 # Self Documenting Commands                                                     #
