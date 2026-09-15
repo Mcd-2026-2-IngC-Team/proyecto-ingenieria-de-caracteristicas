@@ -31,7 +31,6 @@ clean:
 	rm -rf data/raw/*
 	rm -rf data/interim/*
 	rm -rf data/processed/*
-	rm -rf logs/*
 
 .PHONY: lint
 lint:
