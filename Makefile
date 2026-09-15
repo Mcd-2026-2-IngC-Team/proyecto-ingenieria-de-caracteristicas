@@ -6,6 +6,9 @@ PROJECT_NAME = project_name
 PYTHON_VERSION = 3.13
 PYTHON_INTERPRETER = python
 
+# Override on the command line: make backup DEST=/path/to/dest
+DEST ?= backups
+
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
@@ -28,7 +31,6 @@ clean:
 	rm -rf data/raw/*
 	rm -rf data/interim/*
 	rm -rf data/processed/*
-	rm -rf data/external/*
 	rm -rf logs/*
 
 .PHONY: lint
@@ -77,6 +79,12 @@ ingest:
 .PHONY: process
 process:
 	uv run python -m project_name.jobs.process_denue_sonora_job
+
+## Backup data/ to DEST as a tar.gz archive (override with make backup DEST=/path/to/dest)
+.PHONY: backup
+backup:
+	mkdir -p "$(DEST)"
+	tar -czf "$(DEST)/data_$$(date +%Y%m%d_%H%M%S).tar.gz" data
 
 
 #################################################################################

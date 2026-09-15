@@ -8,6 +8,9 @@ data/*/*
 logs/*
 !logs/.gitkeep
 
+backups/*
+!backups/.gitignore
+
 # Configuration files
 params.yml
 
