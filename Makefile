@@ -87,8 +87,8 @@ backup:
 
 # Target-specific (unconditional `=`, not `?=`) so DEST doesn't inherit the
 # global default from `backup` above; command-line overrides still win either way.
-# e.g make extract-images SOURCE=data/external/dataset_facebook-posts-scraper_04-07-2024-to-12-31-2024.csv
-extract-images: SOURCE = data/external/dataset_facebook-posts-scraper_04-07-2024-to-12-31-2024.csv
+# e.g make extract-images SOURCE=data/external/dataset_facebook-posts-scraper_2025-10-23-to-2026-09-14.csv
+extract-images: SOURCE = data/external/dataset_facebook-posts-scraper_2024-04-07-to-2024-12-31.csv
 extract-images: DEST = data/external/facebook/images
 extract-images: COLUMN = media/0/photo_image/uri
 extract-images: ID_COLUMN = postId
