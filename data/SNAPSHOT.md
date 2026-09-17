@@ -15,7 +15,7 @@ git solo se versiona `data/external.sha256`, con el checksum de cada archivo.
 ## Versión actual
 
 - **Versión:** v1 (`backups/external_snapshot_20260916.tar.gz`)
-- **Ubicación:** OneDrive Unison — _pendiente: pegar aquí el enlace_
+- **Ubicación:** OneDrive Unison — https://unisonmx-my.sharepoint.com/:f:/g/personal/a220212781_unison_mx/IgBKPXlOdPheQZloCQRezUxXAeNe98Njfu9Bdp2gJqaox7w?e=15hiHH 
 - **Acceso:** pedirlo al equipo; el enlace es solo para cuentas `@unison.mx`.
 
 ## Cómo usarlo
