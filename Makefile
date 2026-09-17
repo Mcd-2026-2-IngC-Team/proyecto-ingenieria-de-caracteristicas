@@ -69,6 +69,15 @@ create_environment:
 data: requirements
 	$(PYTHON_INTERPRETER) project_name/dataset.py
 
+#--------------------------------------------------------------------------------
+# Pipeline reproducible: parte de data/external ya verificado (ver data/SNAPSHOT.md)
+#--------------------------------------------------------------------------------
+
+## Verify data/external against the versioned checksums (data/external.sha256)
+.PHONY: verify-data
+verify-data:
+	uv run python -m project_name.jobs.snapshot_external_job --verify
+
 ## Download DENUE Sonora raw data
 .PHONY: ingest
 ingest:
@@ -85,6 +94,17 @@ backup:
 	mkdir -p "$(DEST)"
 	tar -czf "$(DEST)/data_$$(date +%Y%m%d_%H%M%S).tar.gz" data
 
+#--------------------------------------------------------------------------------
+# Adquisición: ya ejecutada y NO reproducible (scraper de paga, URLs que expiran,
+# OCR dependiente del hardware). Sus resultados viven en el snapshot de
+# data/external; estas reglas documentan cómo se generaron.
+#--------------------------------------------------------------------------------
+
+## Freeze data/external: write data/external.sha256 and a tar.gz in backups/
+.PHONY: snapshot
+snapshot:
+	uv run python -m project_name.jobs.snapshot_external_job --write
+
 # Target-specific (unconditional `=`, not `?=`) so DEST doesn't inherit the
 # global default from `backup` above; command-line overrides still win either way.
 # e.g make extract-images SOURCE=data/external/dataset_facebook-posts-scraper_2025-10-23-to-2026-09-14.csv
@@ -99,6 +119,30 @@ extract-images: ON_EXISTS = skip
 extract-images:
 	uv run python -m project_name.jobs.extract_images_job \
 		--source "$(SOURCE)" --dest "$(DEST)" --column "$(COLUMN)" --id-column "$(ID_COLUMN)" --on-exists "$(ON_EXISTS)"
+
+# Origen de torch para el OCR: cpu (PyPI: Mac, Linux CPU/NVIDIA) o rocm (GPUs AMD, p. ej. Yuca).
+TORCH ?= cpu
+# Vacío = usa ocr.device de params.yml; p. ej. DEVICE=gpu:0
+DEVICE ?=
+OCR_UV = uv run --extra ocr --extra $(TORCH)
+OCR_DEVICE = $(if $(DEVICE),--device "$(DEVICE)")
+
+## Install the extra (heavy) dependencies needed to run `make ocr` (TORCH=cpu|rocm)
+.PHONY: requirements-ocr
+requirements-ocr:
+	uv sync --extra ocr --extra $(TORCH)
+
+ocr: MANIFEST = data/external/facebook/images/dataset_facebook-posts-scraper_2025-10-23-to-2026-09-14/manifest_media-0-photo_image-uri.csv
+
+## Run OCR over images referenced by a manifest from extract-images (override MANIFEST, TORCH, DEVICE)
+.PHONY: ocr
+ocr: requirements-ocr
+	$(OCR_UV) python -m project_name.jobs.ocr_images_job --manifest "$(MANIFEST)" $(OCR_DEVICE)
+
+## Run OCR on a single image and print the extracted text (set IMAGE; override TORCH, DEVICE)
+.PHONY: ocr-image
+ocr-image: requirements-ocr
+	$(OCR_UV) python -m project_name.jobs.ocr_images_job --image "$(IMAGE)" $(OCR_DEVICE)
 
 
 #################################################################################

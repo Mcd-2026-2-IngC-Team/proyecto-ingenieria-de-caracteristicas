@@ -22,6 +22,10 @@ sources:
           directory: "data/processed/inegi/denue"
           filename: "denue_sonora_2024_05.csv"
 
+ocr:
+  device: "auto"
+  output_dir: "data/external/facebook/ocr"
+
 defaults:
   download:
     on_exists: "skip"
