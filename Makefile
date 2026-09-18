@@ -1,10 +1,7 @@
 # `make help` lists every rule with its description ("## ..." at the end of the line).
 .DEFAULT_GOAL := help
-# Rules run one after another even with -j: `download` already works in parallel,
-# and `process` must wait for its raw data.
-.NOTPARALLEL:
 .PHONY: help requirements test lint format clean nb \
-	data download ingest ingest-dcah ingest-mg-streets process verify-data backup \
+	data download verify-data backup \
 	snapshot extract-images requirements-ocr ocr ocr-image
 
 help: ## Show this help
@@ -36,22 +33,11 @@ nb: ## Export a marimo notebook with outputs (NOTEBOOK=notebooks/<name>, without
 
 # --- Reproducible pipeline -----------------------------------------------------
 
-data: download process ## Download every raw source and build the processed datasets
+data: download ## Download every raw source and build the processed datasets
+	uv run python -m project_name.jobs.process_denue_sonora_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
-
-ingest: ## Download DENUE Sonora raw data
-	uv run python -m project_name.jobs.ingest_denue_sonora_job
-
-ingest-dcah: ## Download Sonora's colonias (INEGI DCAH 2025) raw data
-	uv run python -m project_name.jobs.ingest_dcah_job
-
-ingest-mg-streets: ## Download Sonora's streets (INEGI geostatistical framework 2025) raw data
-	uv run python -m project_name.jobs.ingest_mg_streets_job
-
-process: ## Process DENUE Sonora data into data/processed
-	uv run python -m project_name.jobs.process_denue_sonora_job
 
 verify-data: ## Verify data/external against data/external.sha256 (see data/SNAPSHOT.md)
 	uv run python -m project_name.jobs.snapshot_external_job --verify

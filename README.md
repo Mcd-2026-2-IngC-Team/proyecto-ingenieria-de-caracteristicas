@@ -26,13 +26,9 @@ El proyecto tiene dos partes:
 ### Pipeline reproducible
 
 ```
-make data            # todo el pipeline: descarga las fuentes (download) y las procesa (process)
+make data            # todo el pipeline: descarga las fuentes (make download) y genera data/processed/
 make verify-data     # confirma que data/external es idéntico al snapshot (checksums en git)
 make download        # descarga todas las fuentes crudas en paralelo (DENUE, colonias y calles)
-make ingest          # descarga el zip crudo del DENUE a data/raw/
-make process         # lo extrae y transforma hacia data/processed/
-make ingest-dcah     # descarga las colonias de Sonora (INEGI DCAH 2025) a data/raw/
-make ingest-mg-streets  # descarga la capa de calles de Sonora (Marco Geoestadístico 2025) a data/raw/
 make test            # corre la suite de pruebas
 make lint            # ruff check + format --check
 make format          # ruff check --fix + format
