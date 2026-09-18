@@ -26,9 +26,13 @@ El proyecto tiene dos partes:
 ### Pipeline reproducible
 
 ```
+make data            # todo el pipeline: descarga las fuentes (download) y las procesa (process)
 make verify-data     # confirma que data/external es idéntico al snapshot (checksums en git)
+make download        # descarga todas las fuentes crudas en paralelo (DENUE, colonias y calles)
 make ingest          # descarga el zip crudo del DENUE a data/raw/
 make process         # lo extrae y transforma hacia data/processed/
+make ingest-dcah     # descarga las colonias de Sonora (INEGI DCAH 2025) a data/raw/
+make ingest-mg-streets  # descarga la capa de calles de Sonora (Marco Geoestadístico 2025) a data/raw/
 make test            # corre la suite de pruebas
 make lint            # ruff check + format --check
 make format          # ruff check --fix + format
@@ -36,6 +40,14 @@ make format          # ruff check --fix + format
 
 Antes de `make verify-data`, descarga el snapshot de OneDrive y descomprímelo en
 `data/` (instrucciones en `data/SNAPSHOT.md`).
+
+Cada job de descarga deja, junto a sus archivos en `data/raw/`, un `FUENTE.txt` con
+la institución, la URL de descarga, una descripción de qué contienen los datos, enlaces
+a su documentación, la licencia y, por archivo, su tamaño, fecha de descarga y sha256.
+La descripción y los enlaces de cada fuente se declaran en `params.yml`
+(`description` y `documentation`). La fecha de descarga es la fecha de modificación
+del archivo: si la política `skip` omite una descarga ya hecha, la fecha original se
+conserva.
 
 ### Adquisición (ya ejecutada, no reproducible)
 
@@ -96,10 +108,14 @@ project_name/
 ├── constants.py             <- rutas del directorio data/
 ├── features.py               <- transformaciones con pandas (columnas crudas del DENUE -> features)
 ├── logging.py                <- decorador @log_execution (inicio/fin/error + tiempo)
+├── provenance.py             <- sha256 y FUENTE.txt: descripción, enlaces y fecha de descarga de cada fuente cruda
 ├── clients/                   <- cliente HTTP de descarga, cliente OCR (pipeline PaddleOCR-VL: layout + VLM) + wrapper delgado para INEGI
 ├── policies/                   <- FilePolicy: skip/overwrite/error ante archivos existentes
 └── jobs/
+    ├── download_job.py                <- corre en paralelo todas las ingestas de abajo (make download)
     ├── ingest_denue_sonora_job.py    <- descarga el zip crudo
+    ├── ingest_dcah_job.py             <- descarga solo Sonora del paquete nacional de colonias (DCAH), por rango
+    ├── ingest_mg_streets_job.py       <- descarga solo la capa de calles (26e) del Marco Geoestadístico, por rango
     ├── process_denue_sonora_job.py    <- zip crudo -> csv interim -> csv processed
     ├── extract_images_job.py          <- descarga imágenes desde una columna de un CSV (--source/--dest/--column/--id-column)
     ├── ocr_images_job.py              <- corre OCR sobre un manifest o una sola imagen (--manifest | --image, --device, --output-dir)

@@ -1,6 +1,5 @@
 import argparse
 from datetime import UTC, datetime
-import hashlib
 from pathlib import Path
 import sys
 import tarfile
@@ -10,6 +9,7 @@ from loguru import logger
 from project_name.config import PROJECT_ROOT, load_logging, load_params
 from project_name.constants import EXTERNAL_DIR
 from project_name.logging import log_execution
+from project_name.provenance import sha256
 
 # data/external no es reproducible (scraper de paga, URLs que expiran, OCR que
 # depende del hardware): se congela en un snapshot y en git solo se versionan
@@ -17,14 +17,6 @@ from project_name.logging import log_execution
 CHECKSUMS_FILE = PROJECT_ROOT / "data" / "external.sha256"
 BACKUPS_DIR = PROJECT_ROOT / "backups"
 IGNORED_NAMES = {".DS_Store", ".gitkeep"}
-
-
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as file:
-        for chunk in iter(lambda: file.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def list_files(root: Path) -> list[Path]:

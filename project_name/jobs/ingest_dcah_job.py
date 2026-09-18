@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from project_name.clients.http import HttpClient
+from project_name.clients.inegi import InegiClient
 from project_name.config import load_dataset_config, load_logging, load_params
 from project_name.logging import log_execution
 from project_name.policies.file import FilePolicy, OnExists
@@ -8,21 +9,24 @@ from project_name.provenance import write_source_description
 
 
 @log_execution
-def ingest_denue_sonora(params: dict) -> None:
+def ingest_dcah(params: dict) -> None:
     dataset = load_dataset_config(
         params,
         source="inegi",
-        dataset="denue_sonora_2024_05",
+        dataset="dcah_2025",
     )
 
     policy = FilePolicy(on_exists=OnExists(dataset["download"]["on_exists"]))
 
     destination = Path(dataset["raw"]["directory"]) / dataset["raw"]["filename"]
 
-    client = HttpClient(file_policy=policy)
+    client = InegiClient(http_client=HttpClient(file_policy=policy))
 
-    client.download(
+    # El INEGI solo publica el paquete nacional (~556 MB) con un ZIP por estado
+    # adentro; bajamos por rango únicamente el de Sonora (~15 MB).
+    client.download_zip_member(
         url=dataset["url"],
+        member=dataset["state_member"],
         destination=destination,
     )
 
@@ -31,6 +35,7 @@ def ingest_denue_sonora(params: dict) -> None:
         dataset=dataset,
         files=[destination],
         job=Path(__file__).stem,
+        members=[dataset["state_member"]],
     )
 
 
@@ -42,4 +47,4 @@ if __name__ == "__main__":
         log_file=Path(params["logging"]["file"]),
     )
 
-    ingest_denue_sonora(params)
+    ingest_dcah(params)
