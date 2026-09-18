@@ -16,6 +16,7 @@ classifiers = [
     
 ]
 dependencies = [
+    "geopandas>=1.1",
     "httpx2>=2.12.0",
     "loguru",
     "marimo>=0.24.0",
@@ -23,6 +24,7 @@ dependencies = [
     "nbformat>=5.11.1",
     "pandas>=3.0.5",
     "pip",
+    "pyogrio>=0.11",
     "pytest",
     "python-dotenv",
     # >=6.0.2 (not 6.0.3): paddleocr>=3.7 (in the "ocr" extra) pins pyyaml==6.0.2 exactly.

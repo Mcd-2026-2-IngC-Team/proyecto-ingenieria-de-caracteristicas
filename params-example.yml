@@ -22,6 +22,35 @@ sources:
           directory: "data/processed/inegi/denue"
           filename: "denue_sonora_2024_05.csv"
 
+      dcah_2025:
+        name: "Delimitación de colonias y otros asentamientos humanos 2025"
+        # Solo existe como paquete nacional (~556 MB) con un ZIP por estado; con
+        # descargas por rango bajamos únicamente `state_member` (~15 MB).
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/delimitaciones/794551163078_s.zip"
+        state_member: "26_sonora.zip"
+
+        raw:
+          directory: "data/raw/inegi/dcah"
+          filename: "dcah_2025_26_sonora.zip"
+
+        interim:
+          directory: "data/interim/inegi/dcah"
+
+      mg_2025_sonora:
+        name: "Marco Geoestadístico 2025 — Sonora"
+        # Paquete estatal (~73 MB) con todas las capas; bajamos por rango solo las
+        # que usamos. La capa 26e son los ejes de vialidad (calles con su nombre).
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marcogeo/794551163061/26_sonora.zip"
+        streets_members:
+          - "conjunto_de_datos/26e.shp"
+          - "conjunto_de_datos/26e.shx"
+          - "conjunto_de_datos/26e.dbf"
+          - "conjunto_de_datos/26e.prj"
+          - "conjunto_de_datos/26e.CPG"
+
+        raw:
+          directory: "data/raw/inegi/mg"
+
 ocr:
   device: "auto"
   output_dir: "data/external/facebook/ocr"
