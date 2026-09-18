@@ -1,11 +1,10 @@
 from pathlib import Path
 
-from project_name.jobs import ingest_denue_sonora_job as job
+from project_name.jobs import ingest_dcah_job as job
 from project_name.policies.file import OnExists
 
 
-def test_ingest_denue_sonora_downloads_to_raw_directory(tmp_path, monkeypatch):
-    """Regression test: the job must use dataset["raw"], not a stale dataset["output"]."""
+def test_ingest_dcah_downloads_only_the_state_member(tmp_path, monkeypatch):
     created_clients = []
 
     class FakeHttpClient:
@@ -14,8 +13,8 @@ def test_ingest_denue_sonora_downloads_to_raw_directory(tmp_path, monkeypatch):
             self.calls = []
             created_clients.append(self)
 
-        def download(self, url, destination):
-            self.calls.append((url, destination))
+        def download_zip_member(self, url, member, destination):
+            self.calls.append((url, member, destination))
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(b"zip")
 
@@ -25,12 +24,13 @@ def test_ingest_denue_sonora_downloads_to_raw_directory(tmp_path, monkeypatch):
             "inegi": {
                 "name": "INEGI",
                 "datasets": {
-                    "denue_sonora_2024_05": {
-                        "name": "DENUE Sonora",
-                        "url": "https://example.com/denue.zip",
+                    "dcah_2025": {
+                        "name": "Colonias DCAH",
+                        "url": "https://example.com/national.zip",
+                        "state_member": "26_sonora.zip",
                         "raw": {
                             "directory": str(tmp_path / "raw"),
-                            "filename": "denue.zip",
+                            "filename": "dcah_26_sonora.zip",
                         },
                     }
                 }
@@ -39,18 +39,22 @@ def test_ingest_denue_sonora_downloads_to_raw_directory(tmp_path, monkeypatch):
         "defaults": {"download": {"on_exists": "skip"}},
     }
 
-    monkeypatch.setattr(job, "load_params", lambda: params)
     monkeypatch.setattr(job, "HttpClient", FakeHttpClient)
 
-    job.ingest_denue_sonora(params)
+    job.ingest_dcah(params)
 
     assert len(created_clients) == 1
     client = created_clients[0]
     assert client.file_policy.on_exists == OnExists.SKIP
     assert client.calls == [
-        ("https://example.com/denue.zip", Path(tmp_path / "raw") / "denue.zip")
+        (
+            "https://example.com/national.zip",
+            "26_sonora.zip",
+            Path(tmp_path / "raw") / "dcah_26_sonora.zip",
+        )
     ]
 
     source_description = (tmp_path / "raw" / "FUENTE.txt").read_text(encoding="utf-8")
-    assert source_description.startswith("DENUE Sonora\n")
-    assert "denue.zip" in source_description
+    assert source_description.startswith("Colonias DCAH\n")
+    assert "por rango: 26_sonora.zip" in source_description
+    assert "dcah_26_sonora.zip" in source_description
