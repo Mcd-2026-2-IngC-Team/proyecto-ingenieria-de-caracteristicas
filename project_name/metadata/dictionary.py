@@ -34,12 +34,14 @@ TEXT_RANGE_NOTE = (
 # Qué representa una fila de cada dataset procesado (la "granularidad" de la tabla).
 ROWS = {
     "denue_sonora_2024_05": "un establecimiento activo del DENUE en Sonora",
+    "baches": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
 }
 
 # Columnas que deben leerse como fecha: pandas no las infiere solo desde un CSV, así
 # que se declaran a mano, igual que ROWS y DESCRIPTIONS.
 DATE_COLUMNS = {
     "denue_sonora_2024_05": ["registration_date"],
+    "baches": ["date"],
 }
 
 DESCRIPTIONS = {
@@ -57,6 +59,18 @@ DESCRIPTIONS = {
         "registration_date": "Fecha de alta del establecimiento en el DENUE",
         "has_phone": "Si el establecimiento tiene teléfono registrado",
         "has_email": "Si el establecimiento tiene correo electrónico registrado",
+    },
+    "baches": {
+        "id_row": "Identificador secuencial de la fila, asignado al combinar los años",
+        "latitude": "Latitud del reporte de bache",
+        "longitude": "Longitud del reporte de bache",
+        "date": "Fecha del reporte de bache",
+        "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte",
+        "material": "Código del tipo de material/pavimento reportado por el Bachómetro",
+        "description": "Descripción en texto libre del reporte, escrita por el ciudadano",
+        "id": "Identificador del reporte en el Bachómetro",
+        "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
+        "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
     },
 }
 
