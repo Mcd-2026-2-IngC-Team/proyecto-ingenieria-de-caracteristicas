@@ -28,8 +28,8 @@ clean: ## Delete caches and data/raw, data/interim, data/processed
 	find . -type d -name "__pycache__" -delete
 	rm -rf data/raw/* data/interim/* data/processed/*
 
-nb: ## Export a marimo notebook with outputs (NOTEBOOK=notebooks/<name>, without -marimo.py)
-	uv run marimo export ipynb $(NOTEBOOK)-marimo.py -o $(NOTEBOOK).ipynb --include-outputs
+nb: ## Export a marimo notebook with outputs (NOTEBOOK=<name>; source in notebooks/marimo/, output in notebooks/)
+	uv run marimo export ipynb notebooks/marimo/$(NOTEBOOK).py -o notebooks/$(NOTEBOOK).ipynb --include-outputs
 
 # --- Reproducible pipeline -----------------------------------------------------
 

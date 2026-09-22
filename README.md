@@ -128,7 +128,9 @@ project_name/
     ├── ocr_images_job.py              <- corre OCR sobre un manifest o una sola imagen (--manifest | --image, --device, --output-dir)
     └── snapshot_external_job.py       <- congela (--write) o verifica (--verify) data/external contra data/external.sha256
 
-notebooks/    
+notebooks/
+├── marimo/     <- código fuente editable (make nb NOTEBOOK=<nombre>)
+└── *.ipynb     <- export con outputs, se renderiza en GitHub
 tests/       
 data/         <- raw / interim / processed / external, según las rutas de params.yml
               <- SNAPSHOT.md + external.sha256: de dónde sale data/external y cómo verificarlo

@@ -203,4 +203,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-notebooks/__marimo__
+notebooks/marimo/__marimo__
