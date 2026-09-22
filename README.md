@@ -29,6 +29,7 @@ El proyecto tiene dos partes:
 make data            # todo el pipeline: descarga las fuentes (make download) y genera data/processed/
 make verify-data     # confirma que data/external es idéntico al snapshot (checksums en git)
 make download        # descarga todas las fuentes crudas en paralelo (DENUE, colonias y calles)
+make dictionary      # regenera los diccionarios de datos en references/ desde data/processed/
 make test            # corre la suite de pruebas
 make lint            # ruff check + format --check
 make format          # ruff check --fix + format
@@ -44,6 +45,14 @@ La descripción y los enlaces de cada fuente se declaran en `params.yml`
 (`description` y `documentation`). La fecha de descarga es la fecha de modificación
 del archivo: si la política `skip` omite una descarga ya hecha, la fecha original se
 conserva.
+
+`make dictionary` perfila cada dataset de `data/processed/` con pandas (dtype, nulos,
+valores distintos y rango) y escribe su diccionario de datos en
+[`references/`](references/README.md): un CSV por
+dataset (para que GitHub lo renderice como tabla) y su JSON equivalente en
+`references/json/`. Las descripciones de columnas viven a mano en
+`project_name/metadata/dictionary.py`, que falla si una columna no está descrita o si
+sobra una descripción de una columna que ya no existe.
 
 ### Adquisición (ya ejecutada, no reproducible)
 
@@ -104,7 +113,9 @@ project_name/
 ├── constants.py             <- rutas del directorio data/
 ├── features.py               <- transformaciones con pandas (columnas crudas del DENUE -> features)
 ├── logging.py                <- decorador @log_execution (inicio/fin/error + tiempo)
-├── provenance.py             <- sha256 y FUENTE.txt: descripción, enlaces y fecha de descarga de cada fuente cruda
+├── metadata/                  <- documentación de los datos: origen (source) y columnas (dictionary)
+│   ├── source.py                <- sha256 y FUENTE.txt: descripción, enlaces y fecha de descarga de cada fuente cruda
+│   └── dictionary.py             <- diccionarios de datos en references/ (make dictionary)
 ├── clients/                   <- cliente HTTP de descarga, cliente OCR (pipeline PaddleOCR-VL: layout + VLM) + wrapper delgado para INEGI
 ├── policies/                   <- FilePolicy: skip/overwrite/error ante archivos existentes
 └── jobs/
@@ -121,6 +132,7 @@ notebooks/
 tests/       
 data/         <- raw / interim / processed / external, según las rutas de params.yml
               <- SNAPSHOT.md + external.sha256: de dónde sale data/external y cómo verificarlo
+references/   <- diccionarios de datos generados por make dictionary (ver references/README.md)
 slurm/        <- lanzadores para correr la adquisición (OCR) en el cluster Yuca con SLURM
 logs/         <- logs de los jobs (project_name.log)
 ```

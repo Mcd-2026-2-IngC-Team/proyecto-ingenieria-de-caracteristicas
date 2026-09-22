@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 import hashlib
 import os
 
-from project_name.provenance import SOURCE_DESCRIPTION_FILENAME, write_source_description
+from project_name.metadata.source import SOURCE_DESCRIPTION_FILENAME, write_source_description
 
 SOURCE = {
     "name": "Instituto Nacional de Estadística y Geografía",
@@ -40,7 +40,9 @@ def test_write_source_description_documents_source_and_files(tmp_path):
     text = written.read_text(encoding="utf-8")
     assert written == raw_dir / SOURCE_DESCRIPTION_FILENAME
     assert text.startswith("Delimitación de colonias 2025\n")
-    assert "Fuente: Instituto Nacional de Estadística y Geografía (https://www.inegi.org.mx)" in text
+    assert (
+        "Fuente: Instituto Nacional de Estadística y Geografía (https://www.inegi.org.mx)" in text
+    )
     assert "https://example.com/national.zip" in text
     assert "por rango: 26_sonora.zip" in text
     # La descripción del YAML se reacomoda en una sola línea con sangría.
