@@ -80,3 +80,7 @@ ocr: requirements-ocr ## Run OCR over the images of a manifest (override MANIFES
 
 ocr-image: requirements-ocr ## Run OCR on one image and print its text (IMAGE=...; override TORCH, DEVICE)
 	$(OCR_JOB) --image "$(IMAGE)"
+
+process-baches: 
+	uv run python -m project_name.jobs.process_baches_job
+	

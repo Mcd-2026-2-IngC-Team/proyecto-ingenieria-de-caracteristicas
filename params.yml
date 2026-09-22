@@ -113,6 +113,10 @@ sources:
           directory: "data/raw/bachometro"
           filename: "baches_{year}.json"
 
+        processed:
+          directory: "data/processed/bachometro"
+          filename: "baches_hermosillo.csv"
+
 
 ocr:
   device: "auto"
