@@ -104,6 +104,9 @@ sola imagen e imprime el texto extraído en la terminal, sin escribir ningún
 CSV — útil para probar rápido antes de correr `make ocr` contra un manifest
 completo.
 
+`make process-baches` script que junta todos los json obtenidos por la consulta a bachómetro hermosillo
+en un solo csv
+
 ## Estructura
 
 ```
@@ -121,9 +124,11 @@ project_name/
 └── jobs/
     ├── download_job.py                <- corre en paralelo todas las ingestas de abajo (make download)
     ├── ingest_denue_sonora_job.py    <- descarga el zip crudo
+    ├── ingest_baches_job.py           <- Obtiene la información de bachómetro de hermosillo desde el año 2021 a la fecha actual
     ├── ingest_dcah_job.py             <- descarga solo Sonora del paquete nacional de colonias (DCAH), por rango
     ├── ingest_mg_streets_job.py       <- descarga solo la capa de calles (26e) del Marco Geoestadístico, por rango
     ├── process_denue_sonora_job.py    <- zip crudo -> csv interim -> csv processed
+    ├── process_baches_sonora_job.py   <- jsons por año de bachometro -> csv integrado 
     ├── extract_images_job.py          <- descarga imágenes desde una columna de un CSV (--source/--dest/--column/--id-column)
     ├── ocr_images_job.py              <- corre OCR sobre un manifest o una sola imagen (--manifest | --image, --device, --output-dir)
     └── snapshot_external_job.py       <- congela (--write) o verifica (--verify) data/external contra data/external.sha256
