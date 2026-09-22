@@ -93,6 +93,29 @@ sources:
 
         raw:
           directory: "data/raw/inegi/mg"
+      hidrografia_2010_hermosillo:
+        name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Da R. Sonora - Hermosillo. Cuenca R. Sonora. RH Sonora Sur"
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463135579_s.zip"
+        description: >-
+          Describir los aspectos técnicos de los elementos que componen la Red Hidrográfica 
+          escala 1:50 000 como son puntos de drenaje, líneas de flujo y unidades de captación de 
+          aguas superficiales a la misma escala (subcuenca, cuenca y región hidrográfica), así 
+          como la información asociada y complementaria, con el fin de facilitar el conocimiento y el 
+          mejor entendimiento para su uso y aplicación.
+        documentation:
+          - "https://www.inegi.org.mx/temas/hidrografia/"
+          - "https://www.inegi.org.mx/temas/hidrografia/#descargas"
+
+        raw:
+          directory: "data/raw/inegi/hidrografia/"
+          filename: "hidrografia_sonora_2010_hermosillo.zip"
+
+        interim:
+          directory: "data/interim/inegi/hidrografia/"
+
+        processed:
+          directory: "data/processed/inegi/hidrografia/"
+          filename: "hidrografia_sonora_2010_hermosillo.csv"
 
 ocr:
   device: "auto"
