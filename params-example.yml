@@ -93,6 +93,7 @@ sources:
 
         raw:
           directory: "data/raw/inegi/mg"
+          
       hidrografia_2010_hermosillo:
         name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Da R. Sonora - Hermosillo. Cuenca R. Sonora. RH Sonora Sur"
         url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463135579_s.zip"

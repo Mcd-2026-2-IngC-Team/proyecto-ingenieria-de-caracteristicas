@@ -5,6 +5,9 @@ data/*/*
 !data/*/
 !data/*/.gitkeep
 
+# Experiments Data AAMM
+notebooks/AAMM/notebook_experimentation_data/
+
 logs/*
 !logs/.gitkeep
 
