@@ -4,8 +4,8 @@ from project_name.clients.http import HttpClient
 from project_name.clients.inegi import InegiClient
 from project_name.config import load_dataset_config, load_logging, load_params
 from project_name.logging import log_execution
+from project_name.metadata.source import write_source_description
 from project_name.policies.file import FilePolicy, OnExists
-from project_name.provenance import write_source_description
 
 
 @log_execution

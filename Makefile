@@ -1,7 +1,7 @@
 # `make help` lists every rule with its description ("## ..." at the end of the line).
 .DEFAULT_GOAL := help
 .PHONY: help requirements test lint format clean nb \
-	data download verify-data backup \
+	data download verify-data backup dictionary \
 	snapshot extract-images requirements-ocr ocr ocr-image
 
 help: ## Show this help
@@ -41,6 +41,9 @@ download: ## Download every raw source in parallel, each with its FUENTE.txt
 
 verify-data: ## Verify data/external against data/external.sha256 (see data/SNAPSHOT.md)
 	uv run python -m project_name.jobs.snapshot_external_job --verify
+
+dictionary: ## Regenerate the data dictionaries in references/ from the processed datasets
+	uv run python -m project_name.metadata.dictionary
 
 backup: DEST = backups
 backup: ## Back up data/ as a tar.gz in DEST (default backups/)
