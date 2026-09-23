@@ -9,13 +9,30 @@ from project_name.policies.file import FilePolicy, OnExists
 
 
 @log_execution
-def ingest_subc_la_poza(params: dict) -> None:
-    dataset = load_dataset_config(
-        params,
-        source="inegi",
-        dataset="subc_la_poza",
-    )
+def ingest_subcuencas(params: dict) -> None:
+# Ingestión de subcuencas de Sonora. Cada subcuenca se descarga de manera independiente en data/raw/inegi/. 
+# Deben estar definidas en params.yml bajo sources.inegi.subcuencas.
+    subcuencas = [
+        "subc_la_manga",
+        "subc_la_poza",
+        "subc_r_son_hillo",
+        "subc_r_san_miguel",
+    ]
 
+    for nombre_dataset in subcuencas:
+        dataset = load_dataset_config(
+            params,
+            source="inegi",
+            dataset=nombre_dataset,
+        )
+
+        ingest_subcuenca(
+            params=params,
+            dataset=dataset,
+        )
+
+
+def ingest_subcuenca(params: dict, dataset: dict) -> None:
     policy = FilePolicy(on_exists=OnExists(dataset["download"]["on_exists"]))
 
     destination = Path(dataset["raw"]["directory"]) / dataset["raw"]["filename"]
@@ -43,4 +60,4 @@ if __name__ == "__main__":
         log_file=Path(params["logging"]["file"]),
     )
 
-    ingest_dcah(params)
+    ingest_subcuencas(params)
