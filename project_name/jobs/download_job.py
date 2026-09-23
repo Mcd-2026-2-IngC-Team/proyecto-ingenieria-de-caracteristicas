@@ -8,9 +8,21 @@ from project_name.jobs.ingest_denue_sonora_job import ingest_denue_sonora
 from project_name.jobs.ingest_mg_streets_job import ingest_mg_streets
 from project_name.jobs.ingest_baches_job import ingest_bachometro
 from project_name.jobs.ingest_subc_la_poza import ingest_subc_la_poza
+from project_name.jobs.ingest_subc_r_son_hillo import ingest_subc_r_son_hillo 
+from project_name.jobs.ingest_subc_la_manga import ingest_subc_la_manga
+from project_name.jobs.ingest_subc_r_san_miguel import ingest_subc_r_san_miguel
 from project_name.logging import log_execution
 
-INGEST_JOBS = (ingest_denue_sonora, ingest_dcah, ingest_mg_streets, ingest_bachometro,ingest_subc_la_poza)
+INGEST_JOBS = (
+    ingest_denue_sonora, 
+    ingest_dcah, 
+    ingest_mg_streets, 
+    ingest_bachometro, 
+    ingest_subc_la_poza, 
+    ingest_subc_r_son_hillo, 
+    ingest_subc_la_manga,
+    ingest_subc_r_san_miguel
+)
 
 
 @log_execution

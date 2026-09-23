@@ -93,10 +93,12 @@ sources:
 
         raw:
           directory: "data/raw/inegi/mg"
+
+      # Actualmente cada subcuenca se descarga de manera independiente. Se podría reducir 
+      # el código y las descargas realizando una sola descarga del paquete que contiene 
+      # las cuencas de Sonora y extrayendo únicamente las carpetas correspondientes a las subcuencas utilizadas.
       subc_la_poza:
         name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Di A. La Poza. Cuenca R. Sonora. RH Sonora Sur"
-        # Paquete estatal (~73 MB) con todas las capas; bajamos por rango solo las
-        # que usamos. La capa 26e son los ejes de vialidad (calles con su nombre).
         url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463135449_s.zip"
         description: >-
           Red hidrográfica de la subcuenca La Poza, correspondiente a la región 
@@ -112,7 +114,65 @@ sources:
 
         raw:
           directory: "data/raw/inegi/subc_la_poza"
-          filename: "Subc_La_Poza.zip"
+          filename: "subc_la_poza.zip"
+        
+      subc_r_son_hillo:
+        name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Da R. Sonora - Hermosillo. Cuenca R. Sonora. RH Sonora Sur"
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463135579_s.zip"
+        description: >-
+          Red hidrográfica de la subcuenca Río Sonora-Hillo, correspondiente a la región 
+          hidrológica 09 Sonora Sur: conjunto de capas geoespaciales que representan 
+          las líneas de flujo, puntos de drenaje, cuerpos de agua, unidad de captación 
+          a nivel subcuenca y topónimos. La capa _hl representa los segmentos de la 
+          red hidrográfica; _dr, los puntos de drenaje; _ha, los polígonos de cuerpos 
+          de agua; _subc, el límite de la unidad de captación a nivel subcuenca; y _to, 
+          los puntos con información de nombres geográficos.
+        documentation:
+          - "https://www.inegi.org.mx/temas/hidrografia/#mapas"
+          - "https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=889463135579"
+
+        raw:
+          directory: "data/raw/inegi/subc_r_son_hillo"
+          filename: "subc_r_son_hillo.zip"
+        
+      subc_la_manga:
+        name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Eb A. La Manga. Cuenca R. Bacoachi. RH Sonora Sur"
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463135586_s.zip"
+        description: >-
+          Red hidrográfica de la subcuenca La Manga, correspondiente a la región 
+          hidrológica 09 Sonora Sur: conjunto de capas geoespaciales que representan 
+          las líneas de flujo, puntos de drenaje, cuerpos de agua, unidad de captación 
+          a nivel subcuenca y topónimos. La capa _hl representa los segmentos de la 
+          red hidrográfica; _dr, los puntos de drenaje; _ha, los polígonos de cuerpos 
+          de agua; _subc, el límite de la unidad de captación a nivel subcuenca; y _to, 
+          los puntos con información de nombres geográficos.
+        documentation:
+          - "https://www.inegi.org.mx/temas/hidrografia/#mapas"
+          - "https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=889463135586"
+
+        raw:
+          directory: "data/raw/inegi/subc_la_manga"
+          filename: "subc_la_manga.zip"
+        
+      subc_r_san_miguel:
+        name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09De R. San Miguel. Cuenca R. Sonora. RH Sonora Sur"
+        url: "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/hidrogeolo/subcuencas_2.0/889463136118_s.zip"
+        description: >-
+          Red hidrográfica de la subcuenca R. San Miguel, correspondiente a la región 
+          hidrológica 09 Sonora Sur: conjunto de capas geoespaciales que representan 
+          las líneas de flujo, puntos de drenaje, cuerpos de agua, unidad de captación 
+          a nivel subcuenca y topónimos. La capa _hl representa los segmentos de la 
+          red hidrográfica; _dr, los puntos de drenaje; _ha, los polígonos de cuerpos 
+          de agua; _subc, el límite de la unidad de captación a nivel subcuenca; y _to, 
+          los puntos con información de nombres geográficos.
+        documentation:
+          - "https://www.inegi.org.mx/temas/hidrografia/#mapas"
+          - "https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=889463136118"
+
+        raw:
+          directory: "data/raw/inegi/subc_r_san_miguel"
+          filename: "subc_r_san_miguel.zip"
+
   bachometro:
     name: "Bachómetro Hermosillo"
     base_url: "https://bachometro.hermosillo.gob.mx"
