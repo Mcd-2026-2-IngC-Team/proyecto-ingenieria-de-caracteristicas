@@ -1,7 +1,7 @@
 # `make help` lists every rule with its description ("## ..." at the end of the line).
 .DEFAULT_GOAL := help
 .PHONY: help requirements test lint format clean nb \
-	data download verify-data backup \
+	data download verify-data backup dictionary \
 	snapshot extract-images requirements-ocr ocr ocr-image
 
 help: ## Show this help
@@ -28,19 +28,23 @@ clean: ## Delete caches and data/raw, data/interim, data/processed
 	find . -type d -name "__pycache__" -delete
 	rm -rf data/raw/* data/interim/* data/processed/*
 
-nb: ## Export a marimo notebook with outputs (NOTEBOOK=notebooks/<name>, without -marimo.py)
-	uv run marimo export ipynb $(NOTEBOOK)-marimo.py -o $(NOTEBOOK).ipynb --include-outputs
+nb: ## Export a marimo notebook with outputs (NOTEBOOK=<name>; source in notebooks/marimo/, output in notebooks/)
+	uv run marimo export ipynb notebooks/marimo/$(NOTEBOOK).py -o notebooks/$(NOTEBOOK).ipynb --include-outputs
 
 # --- Reproducible pipeline -----------------------------------------------------
 
 data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_denue_sonora_job
+	uv run python -m project_name.jobs.process_baches_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
 
 verify-data: ## Verify data/external against data/external.sha256 (see data/SNAPSHOT.md)
 	uv run python -m project_name.jobs.snapshot_external_job --verify
+
+dictionary: ## Regenerate the data dictionaries in references/ from the processed datasets
+	uv run python -m project_name.metadata.dictionary
 
 backup: DEST = backups
 backup: ## Back up data/ as a tar.gz in DEST (default backups/)
@@ -77,3 +81,7 @@ ocr: requirements-ocr ## Run OCR over the images of a manifest (override MANIFES
 
 ocr-image: requirements-ocr ## Run OCR on one image and print its text (IMAGE=...; override TORCH, DEVICE)
 	$(OCR_JOB) --image "$(IMAGE)"
+
+process-baches: 
+	uv run python -m project_name.jobs.process_baches_job
+	

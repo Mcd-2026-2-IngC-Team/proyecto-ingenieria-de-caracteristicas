@@ -367,7 +367,7 @@ def _(mo):
     - Los nombres requieren normalización y reglas para secciones y etapas antes de
       cruzarlos con los avisos de Facebook.
     - Los avisos casi nunca nombran colonias sino cruces de calles; ubicarlos es el
-      tema de `02-job-ingestion-calles-mg-marimo.py`, que usa las colonias extraídas aquí.
+      tema de `02-job-ingestion-calles-mg.py`, que usa las colonias extraídas aquí.
     - Siguiente: convertir esta exploración en un job (`ingest_dcah_job`), y cruzar
       los polígonos con las AGEB del Marco Geoestadístico para obtener la población
       por colonia y normalizar las afectaciones por habitante.

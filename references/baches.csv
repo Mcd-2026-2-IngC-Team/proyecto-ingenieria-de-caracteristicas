@@ -1,0 +1,11 @@
+nombre,tipo,nulos_pct,distintos,rango,descripcion
+id_row,int64,0.0,38833,1 – 38833,"Identificador secuencial de la fila, asignado al combinar los años"
+latitude,float64,0.0,35959,-38.9874506 – 50.937531,Latitud del reporte de bache
+longitude,float64,0.0,35928,-122.4194155 – 121.2755118,Longitud del reporte de bache
+date,datetime64[us],0.0,1365,2021-09-17 – 2026-09-22,Fecha del reporte de bache
+neighborhoods,str,0.0,1253,,IDs de la(s) colonia(s) del Bachómetro asociadas al reporte
+material,int64,0.0,2,1 – 2,Código del tipo de material/pavimento reportado por el Bachómetro
+description,str,0.0,34211,,"Descripción en texto libre del reporte, escrita por el ciudadano"
+id,int64,0.0,38833,1 – 48447,Identificador del reporte en el Bachómetro
+year,int64,0.0,6,2021 – 2026,"Año de la fuente de datos, según bachometro.hermosillo.gob.mx"
+date_mx,str,0.0,1365,,Fecha del reporte en formato mexicano (dd/mm/aaaa)

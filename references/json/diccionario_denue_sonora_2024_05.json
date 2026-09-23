@@ -1,0 +1,118 @@
+{
+  "dataset": "denue_sonora_2024_05",
+  "archivo": "data/processed/inegi/denue/denue_sonora_2024_05.csv",
+  "una_fila_es": "un establecimiento activo del DENUE en Sonora",
+  "filas": 119501,
+  "columnas": [
+    {
+      "nombre": "id",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 119501,
+      "rango": "3862094 – 9487162",
+      "descripcion": "Identificador del establecimiento en el DENUE"
+    },
+    {
+      "nombre": "business_name",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 89583,
+      "rango": null,
+      "descripcion": "Nombre o razón social del establecimiento"
+    },
+    {
+      "nombre": "activity_code",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 854,
+      "rango": "112511 – 931810",
+      "descripcion": "Código SCIAN de la actividad económica"
+    },
+    {
+      "nombre": "activity_name",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 854,
+      "rango": null,
+      "descripcion": "Nombre de la actividad económica (SCIAN)"
+    },
+    {
+      "nombre": "employee_range",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 7,
+      "rango": null,
+      "descripcion": "Rango de personal ocupado, en texto (ej. '0 a 5 personas')"
+    },
+    {
+      "nombre": "municipality",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 72,
+      "rango": null,
+      "descripcion": "Municipio del domicilio del establecimiento"
+    },
+    {
+      "nombre": "locality",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 708,
+      "rango": null,
+      "descripcion": "Localidad del domicilio del establecimiento"
+    },
+    {
+      "nombre": "latitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 111559,
+      "rango": "26.32235048 – 32.49312629",
+      "descripcion": "Latitud del establecimiento"
+    },
+    {
+      "nombre": "longitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 111656,
+      "rango": "-115.01158515 – -108.6502778",
+      "descripcion": "Longitud del establecimiento"
+    },
+    {
+      "nombre": "registration_date",
+      "tipo": "datetime64[us]",
+      "nulos_pct": 0.0,
+      "distintos": 22,
+      "rango": "2010-07-01 – 2024-05-01",
+      "descripcion": "Fecha de alta del establecimiento en el DENUE"
+    },
+    {
+      "nombre": "employee_range_rank",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 7,
+      "rango": "1 – 7",
+      "descripcion": "Orden del rango de personal ocupado, de 1 (menor) a 7 (mayor)"
+    },
+    {
+      "nombre": "has_phone",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Si el establecimiento tiene teléfono registrado"
+    },
+    {
+      "nombre": "has_email",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Si el establecimiento tiene correo electrónico registrado"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-09-22 22:53 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}

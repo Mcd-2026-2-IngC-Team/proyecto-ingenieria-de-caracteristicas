@@ -252,7 +252,7 @@ def _(mo):
     sirven para ubicar los cruces del texto, los puntos deben reproducir los pines.
 
     Para asignarle una colonia a cada punto usamos las colonias del DCAH que extrae
-    `01-job-ingestion-colonias-dcah-marimo.py` (hay que correrlo antes).
+    `01-job-ingestion-colonias-dcah.py` (hay que correrlo antes).
     """)
     return
 
@@ -264,7 +264,7 @@ def _(Path, gpd, load_dataset_config, params):
         Path(colonias_dataset["interim"]["directory"]) / "conjunto_de_datos" / "26as.shp"
     )
     assert colonias_file.exists(), (
-        "Corre primero notebooks/01-job-ingestion-colonias-dcah-marimo.py"
+        "Corre primero notebooks/marimo/01-job-ingestion-colonias-dcah.py"
     )
 
     colonias = gpd.read_file(colonias_file)

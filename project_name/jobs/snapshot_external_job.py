@@ -9,7 +9,7 @@ from loguru import logger
 from project_name.config import PROJECT_ROOT, load_logging, load_params
 from project_name.constants import EXTERNAL_DIR
 from project_name.logging import log_execution
-from project_name.provenance import sha256
+from project_name.metadata.source import sha256
 
 # data/external no es reproducible (scraper de paga, URLs que expiran, OCR que
 # depende del hardware): se congela en un snapshot y en git solo se versionan
