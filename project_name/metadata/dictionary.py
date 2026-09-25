@@ -288,36 +288,56 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
     return len(df), columns
 
 
-def document(dataset: str, processed_file: Path, n_rows: int, columns: list[dict],layer: str | None = None) -> dict:
-    """El diccionario de un dataset, listo para escribirse como JSON."""
-    """Construye el diccionario de un dataset CSV o de una capa GeoPackage."""
+def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], columns: list[dict]) -> dict:
+    """Construye el diccionario de un dataset CSV o de un GeoPackage."""
 
-    if layer is not None:
-        descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
-        row_description = ROWS_SUBCUENCAS[layer]
-    else:
-        descriptions = DESCRIPTIONS[dataset]
-        row_description = ROWS[dataset]
+    #descriptions = DESCRIPTIONS[dataset]
+    #row_description = ROWS[dataset]
 
     shown = (
         processed_file.relative_to(PROJECT_ROOT) if processed_file.is_relative_to(PROJECT_ROOT) else processed_file
     )
-    documented = {
-        "dataset": dataset,
-        "archivo": str(shown),
-        "una_fila_es": row_description,
-        "filas": n_rows,
-        "columnas": [
+
+    if processed_file.suffix == ".gpkg":
+        row_description = ROWS_SUBCUENCAS
+
+        documented_columns = [
+            {
+                "capa": column["capa"],
+                "nombre": column["column_name"],
+                "tipo": column["type"],
+                "nulos_pct": column["nulos_pct"],
+                "distintos": column["distintos"],
+                "rango": column["rango"],
+                "descripcion": DESCRIPTIONS_SUBCUENCAS[
+                    column["capa"]
+                ][column["column_name"]],
+            }
+            for column in columns
+        ]
+    else:
+        row_description = ROWS[dataset]
+
+        documented_columns = [
             {
                 "nombre": column["column_name"],
                 "tipo": column["type"],
                 "nulos_pct": column["nulos_pct"],
                 "distintos": column["distintos"],
                 "rango": column["rango"],
-                "descripcion": descriptions[column["column_name"]],
+                "descripcion": DESCRIPTIONS[
+                    dataset
+                ][column["column_name"]],
             }
             for column in columns
-        ],
+        ]
+
+    documented = {
+        "dataset": dataset,
+        "archivo": str(shown),
+        "una_fila_es": row_description,
+        "filas": n_rows,
+        "columnas": documented_columns,
         "generado": {
             "fecha": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
             "comando": "make dictionary",
@@ -330,8 +350,12 @@ def document(dataset: str, processed_file: Path, n_rows: int, columns: list[dict
     return documented
 
 
-def write_csv(destination: Path, columns: list[dict]) -> None:
+def write_csv(destination: Path, columns: list[dict],is_geopackage: bool = False,) -> None:
     fieldnames = ["nombre", "tipo", "nulos_pct", "distintos", "rango", "descripcion"]
+
+    if is_geopackage:
+        fieldnames.insert(0, "capa")
+
     with destination.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -352,14 +376,26 @@ def build_dictionaries(params: dict) -> list[Path]:
     for dataset, processed_file in processed_files(params).items():
         if not processed_file.exists():
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
+        is_geopackage = processed_file.suffix == ".gpkg"
 
-        if processed_file.suffix == ".gpkg":
+        if is_geopackage:
+
             layers = gpd.list_layers(processed_file)["name"].tolist()
+
+            all_columns = []
+            rows_by_layer = {}
 
             for layer in layers:
                 if layer not in DESCRIPTIONS_SUBCUENCAS:
                     raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
+                
                 n_rows, columns = profile(processed_file, dataset, layer)
+                rows_by_layer[layer] = n_rows
+
+                for column in columns:
+                    column["capa"] = layer
+
+                all_columns.extend(columns)
 
                 descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
                 undocumented = {column["column_name"] for column in columns} - set(descriptions)
@@ -371,7 +407,7 @@ def build_dictionaries(params: dict) -> list[Path]:
                         f"descritas pero inexistentes: {sorted(missing)}"
                     )
 
-                documented = document(dataset, processed_file, n_rows, columns, layer)
+            documented = document(dataset, processed_file, rows_by_layer, all_columns)
 
         else: 
             if dataset not in DESCRIPTIONS:
@@ -396,10 +432,15 @@ def build_dictionaries(params: dict) -> list[Path]:
         )
 
         csv_destination = REFERENCES_DIR / f"{dataset}.csv"
-        write_csv(csv_destination, documented["columnas"])
+        write_csv(csv_destination, documented["columnas"],is_geopackage)
+
+        if is_geopackage:
+            n_columns = len(documented["columnas"])
+        else:
+            n_columns = len(columns)
 
         logger.info(
-            "Documented {} columns → {}, {}", len(columns), csv_destination, json_destination
+            "Documented {} columns → {}, {}", n_columns, csv_destination, json_destination
         )
         written += [csv_destination, json_destination]
     return written
