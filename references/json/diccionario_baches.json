@@ -1,0 +1,94 @@
+{
+  "dataset": "baches",
+  "archivo": "data/processed/bachometro/baches_hermosillo.csv",
+  "una_fila_es": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
+  "filas": 38833,
+  "columnas": [
+    {
+      "nombre": "id_row",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 38833,
+      "rango": "1 – 38833",
+      "descripcion": "Identificador secuencial de la fila, asignado al combinar los años"
+    },
+    {
+      "nombre": "latitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 35959,
+      "rango": "-38.9874506 – 50.937531",
+      "descripcion": "Latitud del reporte de bache"
+    },
+    {
+      "nombre": "longitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 35928,
+      "rango": "-122.4194155 – 121.2755118",
+      "descripcion": "Longitud del reporte de bache"
+    },
+    {
+      "nombre": "date",
+      "tipo": "datetime64[us]",
+      "nulos_pct": 0.0,
+      "distintos": 1365,
+      "rango": "2021-09-17 – 2026-09-22",
+      "descripcion": "Fecha del reporte de bache"
+    },
+    {
+      "nombre": "neighborhoods",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1253,
+      "rango": null,
+      "descripcion": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte"
+    },
+    {
+      "nombre": "material",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "1 – 2",
+      "descripcion": "Código del tipo de material/pavimento reportado por el Bachómetro"
+    },
+    {
+      "nombre": "description",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 34211,
+      "rango": null,
+      "descripcion": "Descripción en texto libre del reporte, escrita por el ciudadano"
+    },
+    {
+      "nombre": "id",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 38833,
+      "rango": "1 – 48447",
+      "descripcion": "Identificador del reporte en el Bachómetro"
+    },
+    {
+      "nombre": "year",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 6,
+      "rango": "2021 – 2026",
+      "descripcion": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx"
+    },
+    {
+      "nombre": "date_mx",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1365,
+      "rango": null,
+      "descripcion": "Fecha del reporte en formato mexicano (dd/mm/aaaa)"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-09-22 22:53 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}

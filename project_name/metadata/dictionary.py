@@ -39,6 +39,7 @@ ROWS = {
     ),
     "colonias_hermosillo": "un asentamiento humano de Hermosillo según el DCAH 2025 del INEGI",
     "ubicaciones_aviso": "un lugar mencionado en una publicación de Agua de Hermosillo",
+    "baches": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
 }
 
 # Columnas que deben leerse como fecha: pandas no las infiere solo desde un CSV, así
@@ -48,6 +49,7 @@ DATE_COLUMNS = {
     "publicaciones_aguah": ["published_at", "announced_start_at"],
     "colonias_hermosillo": [],
     "ubicaciones_aviso": [],
+    "baches": ["date"],
 }
 
 DESCRIPTIONS = {
@@ -158,6 +160,18 @@ DESCRIPTIONS = {
             "volantes), cruce_geocodificado o unmatched. Es el indicador de confianza de "
             "la fila: las menciones con marcador explícito son más seguras que un nombre suelto"
         ),
+        "baches": {
+            "id_row": "Identificador secuencial de la fila, asignado al combinar los años",
+            "latitude": "Latitud del reporte de bache",
+            "longitude": "Longitud del reporte de bache",
+            "date": "Fecha del reporte de bache",
+            "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte",
+            "material": "Código del tipo de material/pavimento reportado por el Bachómetro",
+            "description": "Descripción en texto libre del reporte, escrita por el ciudadano",
+            "id": "Identificador del reporte en el Bachómetro",
+            "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
+            "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
+        },
     },
 }
 
