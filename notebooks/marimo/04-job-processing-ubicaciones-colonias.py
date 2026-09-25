@@ -702,11 +702,12 @@ def _(mo):
 
 @app.cell
 def _(colonia_mentions, colonias, pd, unresolved_points, with_colonia):
-    centroid_by_colonia = colonias.set_index("colonia_id")[["centroid_lat", "centroid_lon"]]
-
     colonia_rows = pd.DataFrame(colonia_mentions)
-    colonia_rows["lat"] = colonia_rows["colonia_id"].map(centroid_by_colonia["centroid_lat"])
-    colonia_rows["lon"] = colonia_rows["colonia_id"].map(centroid_by_colonia["centroid_lon"])
+    # Una colonia mencionada no es un punto, es su polígono: quien lo quiera dibujar une por
+    # colonia_id contra colonias_hermosillo. Ponerle aquí el centroide apilaría cientos de
+    # menciones en una sola coordenada y fabricaría focos donde no los hay.
+    colonia_rows["lat"] = pd.NA
+    colonia_rows["lon"] = pd.NA
 
     crossing_rows = pd.concat([with_colonia, unresolved_points], ignore_index=True)
     crossing_rows = pd.DataFrame(crossing_rows.drop(columns="geometry"))
@@ -725,10 +726,13 @@ def _(colonia_mentions, colonias, pd, unresolved_points, with_colonia):
     # El texto extraído a veces arrastra una palabra de más ("... y De las Rocas Col"), lo
     # que produce dos filas para el mismo cruce. Se resuelven al mismo punto, así que
     # deduplicamos por ubicación en vez de intentar adivinar dónde termina el nombre.
-    locations = locations[
-        ~locations.duplicated(subset=["post_id", "location_type", "colonia_id", "lat", "lon"])
-        | locations["lat"].isna()
-    ]
+    # Solo aplica a los cruces: las menciones de colonia ya son únicas por publicación.
+    _repeated_crossing = (
+        locations["location_type"].eq("cruce")
+        & locations["lat"].notna()
+        & locations.duplicated(subset=["post_id", "location_type", "lat", "lon"])
+    )
+    locations = locations[~_repeated_crossing]
     locations = locations.sort_values(["post_id", "location_type", "raw_text"]).reset_index(
         drop=True
     )

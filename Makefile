@@ -35,6 +35,9 @@ nb: ## Export a marimo notebook with outputs (NOTEBOOK=<name>; source in noteboo
 
 data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_denue_sonora_job
+	uv run python -m project_name.jobs.process_publicaciones_aguah_job
+	uv run python -m project_name.jobs.process_colonias_hermosillo_job
+	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
