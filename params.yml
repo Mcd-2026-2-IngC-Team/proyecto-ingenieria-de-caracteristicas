@@ -117,6 +117,64 @@ sources:
           directory: "data/processed/bachometro"
           filename: "baches_hermosillo.csv"
 
+  agua_hermosillo:
+    name: "Agua de Hermosillo: datos derivados para el tablero de desabasto"
+    description: >-
+      Datasets tidy que produce este proyecto a partir del snapshot de publicaciones de
+      Facebook de Agua de Hermosillo, del texto extraído por OCR de sus volantes, y de
+      las capas del INEGI (colonias del DCAH y calles del Marco Geoestadístico).
+
+    datasets:
+      publicaciones_aguah:
+        name: "Publicaciones de Agua de Hermosillo en Facebook"
+        description: >-
+          Una fila por publicación de la página oficial de Agua de Hermosillo entre
+          diciembre de 2020 y septiembre de 2026. Combina el texto de la publicación con
+          el texto extraído por OCR de su imagen (unión 1:1 por postId), las reacciones
+          (en particular el enojo, que usamos como señal de molestia ciudadana), el
+          comentario destacado, y variables derivadas: tipo de evento, ventana de
+          afectación anunciada y atributos de tiempo en hora local de Hermosillo.
+
+        external:
+          posts_directory: "data/external"
+          posts_pattern: "dataset_facebook-posts-scraper_*.csv"
+          ocr_directory: "data/external/facebook/ocr"
+          ocr_pattern: "*/ocr_media-0-photo_image-uri.csv"
+
+        processed:
+          directory: "data/processed/aguah"
+          filename: "publicaciones_aguah.csv"
+
+      colonias_hermosillo:
+        name: "Colonias y asentamientos humanos de Hermosillo"
+        description: >-
+          Una fila por asentamiento humano de Hermosillo según el DCAH 2025 del INEGI:
+          clave geoestadística, nombre tal cual lo publica el INEGI y normalizado para
+          poder emparejarlo con los avisos, tipo de asentamiento, código postal, área y
+          centroide en coordenadas geográficas. Es el catálogo contra el que se resuelven
+          las colonias que nombran las publicaciones de Agua de Hermosillo. Se guarda dos
+          veces: el CSV es la tabla tidy sin geometría, y junto a él un GeoPackage
+          (colonias_hermosillo.gpkg, EPSG:4326) lleva además el polígono de cada colonia,
+          que es lo que el tablero necesita para pintar el mapa por colonia.
+
+        processed:
+          directory: "data/processed/aguah"
+          filename: "colonias_hermosillo.csv"
+
+      ubicaciones_aviso:
+        name: "Ubicaciones mencionadas en los avisos de Agua de Hermosillo"
+        description: >-
+          Una fila por lugar mencionado en una publicación. Unifica las dos maneras en que
+          un aviso dice dónde pega la afectación: nombrando la colonia y nombrando un cruce
+          de calles, que se geocodifica con los ejes de vialidad del Marco Geoestadístico y
+          se asigna a la colonia más cercana. Cada fila guarda cómo se resolvió y con qué
+          puntuación; las menciones que ninguna regla resuelve se conservan marcadas como
+          no resueltas, para que la cobertura sea medible.
+
+        processed:
+          directory: "data/processed/aguah"
+          filename: "ubicaciones_aviso.csv"
+
 
 ocr:
   device: "auto"
