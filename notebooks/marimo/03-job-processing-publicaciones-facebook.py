@@ -471,9 +471,7 @@ def _(mo):
 
     Una fila por publicación y una variable por columna. Dejamos fuera el nombre de quien
     comentó: es una persona identificable y el tablero no necesita saber quién escribió para
-    medir molestia. Conservamos el texto del comentario y sus likes. Es el mismo criterio que
-    ya sigue el repositorio con el DENUE, donde se guardan `has_phone` y `has_email` en vez
-    del teléfono y el correo.
+    medir molestia. Conservamos el texto del comentario y sus likes.
     """)
     return
 

@@ -3,13 +3,12 @@ import contextvars
 from pathlib import Path
 
 from project_name.config import load_logging, load_params
-from project_name.jobs.ingest_dcah_job import ingest_dcah
-from project_name.jobs.ingest_denue_sonora_job import ingest_denue_sonora
-from project_name.jobs.ingest_mg_streets_job import ingest_mg_streets
 from project_name.jobs.ingest_baches_job import ingest_bachometro
+from project_name.jobs.ingest_dcah_job import ingest_dcah
+from project_name.jobs.ingest_mg_streets_job import ingest_mg_streets
 from project_name.logging import log_execution
 
-INGEST_JOBS = (ingest_denue_sonora, ingest_dcah, ingest_mg_streets, ingest_bachometro)
+INGEST_JOBS = (ingest_dcah, ingest_mg_streets, ingest_bachometro)
 
 
 @log_execution

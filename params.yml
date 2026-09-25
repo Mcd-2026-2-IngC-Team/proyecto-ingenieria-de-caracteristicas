@@ -9,32 +9,6 @@ sources:
     url: "https://www.inegi.org.mx"
     license: "Términos de Libre Uso de la Información del INEGI: https://www.inegi.org.mx/inegi/terminos.html"
     datasets:
-      denue_sonora_2024_05:
-        name: "DENUE Sonora — mayo 2024"
-        url: "https://www.inegi.org.mx/contenidos/masiva/denue/2024_05/denue_26_0524_csv.zip"
-        description: >-
-          Directorio Estadístico Nacional de Unidades Económicas de Sonora, edición mayo
-          2024. Una fila por establecimiento activo: nombre y razón social, actividad
-          económica (código SCIAN), tamaño por personal ocupado, domicilio (vialidad,
-          colonia, código postal, AGEB y manzana), coordenadas (latitud y longitud) y
-          fecha de alta. El ZIP incluye el diccionario de datos del INEGI
-          (diccionario_de_datos/) y los metadatos (metadatos/). El CSV viene en
-          ISO-8859-1.
-        documentation:
-          - "https://www.inegi.org.mx/temas/directorio/"
-          - "https://www.inegi.org.mx/app/descarga/?ti=6"
-
-        raw:
-          directory: "data/raw/inegi/denue"
-          filename: "denue_sonora_2024_05.zip"
-
-        interim:
-          directory: "data/interim/inegi/denue"
-
-        processed:
-          directory: "data/processed/inegi/denue"
-          filename: "denue_sonora_2024_05.csv"
-
       dcah_2025:
         name: "Delimitación de colonias y otros asentamientos humanos 2025"
         # Solo existe como paquete nacional (~556 MB) con un ZIP por estado; con

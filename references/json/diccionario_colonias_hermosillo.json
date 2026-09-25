@@ -86,7 +86,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 02:34 UTC",
+    "fecha": "2026-09-25 03:22 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },
