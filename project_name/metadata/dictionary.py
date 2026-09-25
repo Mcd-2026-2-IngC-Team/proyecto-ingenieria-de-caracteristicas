@@ -366,6 +366,48 @@ def write_csv(destination: Path, columns: list[dict],is_geopackage: bool = False
         writer.writeheader()
         writer.writerows(columns)
 
+def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool,) -> tuple[int | dict[str, int], list[dict]]:
+    """Perfila y valida un archivo CSV o un GeoPackage procesado."""
+
+    if is_geopackage:
+
+        layers = gpd.list_layers(processed_file)["name"].tolist()
+
+        all_columns = []
+        rows_by_layer = {}
+
+        for layer in layers:
+            if layer not in DESCRIPTIONS_SUBCUENCAS:
+                raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
+                
+            n_rows, columns = profile(processed_file, dataset, layer)
+            rows_by_layer[layer] = n_rows
+
+            for column in columns:
+                column["capa"] = layer
+
+            all_columns.extend(columns)
+
+            validate_columns(
+                dataset,
+                columns,
+                DESCRIPTIONS_SUBCUENCAS[layer],
+            )
+
+        return rows_by_layer, all_columns
+
+    if dataset not in DESCRIPTIONS:
+        raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
+    
+    n_rows, columns = profile(processed_file, dataset)
+
+    validate_columns(
+        dataset,
+        columns,
+        DESCRIPTIONS[dataset],
+    )
+
+    return n_rows, columns
 
 @log_execution
 def build_dictionaries(params: dict) -> list[Path]:
@@ -383,53 +425,9 @@ def build_dictionaries(params: dict) -> list[Path]:
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
         is_geopackage = processed_file.suffix == ".gpkg"
 
-        if is_geopackage:
+        n_rows, columns = profile_processed_file(dataset,processed_file,is_geopackage)
 
-            layers = gpd.list_layers(processed_file)["name"].tolist()
-
-            all_columns = []
-            rows_by_layer = {}
-
-            for layer in layers:
-                if layer not in DESCRIPTIONS_SUBCUENCAS:
-                    raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
-                
-                n_rows, columns = profile(processed_file, dataset, layer)
-                rows_by_layer[layer] = n_rows
-
-                for column in columns:
-                    column["capa"] = layer
-
-                all_columns.extend(columns)
-
-                descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
-                undocumented = {column["column_name"] for column in columns} - set(descriptions)
-                missing = set(descriptions) - {column["column_name"] for column in columns}
-    
-                if undocumented or missing:
-                    raise ValueError(
-                        f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
-                        f"descritas pero inexistentes: {sorted(missing)}"
-                    )
-
-            documented = document(dataset, processed_file, rows_by_layer, all_columns)
-
-        else: 
-            if dataset not in DESCRIPTIONS:
-                raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
-    
-            n_rows, columns = profile(processed_file, dataset)
-            descriptions = DESCRIPTIONS[dataset]
-            undocumented = {column["column_name"] for column in columns} - set(descriptions)
-            missing = set(descriptions) - {column["column_name"] for column in columns}
-
-            if undocumented or missing:
-                raise ValueError(
-                    f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
-                    f"descritas pero inexistentes: {sorted(missing)}"
-                )
-
-            documented = document(dataset, processed_file, n_rows, columns)
+        documented = document(dataset,processed_file,n_rows,columns)
 
         json_destination = REFERENCES_JSON_DIR / f"diccionario_{dataset}.json"
         json_destination.write_text(
@@ -439,17 +437,29 @@ def build_dictionaries(params: dict) -> list[Path]:
         csv_destination = REFERENCES_DIR / f"{dataset}.csv"
         write_csv(csv_destination, documented["columnas"],is_geopackage)
 
-        if is_geopackage:
-            n_columns = len(documented["columnas"])
-        else:
-            n_columns = len(columns)
+        n_columns = len(documented["columnas"])
 
         logger.info(
             "Documented {} columns → {}, {}", n_columns, csv_destination, json_destination
         )
         written += [csv_destination, json_destination]
+
     return written
 
+def validate_columns(dataset: str,columns: list[dict],descriptions: dict[str, str],) -> None:
+    """Valida que las columnas tengan una descripción y que no sobren descripciones."""
+
+    column_names = {column["column_name"] for column in columns}
+    description_names = set(descriptions)
+
+    undocumented = column_names - description_names
+    missing = description_names - column_names
+
+    if undocumented or missing:
+        raise ValueError(
+            f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
+            f"descritas pero inexistentes: {sorted(missing)}"
+        )
 
 def main() -> None:
     params = load_params()
