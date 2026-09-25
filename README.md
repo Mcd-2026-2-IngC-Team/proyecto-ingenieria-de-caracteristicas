@@ -1,6 +1,9 @@
 <a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
+<a target="_blank" href="https://github.com/Mcd-2026-2-IngC-Team/proyecto-ingenieria-de-caracteristicas/actions/workflows/ci.yml">
+    <img src="https://github.com/Mcd-2026-2-IngC-Team/proyecto-ingenieria-de-caracteristicas/actions/workflows/ci.yml/badge.svg" />
+</a>
 
 # Proyecto de ingeniería de características
 ## Tema y pregunta
