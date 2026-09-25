@@ -34,6 +34,11 @@ TEXT_RANGE_NOTE = (
 # Qué representa una fila de cada dataset procesado (la "granularidad" de la tabla).
 ROWS = {
     "denue_sonora_2024_05": "un establecimiento activo del DENUE en Sonora",
+    "publicaciones_aguah": (
+        "una publicación de la página oficial de Agua de Hermosillo en Facebook"
+    ),
+    "colonias_hermosillo": "un asentamiento humano de Hermosillo según el DCAH 2025 del INEGI",
+    "ubicaciones_aviso": "un lugar mencionado en una publicación de Agua de Hermosillo",
     "baches": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
 }
 
@@ -41,6 +46,9 @@ ROWS = {
 # que se declaran a mano, igual que ROWS y DESCRIPTIONS.
 DATE_COLUMNS = {
     "denue_sonora_2024_05": ["registration_date"],
+    "publicaciones_aguah": ["published_at", "announced_start_at"],
+    "colonias_hermosillo": [],
+    "ubicaciones_aviso": [],
     "baches": ["date"],
 }
 
@@ -60,17 +68,110 @@ DESCRIPTIONS = {
         "has_phone": "Si el establecimiento tiene teléfono registrado",
         "has_email": "Si el establecimiento tiene correo electrónico registrado",
     },
-    "baches": {
-        "id_row": "Identificador secuencial de la fila, asignado al combinar los años",
-        "latitude": "Latitud del reporte de bache",
-        "longitude": "Longitud del reporte de bache",
-        "date": "Fecha del reporte de bache",
-        "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte",
-        "material": "Código del tipo de material/pavimento reportado por el Bachómetro",
-        "description": "Descripción en texto libre del reporte, escrita por el ciudadano",
-        "id": "Identificador del reporte en el Bachómetro",
-        "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
-        "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
+    "publicaciones_aguah": {
+        "post_id": "Identificador de la publicación en Facebook; llave primaria",
+        "source_slug": "Rango de fechas del export del scraper del que salió la fila",
+        "published_at": "Fecha y hora de publicación en hora local de Hermosillo (UTC-7)",
+        "year": "Año de publicación",
+        "month": "Mes de publicación, de 1 a 12",
+        "iso_week": "Semana ISO de publicación, de 1 a 53",
+        "day_of_week": "Día de la semana de publicación, de 0 (lunes) a 6 (domingo)",
+        "hour_of_day": "Hora del día de publicación, de 0 a 23",
+        "text": "Texto del cuerpo de la publicación; vacío si la publicación no trae texto",
+        "has_text": "Si la publicación trae texto en el cuerpo",
+        "ocr_text": (
+            "Texto extraído por OCR (PaddleOCR-VL) de la imagen de la publicación; "
+            "vacío si no hay imagen o si el OCR no encontró texto"
+        ),
+        "ocr_status": "Resultado del OCR: ocr_success o skipped_no_image",
+        "has_image": "Si la publicación trae imagen",
+        "reactions_like": "Reacciones 'me gusta'",
+        "reactions_love": "Reacciones 'me encanta'",
+        "reactions_haha": "Reacciones 'me divierte'",
+        "reactions_wow": "Reacciones 'me asombra'",
+        "reactions_sad": "Reacciones 'me entristece'",
+        "reactions_angry": "Reacciones 'me enoja'; es la señal de molestia ciudadana",
+        "reactions_care": "Reacciones 'me importa'",
+        "reactions_total": "Suma de todas las reacciones de la publicación",
+        "angry_share": (
+            "Proporción de enojo sobre el total de reacciones; nulo si no hubo reacciones"
+        ),
+        "comments_count": "Número de comentarios de la publicación",
+        "shares_count": "Número de veces que se compartió la publicación",
+        "likes_count": "Número de 'me gusta' que reporta el scraper aparte de las reacciones",
+        "top_comment_text": (
+            "Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió"
+        ),
+        "top_comment_likes": "'Me gusta' del comentario destacado",
+        "event_type": (
+            "Tipo de evento por reglas sobre el texto y el OCR, en orden de prioridad: "
+            "restablecimiento, corte_programado, emergencia, pipas u otro"
+        ),
+        "announced_start_at": (
+            "Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha"
+        ),
+        "announced_duration_hours": (
+            "Duración de la afectación en horas según lo anunciado; "
+            "nulo si el aviso no declara un plazo"
+        ),
+    },
+    "colonias_hermosillo": {
+        "colonia_id": "Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria",
+        "settlement_name": "Nombre del asentamiento tal como lo publica el INEGI",
+        "settlement_name_normalized": (
+            "Nombre sin acentos, signos ni minúsculas, para emparejarlo con los avisos"
+        ),
+        "settlement_type": "Tipo de asentamiento: COLONIA, FRACCIONAMIENTO, RESIDENCIAL...",
+        "locality_code": (
+            "Clave de localidad del INEGI, de cuatro dígitos: 0001 es la ciudad, "
+            "0137 Bahía de Kino y 0343 Miguel Alemán. Léase como texto: en CSV pierde "
+            "los ceros a la izquierda"
+        ),
+        "postal_code": "Código postal que reportó el municipio; 00000 si no lo reportó",
+        "area_km2": "Área del polígono del asentamiento en kilómetros cuadrados",
+        "centroid_lat": "Latitud del centroide del asentamiento (EPSG:4326)",
+        "centroid_lon": "Longitud del centroide del asentamiento (EPSG:4326)",
+        "updated_at": "Mes y año en que el municipio actualizó el asentamiento",
+    },
+    "ubicaciones_aviso": {
+        "post_id": "Publicación donde se mencionó el lugar; une con publicaciones_aguah",
+        "location_type": (
+            "Cómo nombró el aviso el lugar: 'colonia' si dio el nombre del asentamiento, "
+            "'cruce' si dio un cruce de calles"
+        ),
+        "raw_text": "El lugar tal como lo nombra la publicación, ya normalizado",
+        "colonia_id": (
+            "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. "
+            "Nulo cuando la mención no se pudo resolver"
+        ),
+        "source_field": (
+            "Dónde se encontró la mención: 'texto' en el cuerpo de la publicación, "
+            "'ocr' solo en el volante, 'ambos' si aparece en los dos"
+        ),
+        "lat": (
+            "Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: "
+            "una colonia es un polígono, no un punto, y su geometría está en "
+            "colonias_hermosillo"
+        ),
+        "lon": "Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia",
+        "match_method": (
+            "Cómo se resolvió: colonia_con_marcador (el texto dice 'colonia X'), "
+            "colonia_en_catalogo (el nombre aparece suelto, típico de las tablas de los "
+            "volantes), cruce_geocodificado o unmatched. Es el indicador de confianza de "
+            "la fila: las menciones con marcador explícito son más seguras que un nombre suelto"
+        ),
+        "baches": {
+            "id_row": "Identificador secuencial de la fila, asignado al combinar los años",
+            "latitude": "Latitud del reporte de bache",
+            "longitude": "Longitud del reporte de bache",
+            "date": "Fecha del reporte de bache",
+            "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte",
+            "material": "Código del tipo de material/pavimento reportado por el Bachómetro",
+            "description": "Descripción en texto libre del reporte, escrita por el ciudadano",
+            "id": "Identificador del reporte en el Bachómetro",
+            "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
+            "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
+        },
     },
 }
 

@@ -1,0 +1,94 @@
+{
+  "dataset": "colonias_hermosillo",
+  "archivo": "data/processed/aguah/colonias_hermosillo.csv",
+  "una_fila_es": "un asentamiento humano de Hermosillo según el DCAH 2025 del INEGI",
+  "filas": 783,
+  "columnas": [
+    {
+      "nombre": "colonia_id",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 783,
+      "rango": "2603000010001 – 2603003430028",
+      "descripcion": "Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria"
+    },
+    {
+      "nombre": "settlement_name",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 763,
+      "rango": null,
+      "descripcion": "Nombre del asentamiento tal como lo publica el INEGI"
+    },
+    {
+      "nombre": "settlement_name_normalized",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 763,
+      "rango": null,
+      "descripcion": "Nombre sin acentos, signos ni minúsculas, para emparejarlo con los avisos"
+    },
+    {
+      "nombre": "settlement_type",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 12,
+      "rango": null,
+      "descripcion": "Tipo de asentamiento: COLONIA, FRACCIONAMIENTO, RESIDENCIAL..."
+    },
+    {
+      "nombre": "locality_code",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 3,
+      "rango": "1 – 343",
+      "descripcion": "Clave de localidad del INEGI, de cuatro dígitos: 0001 es la ciudad, 0137 Bahía de Kino y 0343 Miguel Alemán. Léase como texto: en CSV pierde los ceros a la izquierda"
+    },
+    {
+      "nombre": "postal_code",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 110,
+      "rango": "0 – 83345",
+      "descripcion": "Código postal que reportó el municipio; 00000 si no lo reportó"
+    },
+    {
+      "nombre": "area_km2",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 676,
+      "rango": "0.0009 – 4.4937",
+      "descripcion": "Área del polígono del asentamiento en kilómetros cuadrados"
+    },
+    {
+      "nombre": "centroid_lat",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 779,
+      "rango": "28.818799 – 29.180338",
+      "descripcion": "Latitud del centroide del asentamiento (EPSG:4326)"
+    },
+    {
+      "nombre": "centroid_lon",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 781,
+      "rango": "-112.027724 – -110.899004",
+      "descripcion": "Longitud del centroide del asentamiento (EPSG:4326)"
+    },
+    {
+      "nombre": "updated_at",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Mes y año en que el municipio actualizó el asentamiento"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-09-25 02:34 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}
