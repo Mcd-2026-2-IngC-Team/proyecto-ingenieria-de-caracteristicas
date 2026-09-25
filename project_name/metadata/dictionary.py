@@ -33,7 +33,6 @@ TEXT_RANGE_NOTE = (
 
 # Qué representa una fila de cada dataset procesado (la "granularidad" de la tabla).
 ROWS = {
-    "denue_sonora_2024_05": "un establecimiento activo del DENUE en Sonora",
     "publicaciones_aguah": (
         "una publicación de la página oficial de Agua de Hermosillo en Facebook"
     ),
@@ -45,7 +44,6 @@ ROWS = {
 # Columnas que deben leerse como fecha: pandas no las infiere solo desde un CSV, así
 # que se declaran a mano, igual que ROWS y DESCRIPTIONS.
 DATE_COLUMNS = {
-    "denue_sonora_2024_05": ["registration_date"],
     "publicaciones_aguah": ["published_at", "announced_start_at"],
     "colonias_hermosillo": [],
     "ubicaciones_aviso": [],
@@ -53,21 +51,6 @@ DATE_COLUMNS = {
 }
 
 DESCRIPTIONS = {
-    "denue_sonora_2024_05": {
-        "id": "Identificador del establecimiento en el DENUE",
-        "business_name": "Nombre o razón social del establecimiento",
-        "activity_code": "Código SCIAN de la actividad económica",
-        "activity_name": "Nombre de la actividad económica (SCIAN)",
-        "employee_range": "Rango de personal ocupado, en texto (ej. '0 a 5 personas')",
-        "employee_range_rank": "Orden del rango de personal ocupado, de 1 (menor) a 7 (mayor)",
-        "municipality": "Municipio del domicilio del establecimiento",
-        "locality": "Localidad del domicilio del establecimiento",
-        "latitude": "Latitud del establecimiento",
-        "longitude": "Longitud del establecimiento",
-        "registration_date": "Fecha de alta del establecimiento en el DENUE",
-        "has_phone": "Si el establecimiento tiene teléfono registrado",
-        "has_email": "Si el establecimiento tiene correo electrónico registrado",
-    },
     "publicaciones_aguah": {
         "post_id": "Identificador de la publicación en Facebook; llave primaria",
         "source_slug": "Rango de fechas del export del scraper del que salió la fila",

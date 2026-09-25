@@ -1,9 +1,7 @@
 # project_name
 
-Descarga los datos del DENUE (directorio nacional de unidades económicas) del INEGI
-para Sonora y los convierte en un dataset pequeño con ingeniería de características.
-Está construido como un pipeline de jobs: descargar datos crudos, extraerlos y
-transformarlos, y dejar el resultado en `data/processed/`.
+Pipeline de jobs que descarga datos crudos, los extrae y transforma, y deja el
+resultado en `data/processed/`.
 
 ## Instalación
 
@@ -28,7 +26,7 @@ El proyecto tiene dos partes:
 ```
 make data            # todo el pipeline: descarga las fuentes (make download) y genera data/processed/
 make verify-data     # confirma que data/external es idéntico al snapshot (checksums en git)
-make download        # descarga todas las fuentes crudas en paralelo (DENUE, colonias y calles)
+make download        # descarga todas las fuentes crudas en paralelo (colonias, calles y baches)
 make dictionary      # regenera los diccionarios de datos en references/ desde data/processed/
 make test            # corre la suite de pruebas
 make lint            # ruff check + format --check
@@ -114,7 +112,6 @@ params.yml                 <- configuración de fuentes de datos (ignorado por g
 project_name/
 ├── config.py               <- carga params.yml, configura el logging
 ├── constants.py             <- rutas del directorio data/
-├── features.py               <- transformaciones con pandas (columnas crudas del DENUE -> features)
 ├── logging.py                <- decorador @log_execution (inicio/fin/error + tiempo)
 ├── metadata/                  <- documentación de los datos: origen (source) y columnas (dictionary)
 │   ├── source.py                <- sha256 y FUENTE.txt: descripción, enlaces y fecha de descarga de cada fuente cruda
@@ -123,11 +120,9 @@ project_name/
 ├── policies/                   <- FilePolicy: skip/overwrite/error ante archivos existentes
 └── jobs/
     ├── download_job.py                <- corre en paralelo todas las ingestas de abajo (make download)
-    ├── ingest_denue_sonora_job.py    <- descarga el zip crudo
     ├── ingest_baches_job.py           <- Obtiene la información de bachómetro de hermosillo desde el año 2021 a la fecha actual
     ├── ingest_dcah_job.py             <- descarga solo Sonora del paquete nacional de colonias (DCAH), por rango
     ├── ingest_mg_streets_job.py       <- descarga solo la capa de calles (26e) del Marco Geoestadístico, por rango
-    ├── process_denue_sonora_job.py    <- zip crudo -> csv interim -> csv processed
     ├── process_baches_sonora_job.py   <- jsons por año de bachometro -> csv integrado 
     ├── extract_images_job.py          <- descarga imágenes desde una columna de un CSV (--source/--dest/--column/--id-column)
     ├── ocr_images_job.py              <- corre OCR sobre un manifest o una sola imagen (--manifest | --image, --device, --output-dir)
