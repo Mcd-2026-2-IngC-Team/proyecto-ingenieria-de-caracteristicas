@@ -10,7 +10,9 @@
 
 Por definir. Hasta ahora el proyecto reúne datos sobre servicios urbanos en
 Hermosillo: reportes de baches, colonias y calles, avisos de cortes y reparaciones
-de agua y, próximamente, fugas.
+de agua y, próximamente, fugas. Además, agrega los datos de la red hidrográfica
+de Hermosillo para analizar su relación con puntos anteriores y, próximamente,
+reportes de inundaciones urbanas.
 
 Pregunta a contestar al final de los 3 proyectos: por definir.
 
@@ -28,9 +30,13 @@ Por definir: a quién va dirigido el tablero final.
 - INEGI, Delimitación de colonias y otros asentamientos humanos (DCAH) 2025.
   https://www.inegi.org.mx/programas/dcah/
 - INEGI, Marco Geoestadístico 2025, Sonora (calles). https://www.inegi.org.mx/temas/mg/
+- INEGI, Red Hidrográfica escala 1:50 000, edición 2.0: información de la red hidrográfica y subcuencas de Hermosillo. https://www.inegi.org.mx/temas/hidrografia/#mapas
 - Fugas de agua: próximamente.
+- Reportes de inundaciones: próximamente.
 
 ## Reproducir
+
+Consultar [data/SNAPSHOT.md](data/SNAPSHOT.md) antes de ejecutar el proyecto.
 
 ```
 uv sync
