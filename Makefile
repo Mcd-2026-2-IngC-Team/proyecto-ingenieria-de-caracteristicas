@@ -2,7 +2,7 @@
 # grouped by the "##@" section headers.
 .DEFAULT_GOAL := help
 .PHONY: help requirements test lint format clean nb \
-	data download verify-data backup dictionary \
+	data download validate verify-data backup dictionary \
 	snapshot extract-images requirements-ocr ocr ocr-image
 
 help: ## Show this help
@@ -39,9 +39,13 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_colonias_hermosillo_job
 	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 	uv run python -m project_name.jobs.process_baches_job
+	uv run python -m project_name.jobs.validate_data_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
+
+validate: ## Check data/processed against the quality rules in project_name/schemas.py
+	uv run python -m project_name.jobs.validate_data_job
 
 verify-data: ## Check data/external against its snapshot checksums (data/SNAPSHOT.md)
 	uv run python -m project_name.jobs.snapshot_external_job --verify

@@ -36,6 +36,10 @@ make verify-data
 make data
 ```
 
+`make data` termina revisando `data/processed/` con las reglas de calidad de
+[project_name/schemas.py](project_name/schemas.py) (Pandera: llaves únicas, rangos,
+catálogos y coordenadas); `make validate` corre solo esa revisión.
+
 `make help` lista las demás reglas. Las fuentes y rutas se configuran en `params.yml`;
 los diccionarios de datos están en [references/](references/README.md) y el OCR en el
 cluster en [slurm/](slurm/README.md).
