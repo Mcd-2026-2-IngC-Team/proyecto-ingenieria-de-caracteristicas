@@ -1,0 +1,25 @@
+capa,nombre,tipo,nulos_pct,distintos,rango,descripcion
+hl,ID,int64,0.0,25838,3042476 – 3068313,Identificador único del segmento de la red hidrográfica
+hl,CVE_SUBC,str,0.0,1,,Clave de la subcuenca hidrográfica
+hl,CONDICION,str,0.0,4,,Descripción de la condición del drenaje
+hl,ORDER_1,int64,0.0,8,-1 – 7,Magnitud de orden (clasificación de Strahler) a nivel de subcuenca
+hl,ID_DRENA,int32,0.0,2,0 – 1,Identificador del punto de drenaje al que corresponde el segmento
+hl,geometry,geometry,0.0,,,Geometría lineal del segmento de la red hidrográfica
+dr,ID,int64,0.0,1,2907 – 2907,Identificador único del punto de drenaje
+dr,CVE_SUBC,str,0.0,1,,Clave de la subcuenca hidrográfica
+dr,CONDICION,str,0.0,1,,Descripción de la condición del drenaje
+dr,ID_DRENA,int64,0.0,1,1 – 1,Identificador del punto de drenaje
+dr,ARBSUM,int64,0.0,1,14396883 – 14396883,Sumatoria de las longitudes de las líneas de flujo aguas arriba que confluyen en el punto de drenaje
+dr,geometry,geometry,0.0,,,Geometría puntual del punto de drenaje
+subc,ID,float64,0.0,1,907.0 – 907.0,Identificador único de la unidad de captación
+subc,CVE_SUBCUE,str,0.0,1,,Clave de la Subcuenca Hidrográfica
+subc,geometry,geometry,0.0,,,Geometría de la unidad de captación a nivel subcuenca
+ha,IDBD,int64,0.0,210,3936 – 14164,Identificador asociado al objeto geográfico en la base de datos
+ha,FC,int64,0.0,2,6291 – 6292,Código de clasificación del objeto geográfico
+ha,CONDICION,str,0.0,2,,Condición de permanencia del cuerpo de agua
+ha,geometry,geometry,0.0,,,Geometría poligonal del cuerpo de agua
+to,FC,str,0.0,1,,Código de clasificación del elemento geográfico
+to,CLASE,str,0.0,1,,Clase a la que pertenece el elemento geográfico
+to,TERMINO_GE,str,0.0,2,,Término genérico que identifica el tipo de rasgo geográfico
+to,NOMBRE,str,0.0,2,,Nombre oficial del elemento geográfico
+to,geometry,geometry,0.0,,,Geometría puntual del elemento geográfico

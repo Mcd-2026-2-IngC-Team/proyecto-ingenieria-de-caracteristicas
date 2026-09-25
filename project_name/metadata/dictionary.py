@@ -298,6 +298,11 @@ def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], c
         processed_file.relative_to(PROJECT_ROOT) if processed_file.is_relative_to(PROJECT_ROOT) else processed_file
     )
 
+    # Convertir explícitamente a formato POSIX, porque queremos 
+    # que los diccionarios sean reproducibles independientemente 
+    # de si se generan en Windows o Linux
+    shown = shown.as_posix()
+
     if processed_file.suffix == ".gpkg":
         row_description = ROWS_SUBCUENCAS
 

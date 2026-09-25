@@ -1,0 +1,242 @@
+{
+  "dataset": "subc_r_san_miguel",
+  "archivo": "data/processed/inegi/subc_r_san_miguel/subc_r_san_miguel.gpkg",
+  "una_fila_es": {
+    "hl": "Un segmento de la red hidrográfica, que representa una sección lineal del cauce o flujo de agua dentro de la subcuenca.",
+    "dr": "Un punto de drenaje, que representa una ubicación donde convergen o se conectan líneas de flujo de la red hidrográfica y por donde se concentra o continúa el drenaje del agua.",
+    "subc": "Una unidad de captación a nivel subcuenca, que representa el área del territorio delimitada por la que se concentra y conduce el escurrimiento hacia una salida común.",
+    "ha": "Un cuerpo de agua, que representa una superficie de agua delimitada espacialmente dentro de la subcuenca.",
+    "to": "Un elemento geográfico con información toponímica, es decir, información relacionada con los nombres propios utilizados para identificar lugares o rasgos geográficos, dentro del municipio de Hermosillo."
+  },
+  "filas": {
+    "hl": 25838,
+    "dr": 1,
+    "subc": 1,
+    "ha": 210,
+    "to": 3
+  },
+  "columnas": [
+    {
+      "capa": "hl",
+      "nombre": "ID",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 25838,
+      "rango": "3042476 – 3068313",
+      "descripcion": "Identificador único del segmento de la red hidrográfica"
+    },
+    {
+      "capa": "hl",
+      "nombre": "CVE_SUBC",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Clave de la subcuenca hidrográfica"
+    },
+    {
+      "capa": "hl",
+      "nombre": "CONDICION",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": null,
+      "descripcion": "Descripción de la condición del drenaje"
+    },
+    {
+      "capa": "hl",
+      "nombre": "ORDER_1",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 8,
+      "rango": "-1 – 7",
+      "descripcion": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca"
+    },
+    {
+      "capa": "hl",
+      "nombre": "ID_DRENA",
+      "tipo": "int32",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "0 – 1",
+      "descripcion": "Identificador del punto de drenaje al que corresponde el segmento"
+    },
+    {
+      "capa": "hl",
+      "nombre": "geometry",
+      "tipo": "geometry",
+      "nulos_pct": 0.0,
+      "distintos": null,
+      "rango": null,
+      "descripcion": "Geometría lineal del segmento de la red hidrográfica"
+    },
+    {
+      "capa": "dr",
+      "nombre": "ID",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": "2907 – 2907",
+      "descripcion": "Identificador único del punto de drenaje"
+    },
+    {
+      "capa": "dr",
+      "nombre": "CVE_SUBC",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Clave de la subcuenca hidrográfica"
+    },
+    {
+      "capa": "dr",
+      "nombre": "CONDICION",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Descripción de la condición del drenaje"
+    },
+    {
+      "capa": "dr",
+      "nombre": "ID_DRENA",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": "1 – 1",
+      "descripcion": "Identificador del punto de drenaje"
+    },
+    {
+      "capa": "dr",
+      "nombre": "ARBSUM",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": "14396883 – 14396883",
+      "descripcion": "Sumatoria de las longitudes de las líneas de flujo aguas arriba que confluyen en el punto de drenaje"
+    },
+    {
+      "capa": "dr",
+      "nombre": "geometry",
+      "tipo": "geometry",
+      "nulos_pct": 0.0,
+      "distintos": null,
+      "rango": null,
+      "descripcion": "Geometría puntual del punto de drenaje"
+    },
+    {
+      "capa": "subc",
+      "nombre": "ID",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": "907.0 – 907.0",
+      "descripcion": "Identificador único de la unidad de captación"
+    },
+    {
+      "capa": "subc",
+      "nombre": "CVE_SUBCUE",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Clave de la Subcuenca Hidrográfica"
+    },
+    {
+      "capa": "subc",
+      "nombre": "geometry",
+      "tipo": "geometry",
+      "nulos_pct": 0.0,
+      "distintos": null,
+      "rango": null,
+      "descripcion": "Geometría de la unidad de captación a nivel subcuenca"
+    },
+    {
+      "capa": "ha",
+      "nombre": "IDBD",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 210,
+      "rango": "3936 – 14164",
+      "descripcion": "Identificador asociado al objeto geográfico en la base de datos"
+    },
+    {
+      "capa": "ha",
+      "nombre": "FC",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "6291 – 6292",
+      "descripcion": "Código de clasificación del objeto geográfico"
+    },
+    {
+      "capa": "ha",
+      "nombre": "CONDICION",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Condición de permanencia del cuerpo de agua"
+    },
+    {
+      "capa": "ha",
+      "nombre": "geometry",
+      "tipo": "geometry",
+      "nulos_pct": 0.0,
+      "distintos": null,
+      "rango": null,
+      "descripcion": "Geometría poligonal del cuerpo de agua"
+    },
+    {
+      "capa": "to",
+      "nombre": "FC",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Código de clasificación del elemento geográfico"
+    },
+    {
+      "capa": "to",
+      "nombre": "CLASE",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1,
+      "rango": null,
+      "descripcion": "Clase a la que pertenece el elemento geográfico"
+    },
+    {
+      "capa": "to",
+      "nombre": "TERMINO_GE",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Término genérico que identifica el tipo de rasgo geográfico"
+    },
+    {
+      "capa": "to",
+      "nombre": "NOMBRE",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Nombre oficial del elemento geográfico"
+    },
+    {
+      "capa": "to",
+      "nombre": "geometry",
+      "tipo": "geometry",
+      "nulos_pct": 0.0,
+      "distintos": null,
+      "rango": null,
+      "descripcion": "Geometría puntual del elemento geográfico"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-09-25 19:00 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}
