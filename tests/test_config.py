@@ -9,18 +9,18 @@ def test_load_dataset_config_merges_defaults():
         "sources": {
             "inegi": {
                 "datasets": {
-                    "denue_sonora_2024_05": {
-                        "name": "DENUE Sonora",
-                        "url": "https://example.com/denue.zip",
+                    "dcah_2025": {
+                        "name": "DCAH 2025",
+                        "url": "https://example.com/dcah.zip",
                     }
                 }
             }
         },
     }
 
-    dataset = config.load_dataset_config(params, source="inegi", dataset="denue_sonora_2024_05")
+    dataset = config.load_dataset_config(params, source="inegi", dataset="dcah_2025")
 
-    assert dataset["name"] == "DENUE Sonora"
+    assert dataset["name"] == "DCAH 2025"
     assert dataset["download"] == {"on_exists": "skip"}
 
 
@@ -30,7 +30,7 @@ def test_load_dataset_config_dataset_override_wins_over_default():
         "sources": {
             "inegi": {
                 "datasets": {
-                    "denue_sonora_2024_05": {
+                    "dcah_2025": {
                         "download": {"on_exists": "overwrite"},
                     }
                 }
@@ -38,7 +38,7 @@ def test_load_dataset_config_dataset_override_wins_over_default():
         },
     }
 
-    dataset = config.load_dataset_config(params, source="inegi", dataset="denue_sonora_2024_05")
+    dataset = config.load_dataset_config(params, source="inegi", dataset="dcah_2025")
 
     assert dataset["download"] == {"on_exists": "overwrite"}
 

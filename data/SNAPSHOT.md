@@ -29,7 +29,7 @@ git solo se versiona `data/external.sha256`, con el checksum de cada archivo.
 
 Solo si cambian los datos externos (p. ej. un nuevo rango de posts):
 
-1. Correr la adquisición (`extract-images`, `ocr`; ver `README.md` y `slurm/README.md`).
+1. Correr la adquisición (`extract-images`, `ocr`; ver `slurm/README.md`).
 2. `make snapshot` → reescribe `data/external.sha256` y crea el tar.gz en `backups/`.
 3. Subir el tar.gz a OneDrive, actualizar la sección **Versión actual** y hacer commit de
    `data/external.sha256` y de este archivo juntos.

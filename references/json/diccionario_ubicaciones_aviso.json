@@ -1,0 +1,78 @@
+{
+  "dataset": "ubicaciones_aviso",
+  "archivo": "data/processed/aguah/ubicaciones_aviso.csv",
+  "una_fila_es": "un lugar mencionado en una publicación de Agua de Hermosillo",
+  "filas": 16261,
+  "columnas": [
+    {
+      "nombre": "post_id",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 3788,
+      "rango": "361869212652023 – 5694827593879671",
+      "descripcion": "Publicación donde se mencionó el lugar; une con publicaciones_aguah"
+    },
+    {
+      "nombre": "location_type",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Cómo nombró el aviso el lugar: 'colonia' si dio el nombre del asentamiento, 'cruce' si dio un cruce de calles"
+    },
+    {
+      "nombre": "raw_text",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 2002,
+      "rango": null,
+      "descripcion": "El lugar tal como lo nombra la publicación, ya normalizado"
+    },
+    {
+      "nombre": "colonia_id",
+      "tipo": "float64",
+      "nulos_pct": 2.3553287005719206,
+      "distintos": 562,
+      "rango": "2603000010001.0 – 2603003430028.0",
+      "descripcion": "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. Nulo cuando la mención no se pudo resolver"
+    },
+    {
+      "nombre": "lat",
+      "tipo": "float64",
+      "nulos_pct": 90.9784146116475,
+      "distintos": 1021,
+      "rango": "28.992135 – 29.17816",
+      "descripcion": "Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: una colonia es un polígono, no un punto, y su geometría está en colonias_hermosillo"
+    },
+    {
+      "nombre": "lon",
+      "tipo": "float64",
+      "nulos_pct": 90.9784146116475,
+      "distintos": 1017,
+      "rango": "-111.065393 – -110.91486",
+      "descripcion": "Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia"
+    },
+    {
+      "nombre": "source_field",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 3,
+      "rango": null,
+      "descripcion": "Dónde se encontró la mención: 'texto' en el cuerpo de la publicación, 'ocr' solo en el volante, 'ambos' si aparece en los dos"
+    },
+    {
+      "nombre": "match_method",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": null,
+      "descripcion": "Cómo se resolvió: colonia_con_marcador (el texto dice 'colonia X'), colonia_en_catalogo (el nombre aparece suelto, típico de las tablas de los volantes), cruce_geocodificado o unmatched. Es el indicador de confianza de la fila: las menciones con marcador explícito son más seguras que un nombre suelto"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-09-25 03:22 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}

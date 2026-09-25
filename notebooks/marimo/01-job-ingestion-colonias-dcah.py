@@ -109,7 +109,7 @@ def _(FilePolicy, HttpClient, InegiClient, OnExists, dataset, raw_file):
 def _(mo):
     mo.md(r"""
     ## Extracción
-    Validamos las rutas igual que el job de procesamiento del DENUE, para que un
+    Validamos las rutas de cada miembro del ZIP antes de extraer, para que un
     nombre como `../../algo` no escriba fuera de `data/interim/` (Zip Slip).
     """)
     return

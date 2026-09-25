@@ -2,7 +2,7 @@
 
 Un diccionario de datos por cada dataset de `data/processed/`, en dos formatos:
 
-- CSV en esta carpeta (`references/<dataset>.csv`) — GitHub lo renderiza como tabla.
+- CSV en esta carpeta (`references/<dataset>.csv`), que GitHub renderiza como tabla.
 - JSON equivalente en [`json/`](json/) (`json/diccionario_<dataset>.json`).
 
 Cada uno dice qué representa una fila del dataset, cuántas filas tiene y, por columna,
@@ -14,6 +14,6 @@ pandas sobre los archivos de `data/processed/` y las descripciones viven a mano 
 sobra una descripción de una columna que ya no existe. En columnas de texto libre el
 rango no se publica: su mínimo y su máximo serían valores reales sin agregar.
 
-`data/raw/` (la descarga original, con su `FUENTE.txt` — ver
+`data/raw/` (la descarga original, con su `FUENTE.txt`, ver
 `project_name/metadata/source.py`) documenta de dónde sale cada dataset; este README
 documenta qué forma tiene una vez procesado.

@@ -1,0 +1,9 @@
+nombre,tipo,nulos_pct,distintos,rango,descripcion
+post_id,int64,0.0,3788,361869212652023 – 5694827593879671,Publicación donde se mencionó el lugar; une con publicaciones_aguah
+location_type,str,0.0,2,,"Cómo nombró el aviso el lugar: 'colonia' si dio el nombre del asentamiento, 'cruce' si dio un cruce de calles"
+raw_text,str,0.0,2002,,"El lugar tal como lo nombra la publicación, ya normalizado"
+colonia_id,float64,2.3553287005719206,562,2603000010001.0 – 2603003430028.0,Asentamiento al que corresponde el lugar; une con colonias_hermosillo. Nulo cuando la mención no se pudo resolver
+lat,float64,90.9784146116475,1021,28.992135 – 29.17816,"Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: una colonia es un polígono, no un punto, y su geometría está en colonias_hermosillo"
+lon,float64,90.9784146116475,1017,-111.065393 – -110.91486,Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia
+source_field,str,0.0,3,,"Dónde se encontró la mención: 'texto' en el cuerpo de la publicación, 'ocr' solo en el volante, 'ambos' si aparece en los dos"
+match_method,str,0.0,4,,"Cómo se resolvió: colonia_con_marcador (el texto dice 'colonia X'), colonia_en_catalogo (el nombre aparece suelto, típico de las tablas de los volantes), cruce_geocodificado o unmatched. Es el indicador de confianza de la fila: las menciones con marcador explícito son más seguras que un nombre suelto"

@@ -1,0 +1,31 @@
+nombre,tipo,nulos_pct,distintos,rango,descripcion
+post_id,int64,0.0,5200,361869212652023 – 5694827593879671,Identificador de la publicación en Facebook; llave primaria
+source_slug,str,0.0,7,,Rango de fechas del export del scraper del que salió la fila
+published_at,datetime64[us],0.0,5200,2020-12-07 – 2026-09-14,Fecha y hora de publicación en hora local de Hermosillo (UTC-7)
+year,int64,0.0,7,2020 – 2026,Año de publicación
+month,int64,0.0,12,1 – 12,"Mes de publicación, de 1 a 12"
+iso_week,int64,0.0,53,1 – 53,"Semana ISO de publicación, de 1 a 53"
+day_of_week,int64,0.0,7,0 – 6,"Día de la semana de publicación, de 0 (lunes) a 6 (domingo)"
+hour_of_day,int64,0.0,22,0 – 23,"Hora del día de publicación, de 0 a 23"
+text,str,0.8653846153846154,5026,,Texto del cuerpo de la publicación; vacío si la publicación no trae texto
+has_text,bool,0.0,2,False – True,Si la publicación trae texto en el cuerpo
+ocr_text,str,54.86538461538461,1061,,Texto extraído por OCR (PaddleOCR-VL) de la imagen de la publicación; vacío si no hay imagen o si el OCR no encontró texto
+ocr_status,str,0.0,2,,Resultado del OCR: ocr_success o skipped_no_image
+has_image,bool,0.0,2,False – True,Si la publicación trae imagen
+reactions_like,int64,0.0,174,0 – 5300,Reacciones 'me gusta'
+reactions_love,int64,0.0,35,0 – 207,Reacciones 'me encanta'
+reactions_haha,int64,0.0,49,0 – 127,Reacciones 'me divierte'
+reactions_wow,int64,0.0,33,0 – 65,Reacciones 'me asombra'
+reactions_sad,int64,0.0,29,0 – 82,Reacciones 'me entristece'
+reactions_angry,int64,0.0,125,0 – 505,Reacciones 'me enoja'; es la señal de molestia ciudadana
+reactions_care,int64,0.0,6,0 – 15,Reacciones 'me importa'
+reactions_total,int64,0.0,256,0 – 5661,Suma de todas las reacciones de la publicación
+angry_share,float64,0.5576923076923077,730,0.0 – 1.0,Proporción de enojo sobre el total de reacciones; nulo si no hubo reacciones
+comments_count,int64,0.0,231,0 – 1440,Número de comentarios de la publicación
+shares_count,int64,0.0,120,0 – 947,Número de veces que se compartió la publicación
+likes_count,int64,0.0,256,0 – 5661,Número de 'me gusta' que reporta el scraper aparte de las reacciones
+top_comment_text,str,23.557692307692307,3743,,Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió
+top_comment_likes,int64,0.0,65,0 – 161,'Me gusta' del comentario destacado
+event_type,str,0.0,5,,"Tipo de evento por reglas sobre el texto y el OCR, en orden de prioridad: restablecimiento, corte_programado, emergencia, pipas u otro"
+announced_start_at,datetime64[us],70.0,973,2020-12-08 – 2026-09-11,Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha
+announced_duration_hours,float64,89.28846153846153,15,2.0 – 48.0,Duración de la afectación en horas según lo anunciado; nulo si el aviso no declara un plazo
