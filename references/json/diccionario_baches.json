@@ -2,21 +2,21 @@
   "dataset": "baches",
   "archivo": "data/processed/bachometro/baches_hermosillo.csv",
   "una_fila_es": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
-  "filas": 38833,
+  "filas": 38975,
   "columnas": [
     {
       "nombre": "id_row",
       "tipo": "int64",
       "nulos_pct": 0.0,
-      "distintos": 38833,
-      "rango": "1 – 38833",
+      "distintos": 38975,
+      "rango": "1 – 38975",
       "descripcion": "Identificador secuencial de la fila, asignado al combinar los años"
     },
     {
       "nombre": "latitude",
       "tipo": "float64",
       "nulos_pct": 0.0,
-      "distintos": 35959,
+      "distintos": 36084,
       "rango": "-38.9874506 – 50.937531",
       "descripcion": "Latitud del reporte de bache"
     },
@@ -24,7 +24,7 @@
       "nombre": "longitude",
       "tipo": "float64",
       "nulos_pct": 0.0,
-      "distintos": 35928,
+      "distintos": 36047,
       "rango": "-122.4194155 – 121.2755118",
       "descripcion": "Longitud del reporte de bache"
     },
@@ -32,8 +32,8 @@
       "nombre": "date",
       "tipo": "datetime64[us]",
       "nulos_pct": 0.0,
-      "distintos": 1365,
-      "rango": "2021-09-17 – 2026-09-22",
+      "distintos": 1367,
+      "rango": "2021-09-17 – 2026-09-24",
       "descripcion": "Fecha del reporte de bache"
     },
     {
@@ -56,7 +56,7 @@
       "nombre": "description",
       "tipo": "str",
       "nulos_pct": 0.0,
-      "distintos": 34211,
+      "distintos": 34334,
       "rango": null,
       "descripcion": "Descripción en texto libre del reporte, escrita por el ciudadano"
     },
@@ -64,8 +64,8 @@
       "nombre": "id",
       "tipo": "int64",
       "nulos_pct": 0.0,
-      "distintos": 38833,
-      "rango": "1 – 48447",
+      "distintos": 38975,
+      "rango": "1 – 48590",
       "descripcion": "Identificador del reporte en el Bachómetro"
     },
     {
@@ -80,13 +80,13 @@
       "nombre": "date_mx",
       "tipo": "str",
       "nulos_pct": 0.0,
-      "distintos": 1365,
+      "distintos": 1367,
       "rango": null,
       "descripcion": "Fecha del reporte en formato mexicano (dd/mm/aaaa)"
     }
   ],
   "generado": {
-    "fecha": "2026-09-22 22:53 UTC",
+    "fecha": "2026-09-25 03:22 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },
