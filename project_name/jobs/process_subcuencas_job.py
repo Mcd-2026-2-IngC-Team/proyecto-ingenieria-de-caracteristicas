@@ -78,6 +78,12 @@ def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str
                 driver="GPKG"
             )
 
+def leer_capa(ruta_gpkg, nombre_capa):
+    return gpd.read_file(
+        ruta_gpkg,
+        layer=nombre_capa
+    )
+
 if __name__ == "__main__":
     params = load_params()
 

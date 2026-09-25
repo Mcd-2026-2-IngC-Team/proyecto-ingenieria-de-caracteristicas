@@ -15,10 +15,12 @@ from pathlib import Path
 
 from loguru import logger
 import pandas as pd
+import geopandas as gpd
 
 from project_name.config import PROJECT_ROOT, load_logging, load_params
 from project_name.constants import REFERENCES_DIR
 from project_name.logging import log_execution
+from project_name.jobs.process_subcuencas_job import leer_capa
 
 REFERENCES_JSON_DIR = REFERENCES_DIR / "json"
 
@@ -158,6 +160,74 @@ DESCRIPTIONS = {
     },
 }
 
+DESCRIPTIONS_SUBCUENCAS = {
+    "hl": {
+        "geometry": "Geometría lineal del segmento de la red hidrográfica",
+        "ID": "Identificador único del segmento de la red hidrográfica",
+        "CVE_SUBC": "Clave de la subcuenca hidrográfica",
+        "CONDICION": "Descripción de la condición del drenaje",
+        "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
+        "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
+    },
+
+    "dr": {
+        "geometry": "Geometría puntual del punto de drenaje",
+        "ID": "Identificador único del punto de drenaje",
+        "CVE_SUBC": "Clave de la subcuenca hidrográfica",
+        "CONDICION": "Descripción de la condición del drenaje",
+        "ID_DRENA": "Identificador del punto de drenaje",
+        "ARBSUM": "Sumatoria de las longitudes de las líneas de flujo aguas arriba que confluyen en el punto de drenaje",
+    },
+
+    "subc": {
+        "geometry": "Geometría de la unidad de captación a nivel subcuenca",
+        "ID": "Identificador único de la unidad de captación",
+        "CVE_SUBCUE": "Clave de la Subcuenca Hidrográfica",
+    },
+
+    "ha": {
+        "geometry": "Geometría poligonal del cuerpo de agua",
+        "IDBD": "Identificador asociado al objeto geográfico en la base de datos",
+        "FC": "Código de clasificación del objeto geográfico",
+        "CONDICION": "Condición de permanencia del cuerpo de agua",
+    },
+
+    "to": {
+        "geometry": "Geometría puntual del elemento geográfico",
+        "FC": "Código de clasificación del elemento geográfico",
+        "CLASE": "Clase a la que pertenece el elemento geográfico",
+        "TERMINO_GE": "Término genérico que identifica el tipo de rasgo geográfico",
+        "NOMBRE": "Nombre oficial del elemento geográfico",
+    },
+}
+
+ROWS_SUBCUENCAS = {
+    "hl": (
+        "Un segmento de la red hidrográfica, que representa una sección "
+        "lineal del cauce o flujo de agua dentro de la subcuenca."
+    ),
+    "dr": (
+        "Un punto de drenaje, que representa una ubicación donde convergen "
+        "o se conectan líneas de flujo de la red hidrográfica y por donde "
+        "se concentra o continúa el drenaje del agua."
+    ),
+    "subc": (
+        "Una unidad de captación a nivel subcuenca, que representa el área "
+        "del territorio delimitada por la que se concentra y conduce el "
+        "escurrimiento hacia una salida común."
+    ),
+    "ha": (
+        "Un cuerpo de agua, que representa una superficie de agua delimitada "
+        "espacialmente dentro de la subcuenca."
+    ),
+    "to": (
+        "Un elemento geográfico con información toponímica, es decir, "
+        "información relacionada con los nombres propios utilizados para "
+        "identificar lugares o rasgos geográficos, dentro del municipio de "
+        "Hermosillo."
+    ),
+}
+
 
 def processed_files(params: dict) -> dict[str, Path]:
     """Mapea cada dataset con salida procesada a la ruta de su archivo, según params.yml."""
@@ -177,13 +247,30 @@ def _format_range(non_null: pd.Series) -> str:
     return f"{minimum} – {maximum}"
 
 
-def profile(csv_file: Path, dataset: str) -> tuple[int, list[dict]]:
-    """Filas del CSV y, por columna, su tipo, nulos, valores distintos y rango."""
-    df = pd.read_csv(csv_file, parse_dates=DATE_COLUMNS.get(dataset, []))
+def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tuple[int, list[dict]]:
+    if processed_file.suffix == ".gpkg":
+        df = leer_capa(processed_file, layer)
+    else:
+        """Filas del CSV y, por columna, su tipo, nulos, valores distintos y rango."""
+        df = pd.read_csv(processed_file, parse_dates=DATE_COLUMNS.get(dataset, []))
 
     columns = []
     for name in df.columns:
         series = df[name]
+
+        if name == "geometry":
+            columns.append(
+                {
+                    "column_name": name,
+                    "type": "geometry",
+                    "nulos_pct": float(series.isna().mean() * 100),
+                    "distintos": None,
+                    "rango": None,
+                    "is_text": False,
+                }
+            )
+            continue
+    
         non_null = series.dropna()
         is_text = pd.api.types.is_string_dtype(series.dtype)
         columns.append(
@@ -201,16 +288,24 @@ def profile(csv_file: Path, dataset: str) -> tuple[int, list[dict]]:
     return len(df), columns
 
 
-def document(dataset: str, csv_file: Path, n_rows: int, columns: list[dict]) -> dict:
+def document(dataset: str, processed_file: Path, n_rows: int, columns: list[dict],layer: str | None = None) -> dict:
     """El diccionario de un dataset, listo para escribirse como JSON."""
-    descriptions = DESCRIPTIONS[dataset]
+    """Construye el diccionario de un dataset CSV o de una capa GeoPackage."""
+
+    if layer is not None:
+        descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
+        row_description = ROWS_SUBCUENCAS[layer]
+    else:
+        descriptions = DESCRIPTIONS[dataset]
+        row_description = ROWS[dataset]
+
     shown = (
-        csv_file.relative_to(PROJECT_ROOT) if csv_file.is_relative_to(PROJECT_ROOT) else csv_file
+        processed_file.relative_to(PROJECT_ROOT) if processed_file.is_relative_to(PROJECT_ROOT) else processed_file
     )
     documented = {
         "dataset": dataset,
         "archivo": str(shown),
-        "una_fila_es": ROWS[dataset],
+        "una_fila_es": row_description,
         "filas": n_rows,
         "columnas": [
             {
@@ -231,6 +326,7 @@ def document(dataset: str, csv_file: Path, n_rows: int, columns: list[dict]) -> 
     }
     if any(column["is_text"] for column in columns):
         documented["nota"] = TEXT_RANGE_NOTE
+
     return documented
 
 
@@ -253,23 +349,46 @@ def build_dictionaries(params: dict) -> list[Path]:
     REFERENCES_JSON_DIR.mkdir(parents=True, exist_ok=True)
 
     written = []
-    for dataset, csv_file in processed_files(params).items():
-        if dataset not in DESCRIPTIONS:
-            raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
-        if not csv_file.exists():
-            raise FileNotFoundError(f"{csv_file} not found: run `make data` first")
+    for dataset, processed_file in processed_files(params).items():
+        if not processed_file.exists():
+            raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
 
-        n_rows, columns = profile(csv_file, dataset)
-        descriptions = DESCRIPTIONS[dataset]
-        undocumented = {column["column_name"] for column in columns} - set(descriptions)
-        missing = set(descriptions) - {column["column_name"] for column in columns}
-        if undocumented or missing:
-            raise ValueError(
-                f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
-                f"descritas pero inexistentes: {sorted(missing)}"
-            )
+        if processed_file.suffix == ".gpkg":
+            layers = gpd.list_layers(processed_file)["name"].tolist()
 
-        documented = document(dataset, csv_file, n_rows, columns)
+            for layer in layers:
+                if layer not in DESCRIPTIONS_SUBCUENCAS:
+                    raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
+                n_rows, columns = profile(processed_file, dataset, layer)
+
+                descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
+                undocumented = {column["column_name"] for column in columns} - set(descriptions)
+                missing = set(descriptions) - {column["column_name"] for column in columns}
+    
+                if undocumented or missing:
+                    raise ValueError(
+                        f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
+                        f"descritas pero inexistentes: {sorted(missing)}"
+                    )
+
+                documented = document(dataset, processed_file, n_rows, columns, layer)
+
+        else: 
+            if dataset not in DESCRIPTIONS:
+                raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
+    
+            n_rows, columns = profile(processed_file, dataset)
+            descriptions = DESCRIPTIONS[dataset]
+            undocumented = {column["column_name"] for column in columns} - set(descriptions)
+            missing = set(descriptions) - {column["column_name"] for column in columns}
+
+            if undocumented or missing:
+                raise ValueError(
+                    f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
+                    f"descritas pero inexistentes: {sorted(missing)}"
+                )
+
+            documented = document(dataset, processed_file, n_rows, columns)
 
         json_destination = REFERENCES_JSON_DIR / f"diccionario_{dataset}.json"
         json_destination.write_text(
