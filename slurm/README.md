@@ -4,6 +4,28 @@ El OCR es parte de la **adquisición** (no reproducible; ver `data/SNAPSHOT.md`)
 Estos scripts solo *lanzan* en SLURM el mismo `make ocr` que corre en tu Mac,
 con `TORCH=rocm` porque las GPUs de Yuca son AMD.
 
+## Adquisición: imágenes y OCR
+
+Estas reglas generaron `data/external/` y no se espera volver a correrlas; sus
+opciones están en `make help`.
+
+- `make extract-images` descarga las imágenes a las que apunta una columna de un CSV
+  (por defecto, el CSV de Facebook y `media/0/photo_image/uri`). Cada CSV deja sus
+  imágenes en `DEST/<nombre-del-csv>/` con un `manifest_<columna>.csv` que liga cada
+  fila (por `ID_COLUMN`) con su archivo, o con el motivo por el que se omitió o falló.
+  Las URLs vencidas se registran y no detienen la descarga.
+- `make ocr MANIFEST=...` corre el pipeline completo de PaddleOCR-VL (layout y luego
+  VLM por región) sobre las imágenes de un manifest: usar solo el VLM sobre la imagen
+  completa alucina texto. Escribe `ocr_<columna>.csv` (texto por `id`) y
+  `ocr_<columna>.meta.json` (fecha, máquina, device, job de SLURM, commit y versiones)
+  en `data/external/facebook/ocr/<nombre-del-csv>/`.
+- `make ocr-image IMAGE=...` corre el mismo pipeline sobre una imagen e imprime el
+  texto, sin escribir nada.
+- `TORCH` elige de dónde viene PyTorch (versiones fijadas en `uv.lock`): `cpu`
+  (default, PyPI; Mac y Linux con CPU o NVIDIA) o `rocm` (GPUs AMD, como las de Yuca).
+  `DEVICE` sobreescribe `ocr.device` de `params.yml`; `auto` usa `cpu`, que es lo que
+  recomienda PaddleOCR en Apple Silicon porque la etapa de layout no soporta Metal/MPS.
+
 ## 0. Cómo funciona un cluster (lo mínimo)
 
 - Al conectarte por `ssh` entras al **nodo de login**. Sirve para copiar archivos,
