@@ -39,6 +39,7 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_colonias_hermosillo_job
 	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 	uv run python -m project_name.jobs.process_baches_job
+	uv run python -m project_name.jobs.process_subcuencas_job
 	uv run python -m project_name.jobs.validate_data_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
