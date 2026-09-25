@@ -115,6 +115,14 @@ sources:
         raw:
           directory: "data/raw/inegi/subc_la_poza"
           filename: "subc_la_poza.zip"
+
+        interim:
+          directory: "data/interim/inegi/subc_la_poza"
+          key: "subc_la_poza"
+
+        processed:
+          directory: "data/processed/inegi/subc_la_poza"
+          filename: "subc_la_poza.gpkg"
         
       subc_r_son_hillo:
         name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Da R. Sonora - Hermosillo. Cuenca R. Sonora. RH Sonora Sur"
@@ -134,6 +142,14 @@ sources:
         raw:
           directory: "data/raw/inegi/subc_r_son_hillo"
           filename: "subc_r_son_hillo.zip"
+
+        interim:
+          directory: "data/interim/inegi/subc_r_son_hillo"
+          key: "subc_r_son_hillo"
+
+        processed:
+          directory: "data/processed/inegi/subc_r_son_hillo"
+          filename: "subc_r_son_hillo.gpkg"
         
       subc_la_manga:
         name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09Eb A. La Manga. Cuenca R. Bacoachi. RH Sonora Sur"
@@ -153,6 +169,14 @@ sources:
         raw:
           directory: "data/raw/inegi/subc_la_manga"
           filename: "subc_la_manga.zip"
+
+        interim:
+          directory: "data/interim/inegi/subc_la_manga"
+          key: "subc_la_manga"
+
+        processed:
+          directory: "data/processed/inegi/subc_la_manga"
+          filename: "subc_la_manga.gpkg"
         
       subc_r_san_miguel:
         name: "Red hidrográfica. Escala 1:50 000. Edición 2.0. Subcuenca hidrográfica RH09De R. San Miguel. Cuenca R. Sonora. RH Sonora Sur"
@@ -172,6 +196,14 @@ sources:
         raw:
           directory: "data/raw/inegi/subc_r_san_miguel"
           filename: "subc_r_san_miguel.zip"
+
+        interim:
+          directory: "data/interim/inegi/subc_r_san_miguel"
+          key: "subc_r_san_miguel"
+
+        processed:
+          directory: "data/processed/inegi/subc_r_san_miguel"
+          filename: "subc_r_san_miguel.gpkg"
 
   bachometro:
     name: "Bachómetro Hermosillo"
