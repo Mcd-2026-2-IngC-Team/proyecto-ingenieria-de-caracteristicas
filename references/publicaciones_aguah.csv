@@ -7,9 +7,10 @@ month,int64,0.0,12,1 – 12,"Mes de publicación, de 1 a 12"
 iso_week,int64,0.0,53,1 – 53,"Semana ISO de publicación, de 1 a 53"
 day_of_week,int64,0.0,7,0 – 6,"Día de la semana de publicación, de 0 (lunes) a 6 (domingo)"
 hour_of_day,int64,0.0,22,0 – 23,"Hora del día de publicación, de 0 a 23"
-text,str,0.8653846153846154,5026,,Texto del cuerpo de la publicación; vacío si la publicación no trae texto
+text,str,0.0,5027,,Texto del cuerpo de la publicación; vacío si la publicación no trae texto
 has_text,bool,0.0,2,False – True,Si la publicación trae texto en el cuerpo
-ocr_text,str,54.86538461538461,1061,,Texto extraído por OCR (PaddleOCR-VL) de la imagen de la publicación; vacío si no hay imagen o si el OCR no encontró texto
+ocr_text,str,0.0,1062,,Texto extraído por OCR (PaddleOCR-VL) de la imagen de la publicación; vacío si no hay imagen o si el OCR no encontró texto
+has_ocr_text,bool,0.0,2,False – True,Si el OCR encontró texto en la imagen de la publicación
 ocr_status,str,0.0,2,,Resultado del OCR: ocr_success o skipped_no_image
 has_image,bool,0.0,2,False – True,Si la publicación trae imagen
 reactions_like,int64,0.0,174,0 – 5300,Reacciones 'me gusta'
@@ -24,8 +25,9 @@ angry_share,float64,0.5576923076923077,730,0.0 – 1.0,Proporción de enojo sobr
 comments_count,int64,0.0,231,0 – 1440,Número de comentarios de la publicación
 shares_count,int64,0.0,120,0 – 947,Número de veces que se compartió la publicación
 likes_count,int64,0.0,256,0 – 5661,Número de 'me gusta' que reporta el scraper aparte de las reacciones
-top_comment_text,str,23.557692307692307,3743,,Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió
+top_comment_text,str,0.0,3744,,"Texto del comentario destacado por Facebook, sin el nombre de quien lo escribió; vacío si no hay comentario destacado"
 top_comment_likes,int64,0.0,65,0 – 161,'Me gusta' del comentario destacado
 event_type,str,0.0,5,,"Tipo de evento por reglas sobre el texto y el OCR, en orden de prioridad: restablecimiento, corte_programado, emergencia, pipas u otro"
 announced_start_at,datetime64[us],70.0,973,2020-12-08 – 2026-09-11,Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha
+has_announced_start_at,bool,0.0,2,False – True,Si el aviso declara una fecha de inicio de la afectación
 announced_duration_hours,float64,89.28846153846153,15,2.0 – 48.0,Duración de la afectación en horas según lo anunciado; nulo si el aviso no declara un plazo

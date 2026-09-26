@@ -30,11 +30,11 @@
     },
     {
       "nombre": "colonia_id",
-      "tipo": "float64",
+      "tipo": "str",
       "nulos_pct": 2.3553287005719206,
       "distintos": 562,
-      "rango": "2603000010001.0 – 2603003430028.0",
-      "descripcion": "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. Nulo cuando la mención no se pudo resolver"
+      "rango": null,
+      "descripcion": "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. En las menciones de colonia es un dato observado (el aviso la nombró); en los cruces es inferido (la colonia donde cae el punto, o la más cercana). Nulo solo cuando match_method es unmatched"
     },
     {
       "nombre": "lat",
@@ -42,7 +42,7 @@
       "nulos_pct": 90.9784146116475,
       "distintos": 1021,
       "rango": "28.992135 – 29.17816",
-      "descripcion": "Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: una colonia es un polígono, no un punto, y su geometría está en colonias_hermosillo"
+      "descripcion": "Latitud del cruce geocodificado (EPSG:4326). Presente solo cuando match_method es cruce_geocodificado: las menciones de colonia no llevan punto (una colonia es un polígono y su geometría está en colonias_hermosillo) y los cruces unmatched no se pudieron ubicar"
     },
     {
       "nombre": "lon",
@@ -50,7 +50,7 @@
       "nulos_pct": 90.9784146116475,
       "distintos": 1017,
       "rango": "-111.065393 – -110.91486",
-      "descripcion": "Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia"
+      "descripcion": "Longitud del cruce geocodificado (EPSG:4326); presente solo cuando match_method es cruce_geocodificado, igual que lat"
     },
     {
       "nombre": "source_field",
@@ -70,7 +70,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 03:22 UTC",
+    "fecha": "2026-09-26 17:16 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

@@ -1,10 +1,10 @@
 nombre,tipo,nulos_pct,distintos,rango,descripcion
-colonia_id,int64,0.0,783,2603000010001 – 2603003430028,Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria
+colonia_id,str,0.0,783,,Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria
 settlement_name,str,0.0,763,,Nombre del asentamiento tal como lo publica el INEGI
 settlement_name_normalized,str,0.0,763,,"Nombre sin acentos, signos ni minúsculas, para emparejarlo con los avisos"
 settlement_type,str,0.0,12,,"Tipo de asentamiento: COLONIA, FRACCIONAMIENTO, RESIDENCIAL..."
-locality_code,int64,0.0,3,1 – 343,"Clave de localidad del INEGI, de cuatro dígitos: 0001 es la ciudad, 0137 Bahía de Kino y 0343 Miguel Alemán. Léase como texto: en CSV pierde los ceros a la izquierda"
-postal_code,int64,0.0,110,0 – 83345,Código postal que reportó el municipio; 00000 si no lo reportó
+locality_code,str,0.0,3,,"Clave de localidad del INEGI, de cuatro dígitos: 0001 es la ciudad, 0137 Bahía de Kino y 0343 Miguel Alemán. Léase como texto: en CSV pierde los ceros a la izquierda"
+postal_code,str,0.0,110,,Código postal que reportó el municipio; 00000 si no lo reportó
 area_km2,float64,0.0,676,0.0009 – 4.4937,Área del polígono del asentamiento en kilómetros cuadrados
 centroid_lat,float64,0.0,779,28.818799 – 29.180338,Latitud del centroide del asentamiento (EPSG:4326)
 centroid_lon,float64,0.0,781,-112.027724 – -110.899004,Longitud del centroide del asentamiento (EPSG:4326)

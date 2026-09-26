@@ -71,8 +71,8 @@
     {
       "nombre": "text",
       "tipo": "str",
-      "nulos_pct": 0.8653846153846154,
-      "distintos": 5026,
+      "nulos_pct": 0.0,
+      "distintos": 5027,
       "rango": null,
       "descripcion": "Texto del cuerpo de la publicación; vacío si la publicación no trae texto"
     },
@@ -87,10 +87,18 @@
     {
       "nombre": "ocr_text",
       "tipo": "str",
-      "nulos_pct": 54.86538461538461,
-      "distintos": 1061,
+      "nulos_pct": 0.0,
+      "distintos": 1062,
       "rango": null,
       "descripcion": "Texto extraído por OCR (PaddleOCR-VL) de la imagen de la publicación; vacío si no hay imagen o si el OCR no encontró texto"
+    },
+    {
+      "nombre": "has_ocr_text",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Si el OCR encontró texto en la imagen de la publicación"
     },
     {
       "nombre": "ocr_status",
@@ -207,10 +215,10 @@
     {
       "nombre": "top_comment_text",
       "tipo": "str",
-      "nulos_pct": 23.557692307692307,
-      "distintos": 3743,
+      "nulos_pct": 0.0,
+      "distintos": 3744,
       "rango": null,
-      "descripcion": "Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió"
+      "descripcion": "Texto del comentario destacado por Facebook, sin el nombre de quien lo escribió; vacío si no hay comentario destacado"
     },
     {
       "nombre": "top_comment_likes",
@@ -237,6 +245,14 @@
       "descripcion": "Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha"
     },
     {
+      "nombre": "has_announced_start_at",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Si el aviso declara una fecha de inicio de la afectación"
+    },
+    {
       "nombre": "announced_duration_hours",
       "tipo": "float64",
       "nulos_pct": 89.28846153846153,
@@ -246,7 +262,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 03:22 UTC",
+    "fecha": "2026-09-26 17:16 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

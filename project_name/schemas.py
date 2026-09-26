@@ -13,12 +13,6 @@ import pandera.pandas as pa
 # Tiburón); basta para detectar coordenadas invertidas o de otro estado.
 HERMOSILLO_BOUNDS = {"lat": (27.5, 30.5), "lon": (-113.0, -110.0)}
 
-# Claves que el CSV guardaría como número, perdiendo los ceros a la izquierda.
-READ_DTYPES = {
-    "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
-    "ubicaciones_aviso": {"colonia_id": str},
-}
-
 REACTIONS = ["like", "love", "haha", "wow", "sad", "angry", "care"]
 COUNTS = [f"reactions_{name}" for name in REACTIONS] + [
     "reactions_total",
@@ -43,6 +37,10 @@ PUBLICACIONES_AGUAH = pa.DataFrameSchema(
     {
         "post_id": pa.Column(unique=True),
         "published_at": pa.Column(),
+        # Vacíos, nunca nulos: si faltaba el texto lo dicen has_text y has_ocr_text.
+        "text": pa.Column(),
+        "ocr_text": pa.Column(),
+        "top_comment_text": pa.Column(),
         "year": pa.Column(checks=pa.Check.in_range(2020, datetime.now(UTC).year)),
         "month": pa.Column(checks=pa.Check.in_range(1, 12)),
         "iso_week": pa.Column(checks=pa.Check.in_range(1, 53)),
@@ -58,10 +56,22 @@ PUBLICACIONES_AGUAH = pa.DataFrameSchema(
         ),
         "announced_duration_hours": pa.Column(checks=pa.Check.gt(0), nullable=True),
     },
-    checks=pa.Check(
-        lambda df: df["reactions_total"] == df[[f"reactions_{n}" for n in REACTIONS]].sum(axis=1),
-        name="reactions_total_is_sum_of_reactions",
-    ),
+    checks=[
+        pa.Check(
+            lambda df: (
+                df["reactions_total"] == df[[f"reactions_{n}" for n in REACTIONS]].sum(axis=1)
+            ),
+            name="reactions_total_is_sum_of_reactions",
+        ),
+        pa.Check(
+            lambda df: df["has_ocr_text"] == df["ocr_text"].ne(""),
+            name="has_ocr_text_matches_ocr_text",
+        ),
+        pa.Check(
+            lambda df: df["has_announced_start_at"] == df["announced_start_at"].notna(),
+            name="has_announced_start_at_matches_announced_start_at",
+        ),
+    ],
 )
 
 COLONIAS_HERMOSILLO = pa.DataFrameSchema(
@@ -97,7 +107,22 @@ UBICACIONES_AVISO = pa.DataFrameSchema(
         "colonia_id": pa.Column(checks=COLONIA_ID, nullable=True),
         "lat": _latitude(nullable=True),
         "lon": _longitude(nullable=True),
-    }
+    },
+    # Los nulos no son faltantes sueltos: los explica match_method.
+    checks=[
+        pa.Check(
+            lambda df: (
+                (df["lat"].notna() & df["lon"].notna())
+                == df["match_method"].eq("cruce_geocodificado")
+            ),
+            name="point_only_for_geocoded_crossings",
+        ),
+        pa.Check(
+            lambda df: df["colonia_id"].isna() == df["match_method"].eq("unmatched"),
+            name="colonia_id_null_only_when_unmatched",
+        ),
+    ],
+    unique=["post_id", "location_type", "raw_text"],
 )
 
 HL = pa.DataFrameSchema(

@@ -52,6 +52,33 @@ DATE_COLUMNS = {
     "baches": ["date"],
 }
 
+# Claves que el CSV guardaría como número, perdiendo los ceros a la izquierda.
+READ_DTYPES = {
+    "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
+    "ubicaciones_aviso": {"colonia_id": str},
+}
+
+# Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
+# vacío y un nulo se escriben igual (campo vacío) y read_csv los lee como NaN, así que
+# al leerlas se devuelven a texto vacío.
+TEXT_COLUMNS = {
+    "publicaciones_aguah": ["text", "ocr_text", "top_comment_text"],
+}
+
+
+def read_processed_csv(csv_file: Path, dataset: str) -> pd.DataFrame:
+    """Lee un CSV procesado con los tipos declarados arriba: fechas, claves como texto y
+    textos vacíos. Lo usan el diccionario y la validación, para que describan lo mismo."""
+    df = pd.read_csv(
+        csv_file,
+        parse_dates=DATE_COLUMNS.get(dataset, []),
+        dtype=READ_DTYPES.get(dataset),
+    )
+    for column in TEXT_COLUMNS.get(dataset, []):
+        df[column] = df[column].fillna("")
+    return df
+
+
 DESCRIPTIONS = {
     "publicaciones_aguah": {
         "post_id": "Identificador de la publicación en Facebook; llave primaria",
@@ -69,6 +96,7 @@ DESCRIPTIONS = {
             "vacío si no hay imagen o si el OCR no encontró texto"
         ),
         "ocr_status": "Resultado del OCR: ocr_success o skipped_no_image",
+        "has_ocr_text": "Si el OCR encontró texto en la imagen de la publicación",
         "has_image": "Si la publicación trae imagen",
         "reactions_like": "Reacciones 'me gusta'",
         "reactions_love": "Reacciones 'me encanta'",
@@ -85,7 +113,8 @@ DESCRIPTIONS = {
         "shares_count": "Número de veces que se compartió la publicación",
         "likes_count": "Número de 'me gusta' que reporta el scraper aparte de las reacciones",
         "top_comment_text": (
-            "Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió"
+            "Texto del comentario destacado por Facebook, sin el nombre de quien lo "
+            "escribió; vacío si no hay comentario destacado"
         ),
         "top_comment_likes": "'Me gusta' del comentario destacado",
         "event_type": (
@@ -95,6 +124,7 @@ DESCRIPTIONS = {
         "announced_start_at": (
             "Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha"
         ),
+        "has_announced_start_at": "Si el aviso declara una fecha de inicio de la afectación",
         "announced_duration_hours": (
             "Duración de la afectación en horas según lo anunciado; "
             "nulo si el aviso no declara un plazo"
@@ -126,19 +156,25 @@ DESCRIPTIONS = {
         ),
         "raw_text": "El lugar tal como lo nombra la publicación, ya normalizado",
         "colonia_id": (
-            "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. "
-            "Nulo cuando la mención no se pudo resolver"
+            "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. En las "
+            "menciones de colonia es un dato observado (el aviso la nombró); en los cruces "
+            "es inferido (la colonia donde cae el punto, o la más cercana). Nulo solo "
+            "cuando match_method es unmatched"
         ),
         "source_field": (
             "Dónde se encontró la mención: 'texto' en el cuerpo de la publicación, "
             "'ocr' solo en el volante, 'ambos' si aparece en los dos"
         ),
         "lat": (
-            "Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: "
-            "una colonia es un polígono, no un punto, y su geometría está en "
-            "colonias_hermosillo"
+            "Latitud del cruce geocodificado (EPSG:4326). Presente solo cuando match_method "
+            "es cruce_geocodificado: las menciones de colonia no llevan punto (una colonia "
+            "es un polígono y su geometría está en colonias_hermosillo) y los cruces "
+            "unmatched no se pudieron ubicar"
         ),
-        "lon": "Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia",
+        "lon": (
+            "Longitud del cruce geocodificado (EPSG:4326); presente solo cuando "
+            "match_method es cruce_geocodificado, igual que lat"
+        ),
         "match_method": (
             "Cómo se resolvió: colonia_con_marcador (el texto dice 'colonia X'), "
             "colonia_en_catalogo (el nombre aparece suelto, típico de las tablas de los "
@@ -253,7 +289,7 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
         df = leer_capa(processed_file, layer)
     else:
         """Filas del CSV y, por columna, su tipo, nulos, valores distintos y rango."""
-        df = pd.read_csv(processed_file, parse_dates=DATE_COLUMNS.get(dataset, []))
+        df = read_processed_csv(processed_file, dataset)
 
     columns = []
     for name in df.columns:

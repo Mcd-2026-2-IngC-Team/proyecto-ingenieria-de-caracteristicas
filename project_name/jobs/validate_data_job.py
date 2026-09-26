@@ -8,8 +8,8 @@ import geopandas as gpd
 from project_name.config import load_logging, load_params
 from project_name.jobs.process_subcuencas_job import leer_capa
 from project_name.logging import log_execution
-from project_name.metadata.dictionary import DATE_COLUMNS, processed_files
-from project_name.schemas import READ_DTYPES, SCHEMAS
+from project_name.metadata.dictionary import processed_files, read_processed_csv
+from project_name.schemas import SCHEMAS
 from project_name.jobs.process_subcuencas_job import leer_capa,get_layer
 
 
@@ -71,11 +71,7 @@ def validate_data(params: dict) -> None:
                 logger.info("No quality rules for {}, skipped", dataset)
                 continue
             
-            df = pd.read_csv(
-                processed_file,
-                parse_dates=DATE_COLUMNS.get(dataset, []),
-                dtype=READ_DTYPES.get(dataset),
-            )
+            df = read_processed_csv(processed_file, dataset)
 
         try:
             # lazy=True junta todas las reglas rotas en vez de parar en la primera.
