@@ -168,6 +168,7 @@ DESCRIPTIONS_SUBCUENCAS = {
         "CONDICION": "Descripción de la condición del drenaje",
         "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
+        "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },
 
     "dr": {

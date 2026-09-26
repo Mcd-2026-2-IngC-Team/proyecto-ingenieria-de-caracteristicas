@@ -4,6 +4,7 @@ hl,CVE_SUBC,str,0.0,1,,Clave de la subcuenca hidrográfica
 hl,CONDICION,str,0.0,4,,Descripción de la condición del drenaje
 hl,ORDER_1,int64,0.0,8,-1 – 7,Magnitud de orden (clasificación de Strahler) a nivel de subcuenca
 hl,ID_DRENA,int32,0.0,2,0 – 1,Identificador del punto de drenaje al que corresponde el segmento
+hl,ENABLED,int32,0.0,2,0 – 1,Indicador que señala si el segmento está habilitado para formar parte de la red geométrica
 hl,geometry,geometry,0.0,,,Geometría lineal del segmento de la red hidrográfica
 dr,ID,int64,0.0,1,2902 – 2902,Identificador único del punto de drenaje
 dr,CVE_SUBC,str,0.0,1,,Clave de la subcuenca hidrográfica

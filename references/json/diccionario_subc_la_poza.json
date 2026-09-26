@@ -63,6 +63,15 @@
     },
     {
       "capa": "hl",
+      "nombre": "ENABLED",
+      "tipo": "int32",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "0 – 1",
+      "descripcion": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica"
+    },
+    {
+      "capa": "hl",
       "nombre": "geometry",
       "tipo": "geometry",
       "nulos_pct": 0.0,
@@ -234,7 +243,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 19:00 UTC",
+    "fecha": "2026-09-26 00:55 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },
