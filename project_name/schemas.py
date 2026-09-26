@@ -100,8 +100,168 @@ UBICACIONES_AVISO = pa.DataFrameSchema(
     }
 )
 
+HL = pa.DataFrameSchema(
+    {
+        "geometry": pa.Column(),
+        "ID": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(1),
+            nullable=False,
+        ),
+        "CVE_SUBC": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(6, 6),
+            nullable=False,
+        ),
+        "CONDICION": pa.Column(
+            pa.String,
+            nullable=False,
+        ),
+        "ORDER_1": pa.Column(
+            pa.Int64,
+            checks=pa.Check(lambda value: (value == -1) | (value >= 1)),
+            nullable=False,
+        ),
+        "ID_DRENA": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(0),
+            nullable=False,
+        ),
+        "ENABLED": pa.Column(
+            checks=pa.Check.isin([0, 1]),
+            nullable=False,
+        ),
+    },
+    # INEGI no documenta explícitamente esta relación entre ID_DRENA y ENABLED.
+    # En los datos originales de las cuatro subcuencas se observó que:
+    # ENABLED=0 corresponde siempre a ID_DRENA=0, mientras que
+    # ENABLED=1 corresponde a ID_DRENA>=1.
+    checks=pa.Check(
+        lambda df: (
+            ((df["ENABLED"] == 0) & (df["ID_DRENA"] == 0))
+            | ((df["ENABLED"] == 1) & (df["ID_DRENA"] >= 1))
+        )
+    )
+)
+
+
+DR = pa.DataFrameSchema(
+    {
+        "geometry": pa.Column(),
+        "ID": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(1),
+            nullable=False,
+        ),
+        "CVE_SUBC": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(6, 6),
+            nullable=False,
+        ),
+        "CONDICION": pa.Column(
+            pa.String,
+            nullable=False,
+        ),
+        # ID_DRENA=0 aparece exclusivamente en segmentos deshabilitados (ENABLED=0), 
+        # y todos los segmentos deshabilitados tienen ID_DRENA=0.
+        "ID_DRENA": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(1),
+            nullable=False,
+        ),
+        "ARBSUM": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(0),
+            nullable=False,
+        ),
+    }
+)
+
+
+SUBC = pa.DataFrameSchema(
+    {
+        "geometry": pa.Column(),
+        "ID": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(1),
+            nullable=False,
+        ),
+        "CVE_SUBCUE": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(6, 6),
+            nullable=False,
+        ),
+    }
+)
+
+
+HA = pa.DataFrameSchema(
+    {
+        "geometry": pa.Column(),
+        "IDBD": pa.Column(
+            pa.Int64,
+            checks=pa.Check.greater_than_or_equal_to(0),
+            nullable=False,
+        ),
+        "FC": pa.Column(
+            pa.Int64,
+            checks=pa.Check.greater_than_or_equal_to(0),
+            nullable=False,
+        ),
+        "CONDICION": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(0, 27),
+            nullable=False,
+        ),
+    }
+)
+
+TO = pa.DataFrameSchema(
+    {
+        "geometry": pa.Column(),
+        "FC": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(0, 40),
+            nullable=False,
+        ),
+        "CLASE": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(0, 60),
+            nullable=False,
+        ),
+        "TERMINO_GE": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(0, 60),
+            nullable=False,
+        ),
+        "NOMBRE": pa.Column(
+            pa.String,
+            checks=pa.Check.str_length(0, 120),
+            nullable=False,
+        ),
+    }
+)
+
 SCHEMAS = {
     "publicaciones_aguah": PUBLICACIONES_AGUAH,
     "colonias_hermosillo": COLONIAS_HERMOSILLO,
     "ubicaciones_aviso": UBICACIONES_AVISO,
+
+    "subc_la_manga_hl": HL,
+    "subc_la_manga_dr": DR,
+    "subc_la_manga_subc": SUBC,
+    "subc_la_manga_ha": HA,
+    "subc_la_manga_to": TO,
+
+    "subc_la_poza_hl": HL,
+    "subc_la_poza_dr": DR,
+    "subc_la_poza_subc": SUBC,
+    "subc_la_poza_ha": HA,
+    "subc_la_poza_to": TO,
+
+    "subc_r_son_hillo_hl": HL,
+    "subc_r_son_hillo_dr": DR,
+    "subc_r_son_hillo_subc": SUBC,
+    "subc_r_son_hillo_ha": HA,
+    "subc_r_son_hillo_to": TO,
+
+    "subc_r_san_miguel_hl": HL,
+    "subc_r_san_miguel_dr": DR,
+    "subc_r_san_miguel_subc": SUBC,
+    "subc_r_san_miguel_ha": HA,
+    "subc_r_san_miguel_to": TO,
 }

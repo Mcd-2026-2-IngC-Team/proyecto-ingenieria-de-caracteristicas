@@ -9,6 +9,9 @@ from project_name.config import load_dataset_config, load_logging, load_params
 from project_name.features import build_subcuencas_features
 from project_name.logging import log_execution
 
+def get_layer(dataset: str) -> str:
+    """Obtiene el nombre de la capa de un dataset hidrográfico."""
+    return dataset.rsplit("_", 1)[-1]
 
 @log_execution
 def process_subcuencas(params: dict) -> None:
