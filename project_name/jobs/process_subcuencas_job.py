@@ -10,6 +10,7 @@ from shapely.geometry import Polygon
 from project_name.config import load_dataset_config, load_logging, load_params
 from project_name.features import build_subcuencas_features
 from project_name.logging import log_execution
+from project_name.constants import REFERENCES_DIR
 
 PUNTOS_REFERENCIA = [
     (-110.88498, 29.17843),  # San Pedro
@@ -48,9 +49,9 @@ def process_subcuencas(params: dict) -> None:
 
         subcuencas_preview.update(preview)
 
-    generar_preview_subcuencas(subcuencas_preview,Path(dataset["processed"]["directory"]).parent / "preview_subcuencas.png",)
+    REFERENCES_DIR.mkdir(parents=True, exist_ok=True)
+    generar_preview_subcuencas(subcuencas_preview,REFERENCES_DIR / f"preview_subcuencas.png",)
     
-
 
 def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str | Path) -> dict:
     ## Descomprimir el archivo ZIP descargado en data/interim/inegi/.
