@@ -6,10 +6,10 @@
   "columnas": [
     {
       "nombre": "colonia_id",
-      "tipo": "int64",
+      "tipo": "str",
       "nulos_pct": 0.0,
       "distintos": 783,
-      "rango": "2603000010001 – 2603003430028",
+      "rango": null,
       "descripcion": "Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria"
     },
     {
@@ -38,18 +38,18 @@
     },
     {
       "nombre": "locality_code",
-      "tipo": "int64",
+      "tipo": "str",
       "nulos_pct": 0.0,
       "distintos": 3,
-      "rango": "1 – 343",
+      "rango": null,
       "descripcion": "Clave de localidad del INEGI, de cuatro dígitos: 0001 es la ciudad, 0137 Bahía de Kino y 0343 Miguel Alemán. Léase como texto: en CSV pierde los ceros a la izquierda"
     },
     {
       "nombre": "postal_code",
-      "tipo": "int64",
+      "tipo": "str",
       "nulos_pct": 0.0,
       "distintos": 110,
-      "rango": "0 – 83345",
+      "rango": null,
       "descripcion": "Código postal que reportó el municipio; 00000 si no lo reportó"
     },
     {
@@ -86,7 +86,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 03:22 UTC",
+    "fecha": "2026-09-26 17:16 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

@@ -8,7 +8,8 @@ SUBC_COLUMNS_HL = [
     "CVE_SUBC",
     "CONDICION",
     "ORDER_1",
-    "ID_DRENA"
+    "ID_DRENA",
+    "ENABLED",
 ]
 
 SUBC_COLUMNS_DR = [
@@ -58,7 +59,7 @@ def cargar_capa(ruta_subcuenca: str | Path, sufijo: str, columnas: list[str])-> 
     df = gpd.read_file(archivo)
 
     if sufijo == "_to":
-        df = df[df["NOM_MUNM"] == "Hermosillo"].copy()
+        df = df[df["NOM_MUNM"] == "HERMOSILLO"].copy()
 
     return df[columnas].copy()    
 

@@ -113,9 +113,12 @@ def build_publicaciones(posts: pd.DataFrame) -> pd.DataFrame:
             time_features,
             pd.DataFrame(
                 {
-                    "text": posts["text"],
+                    # Los textos ausentes quedan vacíos, no nulos; si faltaban lo dicen
+                    # las columnas has_*.
+                    "text": posts["text"].fillna(""),
                     "has_text": posts["text"].notna(),
-                    "ocr_text": posts["ocr_text"],
+                    "ocr_text": posts["ocr_text"].fillna(""),
+                    "has_ocr_text": posts["ocr_text"].notna(),
                     "ocr_status": posts["ocr_status"],
                     "has_image": posts["media/0/photo_image/uri"].notna(),
                 }
@@ -132,12 +135,13 @@ def build_publicaciones(posts: pd.DataFrame) -> pd.DataFrame:
                 {
                     # Sin el nombre de quien comentó: es una persona identificable y el
                     # tablero no lo necesita para medir molestia.
-                    "top_comment_text": posts["topComments/0/text"],
+                    "top_comment_text": posts["topComments/0/text"].fillna(""),
                     "top_comment_likes": posts["topComments/0/likesCount"]
                     .fillna(0)
                     .astype("int64"),
                     "event_type": classify_events(announcement),
                     "announced_start_at": announced_start_at,
+                    "has_announced_start_at": announced_start_at.notna(),
                     "announced_duration_hours": announced_duration_hours,
                 }
             ),

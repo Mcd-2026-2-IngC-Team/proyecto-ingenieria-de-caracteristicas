@@ -52,6 +52,33 @@ DATE_COLUMNS = {
     "baches": ["date"],
 }
 
+# Claves que el CSV guardaría como número, perdiendo los ceros a la izquierda.
+READ_DTYPES = {
+    "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
+    "ubicaciones_aviso": {"colonia_id": str},
+}
+
+# Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
+# vacío y un nulo se escriben igual (campo vacío) y read_csv los lee como NaN, así que
+# al leerlas se devuelven a texto vacío.
+TEXT_COLUMNS = {
+    "publicaciones_aguah": ["text", "ocr_text", "top_comment_text"],
+}
+
+
+def read_processed_csv(csv_file: Path, dataset: str) -> pd.DataFrame:
+    """Lee un CSV procesado con los tipos declarados arriba: fechas, claves como texto y
+    textos vacíos. Lo usan el diccionario y la validación, para que describan lo mismo."""
+    df = pd.read_csv(
+        csv_file,
+        parse_dates=DATE_COLUMNS.get(dataset, []),
+        dtype=READ_DTYPES.get(dataset),
+    )
+    for column in TEXT_COLUMNS.get(dataset, []):
+        df[column] = df[column].fillna("")
+    return df
+
+
 DESCRIPTIONS = {
     "publicaciones_aguah": {
         "post_id": "Identificador de la publicación en Facebook; llave primaria",
@@ -69,6 +96,7 @@ DESCRIPTIONS = {
             "vacío si no hay imagen o si el OCR no encontró texto"
         ),
         "ocr_status": "Resultado del OCR: ocr_success o skipped_no_image",
+        "has_ocr_text": "Si el OCR encontró texto en la imagen de la publicación",
         "has_image": "Si la publicación trae imagen",
         "reactions_like": "Reacciones 'me gusta'",
         "reactions_love": "Reacciones 'me encanta'",
@@ -85,7 +113,8 @@ DESCRIPTIONS = {
         "shares_count": "Número de veces que se compartió la publicación",
         "likes_count": "Número de 'me gusta' que reporta el scraper aparte de las reacciones",
         "top_comment_text": (
-            "Texto del comentario destacado por Facebook; sin el nombre de quien lo escribió"
+            "Texto del comentario destacado por Facebook, sin el nombre de quien lo "
+            "escribió; vacío si no hay comentario destacado"
         ),
         "top_comment_likes": "'Me gusta' del comentario destacado",
         "event_type": (
@@ -95,6 +124,7 @@ DESCRIPTIONS = {
         "announced_start_at": (
             "Inicio de la afectación según lo anunciado; nulo si el aviso no declara fecha"
         ),
+        "has_announced_start_at": "Si el aviso declara una fecha de inicio de la afectación",
         "announced_duration_hours": (
             "Duración de la afectación en horas según lo anunciado; "
             "nulo si el aviso no declara un plazo"
@@ -126,19 +156,25 @@ DESCRIPTIONS = {
         ),
         "raw_text": "El lugar tal como lo nombra la publicación, ya normalizado",
         "colonia_id": (
-            "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. "
-            "Nulo cuando la mención no se pudo resolver"
+            "Asentamiento al que corresponde el lugar; une con colonias_hermosillo. En las "
+            "menciones de colonia es un dato observado (el aviso la nombró); en los cruces "
+            "es inferido (la colonia donde cae el punto, o la más cercana). Nulo solo "
+            "cuando match_method es unmatched"
         ),
         "source_field": (
             "Dónde se encontró la mención: 'texto' en el cuerpo de la publicación, "
             "'ocr' solo en el volante, 'ambos' si aparece en los dos"
         ),
         "lat": (
-            "Latitud del cruce geocodificado (EPSG:4326). Nula en las filas de colonia: "
-            "una colonia es un polígono, no un punto, y su geometría está en "
-            "colonias_hermosillo"
+            "Latitud del cruce geocodificado (EPSG:4326). Presente solo cuando match_method "
+            "es cruce_geocodificado: las menciones de colonia no llevan punto (una colonia "
+            "es un polígono y su geometría está en colonias_hermosillo) y los cruces "
+            "unmatched no se pudieron ubicar"
         ),
-        "lon": "Longitud del cruce geocodificado (EPSG:4326); nula en las filas de colonia",
+        "lon": (
+            "Longitud del cruce geocodificado (EPSG:4326); presente solo cuando "
+            "match_method es cruce_geocodificado, igual que lat"
+        ),
         "match_method": (
             "Cómo se resolvió: colonia_con_marcador (el texto dice 'colonia X'), "
             "colonia_en_catalogo (el nombre aparece suelto, típico de las tablas de los "
@@ -168,6 +204,7 @@ DESCRIPTIONS_SUBCUENCAS = {
         "CONDICION": "Descripción de la condición del drenaje",
         "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
+        "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },
 
     "dr": {
@@ -252,7 +289,7 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
         df = leer_capa(processed_file, layer)
     else:
         """Filas del CSV y, por columna, su tipo, nulos, valores distintos y rango."""
-        df = pd.read_csv(processed_file, parse_dates=DATE_COLUMNS.get(dataset, []))
+        df = read_processed_csv(processed_file, dataset)
 
     columns = []
     for name in df.columns:
@@ -288,36 +325,61 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
     return len(df), columns
 
 
-def document(dataset: str, processed_file: Path, n_rows: int, columns: list[dict],layer: str | None = None) -> dict:
-    """El diccionario de un dataset, listo para escribirse como JSON."""
-    """Construye el diccionario de un dataset CSV o de una capa GeoPackage."""
+def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], columns: list[dict]) -> dict:
+    """Construye el diccionario de un dataset CSV o de un GeoPackage."""
 
-    if layer is not None:
-        descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
-        row_description = ROWS_SUBCUENCAS[layer]
-    else:
-        descriptions = DESCRIPTIONS[dataset]
-        row_description = ROWS[dataset]
+    #descriptions = DESCRIPTIONS[dataset]
+    #row_description = ROWS[dataset]
 
     shown = (
         processed_file.relative_to(PROJECT_ROOT) if processed_file.is_relative_to(PROJECT_ROOT) else processed_file
     )
-    documented = {
-        "dataset": dataset,
-        "archivo": str(shown),
-        "una_fila_es": row_description,
-        "filas": n_rows,
-        "columnas": [
+
+    # Convertir explícitamente a formato POSIX, porque queremos 
+    # que los diccionarios sean reproducibles independientemente 
+    # de si se generan en Windows o Linux
+    shown = shown.as_posix()
+
+    if processed_file.suffix == ".gpkg":
+        row_description = ROWS_SUBCUENCAS
+
+        documented_columns = [
+            {
+                "capa": column["capa"],
+                "nombre": column["column_name"],
+                "tipo": column["type"],
+                "nulos_pct": column["nulos_pct"],
+                "distintos": column["distintos"],
+                "rango": column["rango"],
+                "descripcion": DESCRIPTIONS_SUBCUENCAS[
+                    column["capa"]
+                ][column["column_name"]],
+            }
+            for column in columns
+        ]
+    else:
+        row_description = ROWS[dataset]
+
+        documented_columns = [
             {
                 "nombre": column["column_name"],
                 "tipo": column["type"],
                 "nulos_pct": column["nulos_pct"],
                 "distintos": column["distintos"],
                 "rango": column["rango"],
-                "descripcion": descriptions[column["column_name"]],
+                "descripcion": DESCRIPTIONS[
+                    dataset
+                ][column["column_name"]],
             }
             for column in columns
-        ],
+        ]
+
+    documented = {
+        "dataset": dataset,
+        "archivo": str(shown),
+        "una_fila_es": row_description,
+        "filas": n_rows,
+        "columnas": documented_columns,
         "generado": {
             "fecha": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
             "comando": "make dictionary",
@@ -330,13 +392,59 @@ def document(dataset: str, processed_file: Path, n_rows: int, columns: list[dict
     return documented
 
 
-def write_csv(destination: Path, columns: list[dict]) -> None:
+def write_csv(destination: Path, columns: list[dict],is_geopackage: bool = False,) -> None:
     fieldnames = ["nombre", "tipo", "nulos_pct", "distintos", "rango", "descripcion"]
+
+    if is_geopackage:
+        fieldnames.insert(0, "capa")
+
     with destination.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(columns)
 
+def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool,) -> tuple[int | dict[str, int], list[dict]]:
+    """Perfila y valida un archivo CSV o un GeoPackage procesado."""
+
+    if is_geopackage:
+
+        layers = gpd.list_layers(processed_file)["name"].tolist()
+
+        all_columns = []
+        rows_by_layer = {}
+
+        for layer in layers:
+            if layer not in DESCRIPTIONS_SUBCUENCAS:
+                raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
+                
+            n_rows, columns = profile(processed_file, dataset, layer)
+            rows_by_layer[layer] = n_rows
+
+            for column in columns:
+                column["capa"] = layer
+
+            all_columns.extend(columns)
+
+            validate_columns(
+                dataset,
+                columns,
+                DESCRIPTIONS_SUBCUENCAS[layer],
+            )
+
+        return rows_by_layer, all_columns
+
+    if dataset not in DESCRIPTIONS:
+        raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
+    
+    n_rows, columns = profile(processed_file, dataset)
+
+    validate_columns(
+        dataset,
+        columns,
+        DESCRIPTIONS[dataset],
+    )
+
+    return n_rows, columns
 
 @log_execution
 def build_dictionaries(params: dict) -> list[Path]:
@@ -352,43 +460,11 @@ def build_dictionaries(params: dict) -> list[Path]:
     for dataset, processed_file in processed_files(params).items():
         if not processed_file.exists():
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
+        is_geopackage = processed_file.suffix == ".gpkg"
 
-        if processed_file.suffix == ".gpkg":
-            layers = gpd.list_layers(processed_file)["name"].tolist()
+        n_rows, columns = profile_processed_file(dataset,processed_file,is_geopackage)
 
-            for layer in layers:
-                if layer not in DESCRIPTIONS_SUBCUENCAS:
-                    raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
-                n_rows, columns = profile(processed_file, dataset, layer)
-
-                descriptions = DESCRIPTIONS_SUBCUENCAS[layer]
-                undocumented = {column["column_name"] for column in columns} - set(descriptions)
-                missing = set(descriptions) - {column["column_name"] for column in columns}
-    
-                if undocumented or missing:
-                    raise ValueError(
-                        f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
-                        f"descritas pero inexistentes: {sorted(missing)}"
-                    )
-
-                documented = document(dataset, processed_file, n_rows, columns, layer)
-
-        else: 
-            if dataset not in DESCRIPTIONS:
-                raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
-    
-            n_rows, columns = profile(processed_file, dataset)
-            descriptions = DESCRIPTIONS[dataset]
-            undocumented = {column["column_name"] for column in columns} - set(descriptions)
-            missing = set(descriptions) - {column["column_name"] for column in columns}
-
-            if undocumented or missing:
-                raise ValueError(
-                    f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
-                    f"descritas pero inexistentes: {sorted(missing)}"
-                )
-
-            documented = document(dataset, processed_file, n_rows, columns)
+        documented = document(dataset,processed_file,n_rows,columns)
 
         json_destination = REFERENCES_JSON_DIR / f"diccionario_{dataset}.json"
         json_destination.write_text(
@@ -396,14 +472,31 @@ def build_dictionaries(params: dict) -> list[Path]:
         )
 
         csv_destination = REFERENCES_DIR / f"{dataset}.csv"
-        write_csv(csv_destination, documented["columnas"])
+        write_csv(csv_destination, documented["columnas"],is_geopackage)
+
+        n_columns = len(documented["columnas"])
 
         logger.info(
-            "Documented {} columns → {}, {}", len(columns), csv_destination, json_destination
+            "Documented {} columns → {}, {}", n_columns, csv_destination, json_destination
         )
         written += [csv_destination, json_destination]
+
     return written
 
+def validate_columns(dataset: str,columns: list[dict],descriptions: dict[str, str],) -> None:
+    """Valida que las columnas tengan una descripción y que no sobren descripciones."""
+
+    column_names = {column["column_name"] for column in columns}
+    description_names = set(descriptions)
+
+    undocumented = column_names - description_names
+    missing = description_names - column_names
+
+    if undocumented or missing:
+        raise ValueError(
+            f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
+            f"descritas pero inexistentes: {sorted(missing)}"
+        )
 
 def main() -> None:
     params = load_params()

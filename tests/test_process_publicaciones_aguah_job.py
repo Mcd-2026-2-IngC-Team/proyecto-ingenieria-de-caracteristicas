@@ -89,3 +89,28 @@ def test_build_publicaciones_classifies_with_the_ocr_text():
     tidy = build_publicaciones(silent_body)
 
     assert tidy.loc[0, "event_type"] == "corte_programado"
+
+
+def test_build_publicaciones_leaves_missing_texts_empty_and_flags_them():
+    bare = make_posts(text=None, ocr_text=None, **{"topComments/0/text": None})
+
+    tidy = build_publicaciones(bare)
+
+    assert tidy.loc[0, ["text", "ocr_text", "top_comment_text"]].tolist() == ["", "", ""]
+    assert not tidy.loc[0, "has_text"]
+    assert not tidy.loc[0, "has_ocr_text"]
+    assert not tidy.loc[0, "has_announced_start_at"]
+    assert pd.isna(tidy.loc[0, "announced_start_at"])
+
+
+def test_build_publicaciones_flags_ocr_text_and_announced_start():
+    notice = make_posts(
+        ocr_text="El 21 de enero a partir de las 9:00am habrá un corte programado",
+        ocr_status="ocr_success",
+        time="2022-01-18T17:00:00.000Z",
+    )
+
+    tidy = build_publicaciones(notice)
+
+    assert tidy.loc[0, "has_ocr_text"]
+    assert tidy.loc[0, "has_announced_start_at"]
