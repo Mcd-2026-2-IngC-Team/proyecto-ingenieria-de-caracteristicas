@@ -52,3 +52,11 @@ catálogos y coordenadas); `make validate` corre solo esa revisión.
 `make help` lista las demás reglas. Las fuentes y rutas se configuran en `params.yml`;
 los diccionarios de datos están en [references/](references/README.md) y el OCR en el
 cluster en [slurm/](slurm/README.md).
+
+```
+project_name.jobs.neighborhood_baches_info_job 
+# subconsulta que obtiene la colina asignada al id del bache
+
+uv run python -m project_name.jobs.add_colonia_name_to_bache_job
+# Agrega las colonias al csv de baches_hermosillo
+```

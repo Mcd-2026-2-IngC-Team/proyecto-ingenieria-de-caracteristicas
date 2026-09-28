@@ -39,6 +39,8 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_colonias_hermosillo_job
 	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 	uv run python -m project_name.jobs.process_baches_job
+	uv run python -m project_name.jobs.neighborhood_baches_info_job
+	uv run python -m project_name.jobs.add_colonia_name_to_bache_job
 	uv run python -m project_name.jobs.process_subcuencas_job
 	uv run python -m project_name.jobs.validate_data_job
 
@@ -89,3 +91,5 @@ ocr: requirements-ocr ## Run OCR over the images of a manifest (override MANIFES
 
 ocr-image: requirements-ocr ## Run OCR on one image and print its text (IMAGE=...; override TORCH, DEVICE)
 	$(OCR_JOB) --image "$(IMAGE)"
+
+	
