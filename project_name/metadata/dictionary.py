@@ -193,7 +193,8 @@ DESCRIPTIONS = {
         "id": "Identificador del reporte en el Bachómetro",
         "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
         "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
-    },
+        "colonia": "Nombre de la colonia correspondiente al ID del campo neighborhoods (puede no estar disponible)",
+    }
 }
 
 DESCRIPTIONS_SUBCUENCAS = {

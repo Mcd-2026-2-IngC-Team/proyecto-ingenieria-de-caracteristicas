@@ -16,6 +16,7 @@ classifiers = [
     
 ]
 dependencies = [
+    "beautifulsoup4>=4.15.0",
     "geopandas>=1.1",
     "httpx2>=2.12.0",
     "loguru",
@@ -30,6 +31,7 @@ dependencies = [
     "python-dotenv",
     # >=6.0.2 (not 6.0.3): paddleocr>=3.7 (in the "ocr" extra) pins pyyaml==6.0.2 exactly.
     "pyyaml>=6.0.2",
+    "requests>=2.34.2",
     "ruff",
     "tqdm",
     "typer",

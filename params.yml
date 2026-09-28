@@ -201,7 +201,7 @@ sources:
 
         processed:
           directory: "data/processed/bachometro"
-          filename: "baches_hermosillo.csv"
+          filename: "baches_hermosillo_con_colonias.csv"
 
   agua_hermosillo:
     name: "Agua de Hermosillo: datos derivados para el tablero de desabasto"
