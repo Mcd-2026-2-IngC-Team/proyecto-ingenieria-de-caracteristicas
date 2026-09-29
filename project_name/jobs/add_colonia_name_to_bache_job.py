@@ -2,18 +2,58 @@ import ast
 from pathlib import Path
 
 import pandas as pd
+import requests
+
+from project_name.config import load_dataset_config, load_params
 
 
 # ============================================================
-# Configuración
+# Configuración SharePoint
 # ============================================================
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SHAREPOINT_URL = (
+    "https://unisonmx-my.sharepoint.com/:x:/g/personal/"
+    "a211205228_unison_mx/"
+    "IQACmnNydZIQQI5JGpGa4eJhAZY4udk_M0NHsuOkZEuTV8o"
+    "?e=i21kCd&download=1"
+)
 
-BACHES_CSV = Path("data/processed/bachometro/baches_hermosillo.csv")
-COLONIAS_CSV = Path("data/processed/bachometro/relacion_colonia_baches_id.csv")
-OUTPUT_CSV = Path("data/processed/bachometro/baches_hermosillo_con_colonias.csv")
 
+# ============================================================
+# Descargar archivo de colonias
+# ============================================================
+
+def download_colonias(
+    url: str,
+    output_path: Path,
+) -> Path:
+    """
+    Descarga el archivo de relación colonia/neighborhood
+    desde SharePoint.
+
+    Devuelve el Path del archivo descargado.
+    """
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    print(f"Descargando colonias desde SharePoint...")
+
+    response = requests.get(
+        url,
+        timeout=60,
+        allow_redirects=True,
+    )
+
+    response.raise_for_status()
+
+    output_path.write_bytes(response.content)
+
+    print(f"Archivo descargado: {output_path}")
+
+    return output_path
 
 
 # ============================================================
@@ -60,7 +100,10 @@ def parse_neighborhoods(value):
 # Obtener colonias
 # ============================================================
 
-def get_colonias(neighborhoods, colonia_lookup):
+def get_colonias(
+    neighborhoods,
+    colonia_lookup,
+):
     """
     Obtiene las colonias correspondientes a los IDs
     contenidos en neighborhoods.
@@ -85,10 +128,13 @@ def get_colonias(neighborhoods, colonia_lookup):
 
         try:
             neighborhood_id = int(neighborhood_id)
+
         except (ValueError, TypeError):
             continue
 
-        colonia = colonia_lookup.get(neighborhood_id)
+        colonia = colonia_lookup.get(
+            neighborhood_id
+        )
 
         # Ignorar IDs que no tengan colonia
         if colonia is None or pd.isna(colonia):
@@ -112,15 +158,72 @@ def get_colonias(neighborhoods, colonia_lookup):
 
 def main():
 
-    print(f"Leyendo baches: {BACHES_CSV}")
-    print(f"Leyendo relación de colonias: {COLONIAS_CSV}")
+    # --------------------------------------------------------
+    # Cargar configuración CCDS
+    # --------------------------------------------------------
+
+    params = load_params()
+
+    dataset = load_dataset_config(
+        params,
+        source="bachometro",
+        dataset="baches",
+    )
+
+    raw_directory = Path(
+        dataset["raw"]["directory"]
+    )
+
+    processed_directory = Path(
+        dataset["processed"]["directory"]
+    )
+
+    # --------------------------------------------------------
+    # Definir archivos
+    # --------------------------------------------------------
+
+    BACHES_CSV = (
+        processed_directory
+        / "baches_hermosillo.csv"
+    )
+
+    COLONIAS_CSV = (
+        raw_directory
+        / "relacion_colonia_baches_id.csv"
+    )
+
+    OUTPUT_CSV = (
+        processed_directory
+        / "baches_hermosillo_con_colonias.csv"
+    )
+
+    # --------------------------------------------------------
+    # Descargar archivo de colonias desde SharePoint
+    # --------------------------------------------------------
+
+    colonias_csv = download_colonias(
+        SHAREPOINT_URL,
+        COLONIAS_CSV,
+    )
 
     # --------------------------------------------------------
     # Leer archivos
     # --------------------------------------------------------
 
-    baches_df = pd.read_csv(BACHES_CSV)
-    colonias_df = pd.read_csv(COLONIAS_CSV)
+    print()
+    print(f"Leyendo baches: {BACHES_CSV}")
+    print(
+        f"Leyendo relación de colonias: "
+        f"{colonias_csv}"
+    )
+
+    baches_df = pd.read_csv(
+        BACHES_CSV
+    )
+
+    colonias_df = pd.read_csv(
+        colonias_csv
+    )
 
     # --------------------------------------------------------
     # Validaciones
@@ -158,7 +261,8 @@ def main():
     )
 
     colonias_df["neighborhood_id"] = (
-        colonias_df["neighborhood_id"].astype(int)
+        colonias_df["neighborhood_id"]
+        .astype(int)
     )
 
     # --------------------------------------------------------
@@ -178,7 +282,8 @@ def main():
     )
 
     print(
-        f"Colonias disponibles: {len(colonia_lookup)}"
+        f"Colonias disponibles: "
+        f"{len(colonia_lookup)}"
     )
 
     # --------------------------------------------------------
@@ -216,12 +321,20 @@ def main():
         .sum()
     )
 
-    sin_colonia = total - con_colonia
+    sin_colonia = (
+        total - con_colonia
+    )
 
     print()
     print(f"Total de baches: {total}")
-    print(f"Baches con colonia: {con_colonia}")
-    print(f"Baches sin colonia: {sin_colonia}")
+    print(
+        f"Baches con colonia: "
+        f"{con_colonia}"
+    )
+    print(
+        f"Baches sin colonia: "
+        f"{sin_colonia}"
+    )
 
     # --------------------------------------------------------
     # Guardar resultado
@@ -239,7 +352,10 @@ def main():
     )
 
     print()
-    print(f"Archivo generado: {OUTPUT_CSV}")
+    print(
+        f"Archivo generado: "
+        f"{OUTPUT_CSV}"
+    )
 
 
 # ============================================================

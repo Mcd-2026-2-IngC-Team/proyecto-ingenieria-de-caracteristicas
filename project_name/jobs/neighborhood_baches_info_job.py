@@ -8,20 +8,48 @@ import requests
 from bs4 import BeautifulSoup
 
 
+from project_name.config import load_dataset_config, load_logging, load_params
+from project_name.logging import log_execution
+from pathlib import Path
+
+
 # ============================================================
 # Configuración
 # ============================================================
 
-INPUT_CSV = Path("data/processed/bachometro/baches_hermosillo.csv")
-OUTPUT_CSV = Path("data/processed/bachometro/relacion_colonia_baches_id.csv")
+params = load_params()
+dataset = load_dataset_config(
+    params,
+    source="bachometro",
+    dataset="baches",
+)
+processed_directory = Path(dataset["processed"]["directory"])
+
+INPUT_CSV = (
+    processed_directory
+    / "baches_hermosillo.csv"
+)
+
+OUTPUT_CSV = (
+    processed_directory
+    / "relacion_colonia_baches_id.csv"
+)
+
+print("CWD:", Path.cwd())
+print("INPUT:", INPUT_CSV)
+print("ABSOLUTE:", INPUT_CSV.resolve())
+print("EXISTS:", INPUT_CSV.exists())
+
+# INPUT_CSV = Path("data/processed/bachometro/baches_hermosillo.csv")
+# OUTPUT_CSV = Path("data/processed/bachometro/relacion_colonia_baches_id.csv")
 
 URL = "https://bachometro.hermosillo.gob.mx/mapa/informacion/ajax"
 
 # IMPORTANTE:
 # Estas cookies expiran. Reemplázalas cuando sea necesario.
-SESSION_COOKIE = "eyJpdiI6ImtJb2pUZFloaXRJUXlnekxIMFhPcEE9PSIsInZhbHVlIjoieGg0V3hJYk5RdTU3ODI1ZWZ0Z2NpNjZUZjNNdXM0RkdxcmlqNXNmRENxTS9PQkw5eTEvMTIzM0hNRmMxNklFVlBNT2lsV1NBdks5aGJPMDcyKy9FckJTMExkdFZBKyt2dk0yWWdYWC8xUVVoYS9pMG5mKzB3aFFQM2VvVHY4ZzYiLCJtYWMiOiIzZGIyYjE5NDFkNDZmMTkyMWRlOTkyMTU3ODk5N2YxYzExMzU3ZDUzZjVlYjBhOWJlMzQ1YjU3NDAwMGQyNjdjIiwidGFnIjoiIn0%3D"
+SESSION_COOKIE = "eyJpdiI6InNSWFZVM0VRU2NxRm5SeTNic0ZUVWc9PSIsInZhbHVlIjoiLzV5K3Z4UmUzcy9HM0FxTWE0R09Wc2RUaEo5Q3dUc0JrdWV5Vkt5KzBTNEJpNVhvSmZJS2ZZMjdJQ0JQdWJOd2ZzSVFhVTdPTElHdEl1bkpycWR5aUo4dmVGZFJSNUN4TG4wTGNxZCtWU2pYNmNCZjZEYzRCN0RHTE5QaDJQRlIiLCJtYWMiOiIwYWMxMDRlMDE2NmFjZGQ5NDcwZjNmMDQ4MTliNmQ0MTQ2YjA4NWI2M2ZjZDgwM2YyY2FhNDIyZTVhYmFmMGQ2IiwidGFnIjoiIn0%3D"
 
-XSRF_TOKEN = "eyJpdiI6ImZ4cDlKM3N5WW1aeWdMTzJ6d09zU0E9PSIsInZhbHVlIjoiRjNPYVBta0haRFpCbU1pTHU0UzZMN2lkbjJLbUtUNVZTZmpodHdyc0pyY2Q2RHhDY2Z0a3JlQVllZCtPY05TRjhnKzZGTUNNV3UyWlAwRDJuYVdBTmJHSDNTY0liQ0grNFpQNXdSUjM3ZmlyeW9zNVRWV3RqejduNHBNWTFqaWciLCJtYWMiOiJkY2Q3YzIwMzcwNWI2ZmQyNjcyOWZkZGFhYjE2OGYzYjMxODMwNGU1MWUxMDRhZjA4OTk1ZWRkYTJlMzk5ZTQ3IiwidGFnIjoiIn0%3D"
+XSRF_TOKEN = "eyJpdiI6IlZGa1pId0lYYnBCaldXQzNHbFdIYVE9PSIsInZhbHVlIjoiTjF0SVJtYW5EaDBlNmoxNEJPRVpZZUpsZWtJN052RnBJb04yd1ZRQ2VWRUJzbTFYWmlEOHFaTmk1TnJPeVQvTHVwRzd4TlNjMEM5clI5eitwc09FcUxnSjRTS0wySWk5NEhoMThBcjJNVHB3NDJQR0gyMHh6THBhRldaYjhaRDkiLCJtYWMiOiIyYjUzOWU0ZDkxOTU1NDU2N2IwZDlkNzVkOTQwZmQxN2IyZmZmNzI2YzRhZDBiYjBiZjkxNDNmNTk2YTc2Yjc4IiwidGFnIjoiIn0%3D"
 
 
 # ============================================================

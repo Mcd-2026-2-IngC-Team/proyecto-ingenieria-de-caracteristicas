@@ -39,10 +39,14 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_colonias_hermosillo_job
 	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 	uv run python -m project_name.jobs.process_baches_job
-	uv run python -m project_name.jobs.neighborhood_baches_info_job
 	uv run python -m project_name.jobs.add_colonia_name_to_bache_job
 	uv run python -m project_name.jobs.process_subcuencas_job
 	uv run python -m project_name.jobs.validate_data_job
+
+## descomentar este si se quiere descargar la relación bache colonia directamente del api, de lo contrario
+## se descargará desde una carpeta en one drive. Para la api se requiere actualizar las credenciales
+## uv run python -m project_name.jobs.neighborhood_baches_info_job
+## uv run python -m project_name.jobs.clean_colonia_bache_job
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
