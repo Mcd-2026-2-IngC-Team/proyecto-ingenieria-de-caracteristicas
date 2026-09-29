@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="468" viewBox="0 0 760 468" role="img" aria-labelledby="t d">
+<title id="t">Tamaño en disco por artefacto</title>
+<desc id="d">Barras horizontales con el tamaño en MB de cada artefacto ingerido y de cada dataset procesado.</desc>
+<style>
+  .surface { fill: #fcfcfb; }
+  .ink-1 { fill: #0b0b0b; }
+  .ink-2 { fill: #52514e; }
+  .ink-muted { fill: #898781; }
+  .grid { stroke: #e1e0d9; stroke-width: 1; fill: none; }
+  .axis { stroke: #c3c2b7; stroke-width: 1; fill: none; }
+  .bar { fill: #2a78d6; }
+  .line { stroke: #2a78d6; stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .area { fill: #2a78d6; fill-opacity: 0.10; }
+  .dot { fill: #2a78d6; stroke: #fcfcfb; stroke-width: 2; }
+  text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; }
+  @media (prefers-color-scheme: dark) {
+    .surface { fill: #1a1a19; }
+    .ink-1 { fill: #ffffff; }
+    .ink-2 { fill: #c3c2b7; }
+    .grid { stroke: #2c2c2a; }
+    .axis { stroke: #383835; }
+    .bar { fill: #3987e5; }
+    .line { stroke: #3987e5; }
+    .area { fill: #3987e5; }
+    .dot { fill: #3987e5; stroke: #1a1a19; }
+  }
+</style>
+<rect class="surface" x="0" y="0" width="760" height="468" rx="8"/>
+<text x="20.0" y="30.0" class="ink-1" font-size="15" text-anchor="start" font-weight="600">Tamaño en disco por artefacto</text>
+<text x="20.0" y="50.0" class="ink-2" font-size="12" text-anchor="start" font-weight="400">Millones de bytes (MB), misma escala en ambos grupos. Corte: 28 de septiembre de 2026.</text>
+<text x="20.0" y="86.0" class="ink-2" font-size="12" text-anchor="start" font-weight="600">Ingesta: 350.8 MB</text>
+<text x="222.0" y="108.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Facebook, imágenes</text>
+<path class="bar" d="M232.0,96.0 H678.0 A4.0,4.0 0 0 1 682.0,100.0 V108.0 A4.0,4.0 0 0 1 678.0,112.0 H232.0 Z"/>
+<text x="688.0" y="108.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">171.9 MB</text>
+<text x="222.0" y="134.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Marco Geoestadístico, capa 26e</text>
+<path class="bar" d="M232.0,122.0 H401.5 A4.0,4.0 0 0 1 405.5,126.0 V134.0 A4.0,4.0 0 0 1 401.5,138.0 H232.0 Z"/>
+<text x="411.5" y="134.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">66.3 MB</text>
+<text x="222.0" y="160.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Red hidrográfica, 4 subcuencas</text>
+<path class="bar" d="M232.0,148.0 H361.1 A4.0,4.0 0 0 1 365.1,152.0 V160.0 A4.0,4.0 0 0 1 361.1,164.0 H232.0 Z"/>
+<text x="371.1" y="160.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">50.8 MB</text>
+<text x="222.0" y="186.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Facebook, publicaciones (CSV)</text>
+<path class="bar" d="M232.0,174.0 H320.1 A4.0,4.0 0 0 1 324.1,178.0 V186.0 A4.0,4.0 0 0 1 320.1,190.0 H232.0 Z"/>
+<text x="330.1" y="186.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">35.2 MB</text>
+<text x="222.0" y="212.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">DCAH 2025</text>
+<path class="bar" d="M232.0,200.0 H268.6 A4.0,4.0 0 0 1 272.6,204.0 V212.0 A4.0,4.0 0 0 1 268.6,216.0 H232.0 Z"/>
+<text x="278.6" y="212.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">15.5 MB</text>
+<text x="222.0" y="238.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Bachómetro</text>
+<path class="bar" d="M232.0,226.0 H249.5 A4.0,4.0 0 0 1 253.5,230.0 V238.0 A4.0,4.0 0 0 1 249.5,242.0 H232.0 Z"/>
+<text x="259.5" y="238.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">8.2 MB</text>
+<text x="222.0" y="264.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">Facebook, OCR y manifiestos</text>
+<path class="bar" d="M232.0,252.0 H235.7 A3.7,3.7 0 0 1 239.5,255.7 V264.3 A3.7,3.7 0 0 1 235.7,268.0 H232.0 Z"/>
+<text x="245.5" y="264.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">2.9 MB</text>
+<line class="axis" x1="232" y1="92" x2="232" y2="272"/>
+<text x="20.0" y="306.0" class="ink-2" font-size="12" text-anchor="start" font-weight="600">Procesado: 47.4 MB</text>
+<text x="222.0" y="328.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">subcuencas (4 GeoPackage)</text>
+<path class="bar" d="M232.0,316.0 H320.8 A4.0,4.0 0 0 1 324.8,320.0 V328.0 A4.0,4.0 0 0 1 320.8,332.0 H232.0 Z"/>
+<text x="330.8" y="328.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">35.5 MB</text>
+<text x="222.0" y="354.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">baches_hermosillo.csv</text>
+<path class="bar" d="M232.0,342.0 H242.5 A4.0,4.0 0 0 1 246.5,346.0 V354.0 A4.0,4.0 0 0 1 242.5,358.0 H232.0 Z"/>
+<text x="252.5" y="354.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">5.5 MB</text>
+<text x="222.0" y="380.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">publicaciones_aguah.csv</text>
+<path class="bar" d="M232.0,368.0 H239.0 A4.0,4.0 0 0 1 243.0,372.0 V380.0 A4.0,4.0 0 0 1 239.0,384.0 H232.0 Z"/>
+<text x="249.0" y="380.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">4.2 MB</text>
+<text x="222.0" y="406.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">ubicaciones_aviso.csv</text>
+<path class="bar" d="M232.0,394.0 H233.8 A1.8,1.8 0 0 1 235.5,395.8 V408.2 A1.8,1.8 0 0 1 233.8,410.0 H232.0 Z"/>
+<text x="241.5" y="406.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">1.3 MB</text>
+<text x="222.0" y="432.0" class="ink-1" font-size="12" text-anchor="end" font-weight="400">colonias_hermosillo</text>
+<path class="bar" d="M232.0,420.0 H233.1 A1.1,1.1 0 0 1 234.2,421.1 V434.9 A1.1,1.1 0 0 1 233.1,436.0 H232.0 Z"/>
+<text x="240.2" y="432.0" class="ink-2 num" font-size="12" text-anchor="start" font-weight="400">0.83 MB</text>
+<line class="axis" x1="232" y1="312" x2="232" y2="440"/>
+</svg>

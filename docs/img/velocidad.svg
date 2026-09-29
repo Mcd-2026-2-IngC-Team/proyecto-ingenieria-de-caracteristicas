@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="414" viewBox="0 0 760 414" role="img" aria-labelledby="t d">
+<title id="t">Registros nuevos por mes</title>
+<desc id="d">Dos líneas en paneles separados: reportes de baches por mes en el Bachómetro y publicaciones por mes de Agua de Hermosillo en Facebook, solo meses completos.</desc>
+<style>
+  .surface { fill: #fcfcfb; }
+  .ink-1 { fill: #0b0b0b; }
+  .ink-2 { fill: #52514e; }
+  .ink-muted { fill: #898781; }
+  .grid { stroke: #e1e0d9; stroke-width: 1; fill: none; }
+  .axis { stroke: #c3c2b7; stroke-width: 1; fill: none; }
+  .bar { fill: #2a78d6; }
+  .line { stroke: #2a78d6; stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .area { fill: #2a78d6; fill-opacity: 0.10; }
+  .dot { fill: #2a78d6; stroke: #fcfcfb; stroke-width: 2; }
+  text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; }
+  @media (prefers-color-scheme: dark) {
+    .surface { fill: #1a1a19; }
+    .ink-1 { fill: #ffffff; }
+    .ink-2 { fill: #c3c2b7; }
+    .grid { stroke: #2c2c2a; }
+    .axis { stroke: #383835; }
+    .bar { fill: #3987e5; }
+    .line { stroke: #3987e5; }
+    .area { fill: #3987e5; }
+    .dot { fill: #3987e5; stroke: #1a1a19; }
+  }
+</style>
+<rect class="surface" x="0" y="0" width="760" height="414" rx="8"/>
+<text x="20.0" y="30.0" class="ink-1" font-size="15" text-anchor="start" font-weight="600">Registros nuevos por mes</text>
+<text x="20.0" y="50.0" class="ink-2" font-size="12" text-anchor="start" font-weight="400">Solo meses completos: baches desde oct 2021, publicaciones desde ene 2021. Corte: 28 de septiembre de 2026.</text>
+<text x="20.0" y="88.0" class="ink-2" font-size="12" text-anchor="start" font-weight="600">Bachómetro: reportes de baches por mes</text>
+<line class="axis" x1="66.0" y1="210.0" x2="702.0" y2="210.0"/>
+<text x="60.0" y="214.0" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">0</text>
+<line class="grid" x1="66.0" y1="173.3" x2="702.0" y2="173.3"/>
+<text x="60.0" y="177.3" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">500</text>
+<line class="grid" x1="66.0" y1="136.7" x2="702.0" y2="136.7"/>
+<text x="60.0" y="140.7" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">1,000</text>
+<line class="grid" x1="66.0" y1="100.0" x2="702.0" y2="100.0"/>
+<text x="60.0" y="104.0" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">1,500</text>
+<path class="area" d="M155.8,159.2 L165.1,164.9 L174.4,173.3 L183.8,174.9 L193.1,179.7 L202.4,158.2 L211.7,174.5 L221.0,180.7 L230.3,192.4 L239.6,189.2 L249.0,159.5 L258.3,174.1 L267.6,156.3 L276.9,169.4 L286.2,180.8 L295.5,187.9 L304.8,186.2 L314.1,171.3 L323.5,181.3 L332.8,169.1 L342.1,176.3 L351.4,186.5 L360.7,175.6 L370.0,176.8 L379.3,178.2 L388.7,186.4 L398.0,188.7 L407.3,180.2 L416.6,173.3 L425.9,170.2 L435.2,161.2 L444.5,161.9 L453.9,168.9 L463.2,181.3 L472.5,157.9 L481.8,154.0 L491.1,160.1 L500.4,168.6 L509.7,181.5 L519.0,135.7 L528.4,163.9 L537.7,145.6 L547.0,162.2 L556.3,153.0 L565.6,157.2 L574.9,174.3 L584.2,152.9 L593.6,130.2 L602.9,112.1 L612.2,144.9 L621.5,180.1 L630.8,143.3 L640.1,117.2 L649.4,107.6 L658.7,138.9 L668.1,144.8 L677.4,135.6 L686.7,154.6 L696.0,102.1 L696.0,210.0 L155.8,210.0 Z"/>
+<path class="line" d="M155.8,159.2 L165.1,164.9 L174.4,173.3 L183.8,174.9 L193.1,179.7 L202.4,158.2 L211.7,174.5 L221.0,180.7 L230.3,192.4 L239.6,189.2 L249.0,159.5 L258.3,174.1 L267.6,156.3 L276.9,169.4 L286.2,180.8 L295.5,187.9 L304.8,186.2 L314.1,171.3 L323.5,181.3 L332.8,169.1 L342.1,176.3 L351.4,186.5 L360.7,175.6 L370.0,176.8 L379.3,178.2 L388.7,186.4 L398.0,188.7 L407.3,180.2 L416.6,173.3 L425.9,170.2 L435.2,161.2 L444.5,161.9 L453.9,168.9 L463.2,181.3 L472.5,157.9 L481.8,154.0 L491.1,160.1 L500.4,168.6 L509.7,181.5 L519.0,135.7 L528.4,163.9 L537.7,145.6 L547.0,162.2 L556.3,153.0 L565.6,157.2 L574.9,174.3 L584.2,152.9 L593.6,130.2 L602.9,112.1 L612.2,144.9 L621.5,180.1 L630.8,143.3 L640.1,117.2 L649.4,107.6 L658.7,138.9 L668.1,144.8 L677.4,135.6 L686.7,154.6 L696.0,102.1"/>
+<circle class="dot" cx="696.0" cy="102.1" r="4.5"/>
+<text x="706.0" y="106.1" class="ink-1 num" font-size="12" text-anchor="start" font-weight="600">1,471</text>
+<text x="20.0" y="256.0" class="ink-2" font-size="12" text-anchor="start" font-weight="600">Facebook de Agua de Hermosillo: publicaciones por mes</text>
+<line class="axis" x1="66.0" y1="378.0" x2="702.0" y2="378.0"/>
+<text x="60.0" y="382.0" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">0</text>
+<line class="grid" x1="66.0" y1="323.0" x2="702.0" y2="323.0"/>
+<text x="60.0" y="327.0" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">100</text>
+<line class="grid" x1="66.0" y1="268.0" x2="702.0" y2="268.0"/>
+<text x="60.0" y="272.0" class="ink-muted num" font-size="11" text-anchor="end" font-weight="400">200</text>
+<path class="area" d="M72.0,352.7 L81.3,348.3 L90.6,347.2 L99.9,356.0 L109.3,345.0 L118.6,359.3 L127.9,352.7 L137.2,368.6 L146.5,363.1 L155.8,341.1 L165.1,356.0 L174.4,348.3 L183.8,367.6 L193.1,367.6 L202.4,351.1 L211.7,360.9 L221.0,362.6 L230.3,351.1 L239.6,360.4 L249.0,356.6 L258.3,351.6 L267.6,352.7 L276.9,353.2 L286.2,357.1 L295.5,357.6 L304.8,357.6 L314.1,334.6 L323.5,348.9 L332.8,323.6 L342.1,324.1 L351.4,306.5 L360.7,335.6 L370.0,341.1 L379.3,356.0 L388.7,337.3 L398.0,333.4 L407.3,332.9 L416.6,316.9 L425.9,356.0 L435.2,359.3 L444.5,351.6 L453.9,341.7 L463.2,324.6 L472.5,331.2 L481.8,334.6 L491.1,311.4 L500.4,330.7 L509.7,329.6 L519.0,332.4 L528.4,326.3 L537.7,304.3 L547.0,290.0 L556.3,280.1 L565.6,297.1 L574.9,283.9 L584.2,298.8 L593.6,302.1 L602.9,292.8 L612.2,335.6 L621.5,316.4 L630.8,320.2 L640.1,319.1 L649.4,327.9 L658.7,335.1 L668.1,331.8 L677.4,305.4 L686.7,312.0 L696.0,358.2 L696.0,378.0 L72.0,378.0 Z"/>
+<path class="line" d="M72.0,352.7 L81.3,348.3 L90.6,347.2 L99.9,356.0 L109.3,345.0 L118.6,359.3 L127.9,352.7 L137.2,368.6 L146.5,363.1 L155.8,341.1 L165.1,356.0 L174.4,348.3 L183.8,367.6 L193.1,367.6 L202.4,351.1 L211.7,360.9 L221.0,362.6 L230.3,351.1 L239.6,360.4 L249.0,356.6 L258.3,351.6 L267.6,352.7 L276.9,353.2 L286.2,357.1 L295.5,357.6 L304.8,357.6 L314.1,334.6 L323.5,348.9 L332.8,323.6 L342.1,324.1 L351.4,306.5 L360.7,335.6 L370.0,341.1 L379.3,356.0 L388.7,337.3 L398.0,333.4 L407.3,332.9 L416.6,316.9 L425.9,356.0 L435.2,359.3 L444.5,351.6 L453.9,341.7 L463.2,324.6 L472.5,331.2 L481.8,334.6 L491.1,311.4 L500.4,330.7 L509.7,329.6 L519.0,332.4 L528.4,326.3 L537.7,304.3 L547.0,290.0 L556.3,280.1 L565.6,297.1 L574.9,283.9 L584.2,298.8 L593.6,302.1 L602.9,292.8 L612.2,335.6 L621.5,316.4 L630.8,320.2 L640.1,319.1 L649.4,327.9 L658.7,335.1 L668.1,331.8 L677.4,305.4 L686.7,312.0 L696.0,358.2"/>
+<circle class="dot" cx="696.0" cy="358.2" r="4.5"/>
+<text x="706.0" y="362.2" class="ink-1 num" font-size="12" text-anchor="start" font-weight="600">36</text>
+<circle class="dot" cx="556.3" cy="280.1" r="4.5"/>
+<text x="556.3" y="270.1" class="ink-1 num" font-size="12" text-anchor="middle" font-weight="600">178 (may 2025)</text>
+<line class="axis" x1="72.0" y1="210.0" x2="72.0" y2="214.0"/>
+<line class="axis" x1="72.0" y1="378.0" x2="72.0" y2="382.0"/>
+<text x="72.0" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2021</text>
+<line class="axis" x1="183.8" y1="210.0" x2="183.8" y2="214.0"/>
+<line class="axis" x1="183.8" y1="378.0" x2="183.8" y2="382.0"/>
+<text x="183.8" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2022</text>
+<line class="axis" x1="295.5" y1="210.0" x2="295.5" y2="214.0"/>
+<line class="axis" x1="295.5" y1="378.0" x2="295.5" y2="382.0"/>
+<text x="295.5" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2023</text>
+<line class="axis" x1="407.3" y1="210.0" x2="407.3" y2="214.0"/>
+<line class="axis" x1="407.3" y1="378.0" x2="407.3" y2="382.0"/>
+<text x="407.3" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2024</text>
+<line class="axis" x1="519.0" y1="210.0" x2="519.0" y2="214.0"/>
+<line class="axis" x1="519.0" y1="378.0" x2="519.0" y2="382.0"/>
+<text x="519.0" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2025</text>
+<line class="axis" x1="630.8" y1="210.0" x2="630.8" y2="214.0"/>
+<line class="axis" x1="630.8" y1="378.0" x2="630.8" y2="382.0"/>
+<text x="630.8" y="398.0" class="ink-muted num" font-size="11" text-anchor="middle" font-weight="400">2026</text>
+</svg>

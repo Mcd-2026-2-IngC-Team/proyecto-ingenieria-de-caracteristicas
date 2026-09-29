@@ -34,6 +34,9 @@ Por definir: a quién va dirigido el tablero final.
 - Fugas de agua: próximamente.
 - Reportes de inundaciones: próximamente.
 
+[docs/cinco_v_datos.md](docs/cinco_v_datos.md) resume estas fuentes y los datos procesados
+con el marco de las cinco V (volumen, velocidad, variedad, veracidad y valor).
+
 ## Reproducir
 
 Consultar [data/SNAPSHOT.md](data/SNAPSHOT.md) antes de ejecutar el proyecto.
