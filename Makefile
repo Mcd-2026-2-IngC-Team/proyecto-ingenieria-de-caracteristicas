@@ -40,6 +40,7 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_ubicaciones_aviso_job
 	uv run python -m project_name.jobs.process_baches_job
 	uv run python -m project_name.jobs.add_colonia_name_to_bache_job
+	uv run python -m project_name.jobs.add_colonia_bache_with_gpkg
 	uv run python -m project_name.jobs.process_subcuencas_job
 	uv run python -m project_name.jobs.validate_data_job
 
