@@ -3,7 +3,7 @@
 .DEFAULT_GOAL := help
 .PHONY: help requirements test lint format clean nb \
 	data download validate verify-data backup dictionary \
-	snapshot extract-images requirements-ocr ocr ocr-image
+	snapshot extract-images requirements-ocr ocr ocr-image profile
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*## "} /^##@/ {printf "\n%s\n", substr($$0, 5); next} /^[a-zA-Z_-]+:.*## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -65,6 +65,11 @@ backup: DEST = backups
 backup: ## Back up data/ as a tar.gz in DEST (default backups/)
 	mkdir -p "$(DEST)"
 	tar -czf "$(DEST)/data_$$(date +%Y%m%d_%H%M%S).tar.gz" data
+
+##@ Exploratory analysis
+
+profile: ## Auto EDA with ydata-profiling into docs/eda/ (isolated env; DATASET=... for one)
+	uv run --script scripts/ydata_profile.py $(DATASET)
 
 ##@ Acquisition (already run, not reproducible; outputs in the data/external snapshot)
 # Paid scraper, expiring image URLs and hardware-dependent OCR. See slurm/README.md.

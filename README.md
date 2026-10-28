@@ -37,6 +37,18 @@ Por definir: a quién va dirigido el tablero final.
 [docs/cinco_v_datos.md](docs/cinco_v_datos.md) resume estas fuentes y los datos procesados
 con el marco de las cinco V (volumen, velocidad, variedad, veracidad y valor).
 
+## Análisis exploratorio
+
+Un notebook por dataset tidy, con auto EDA, faltantes, anomalías, relaciones, correlación,
+reducción de dimensión y preguntas para los usuarios:
+
+- [05, publicaciones de Agua de Hermosillo](notebooks/05-eda-publicaciones-aguah.ipynb)
+- [06, colonias de Hermosillo](notebooks/06-eda-colonias-hermosillo.ipynb)
+- [07, ubicaciones mencionadas en los avisos](notebooks/07-eda-ubicaciones-aviso.ipynb)
+
+Los reportes de ydata-profiling están en [docs/eda/](docs/eda/) (`make profile`) y el
+resumen de hallazgos en [docs/eda.md](docs/eda.md).
+
 ## Reproducir
 
 Consultar [data/SNAPSHOT.md](data/SNAPSHOT.md) antes de ejecutar el proyecto.

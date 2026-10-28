@@ -23,10 +23,12 @@ dependencies = [
     "loguru",
     "marimo>=0.24.0",
     "matplotlib>=3.11.1",
+    "missingno>=0.5.2",
     "nbformat>=5.11.1",
     "pandas>=3.0.5",
     "pandera[pandas]>=0.33",
     "pip",
+    "pyod>=3.6",
     "pyogrio>=0.11",
     "pytest",
     "python-dotenv",
@@ -34,8 +36,12 @@ dependencies = [
     "pyyaml>=6.0.2",
     "requests>=2.34.2",
     "ruff",
+    "scikit-learn>=1.9",
+    "scipy>=1.16",
+    "seaborn>=0.13.2",
     "tqdm",
     "typer",
+    "umap-learn>=0.5.12",
 ]
 requires-python = "~=3.13.0"
 
