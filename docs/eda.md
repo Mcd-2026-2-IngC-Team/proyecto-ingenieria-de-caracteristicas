@@ -15,6 +15,12 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
   [`eda/colonias_hermosillo.html`](eda/colonias_hermosillo.html),
   [`eda/ubicaciones_aviso.html`](eda/ubicaciones_aviso.html). Los genera `make profile`
   (`scripts/ydata_profile.py`, entorno aislado porque ydata-profiling exige pandas<3).
+- Auto EDA del consolidado de subcuencas (una capa por reporte):
+  [`eda/subc_hermosillo_hl.html`](eda/subc_hermosillo_hl.html) (red hidrográfica),
+  [`eda/subc_hermosillo_dr.html`](eda/subc_hermosillo_dr.html) (puntos de drenaje),
+  [`eda/subc_hermosillo_subc.html`](eda/subc_hermosillo_subc.html) (unidades de captación),
+  [`eda/subc_hermosillo_ha.html`](eda/subc_hermosillo_ha.html) (cuerpos de agua),
+  [`eda/subc_hermosillo_to.html`](eda/subc_hermosillo_to.html) (topónimos).
 - Funciones comunes: `project_name/eda.py`.
 
 ## Datos faltantes

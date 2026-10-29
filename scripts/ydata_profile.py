@@ -3,6 +3,8 @@
 # dependencies = [
 #     "ydata-profiling==4.18.4",
 #     "pyyaml>=6.0.3",
+#     "pyogrio>=0.11",
+#     "geopandas>=1.1",
 #     "setuptools<81",
 # ]
 # ///
@@ -24,6 +26,7 @@ from pathlib import Path
 import sys
 
 import pandas as pd
+import pyogrio
 import yaml
 from ydata_profiling import ProfileReport
 
@@ -55,24 +58,32 @@ TITLES = {
     "colonias_hermosillo": "Colonias de Hermosillo (DCAH 2025)",
     "publicaciones_aguah": "Publicaciones de Agua de Hermosillo en Facebook",
     "ubicaciones_aviso": "Ubicaciones mencionadas en los avisos",
+    "subc_hermosillo": "Red hidrográfica de las subcuencas de Hermosillo",
+}
+
+# Título legible de cada capa del GeoPackage consolidado.
+LAYER_NAMES = {
+    "hl": "red hidrográfica",
+    "dr": "puntos de drenaje",
+    "subc": "unidades de captación",
+    "ha": "cuerpos de agua",
+    "to": "topónimos",
 }
 
 
 def processed_path(dataset: str) -> Path:
     params = yaml.safe_load((PROJECT_ROOT / "params.yml").read_text())
-    config = params["sources"]["agua_hermosillo"]["datasets"][dataset]["processed"]
-    return PROJECT_ROOT / config["directory"] / config["filename"]
+    for source in params["sources"].values():
+        config = source["datasets"].get(dataset, {}).get("processed")
+        if config:
+            return PROJECT_ROOT / config["directory"] / config["filename"]
+    raise KeyError(f"{dataset} no tiene salida processed en params.yml")
 
 
-def profile(dataset: str) -> None:
-    frame = pd.read_csv(processed_path(dataset), **READ_OPTIONS[dataset])
-    # Con keep_default_na=False las fechas vacías llegan como texto; se convierten aquí.
-    for column in READ_OPTIONS[dataset].get("parse_dates", []):
-        frame[column] = pd.to_datetime(frame[column].replace("", None))
-
+def write_report(frame: pd.DataFrame, name: str, title: str) -> None:
     report = ProfileReport(
         frame,
-        title=TITLES[dataset],
+        title=title,
         explorative=True,
         # Las interacciones (un scatter por par de numéricas) inflan el HTML sin aportar
         # más que la matriz de correlaciones, que los notebooks analizan aparte.
@@ -83,12 +94,34 @@ def profile(dataset: str) -> None:
 
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     JSON_DIR.mkdir(parents=True, exist_ok=True)
-    report.to_file(HTML_DIR / f"{dataset}.html")
-    report.to_file(JSON_DIR / f"{dataset}.json")
+    report.to_file(HTML_DIR / f"{name}.html")
+    report.to_file(JSON_DIR / f"{name}.json")
+
+
+def profile(dataset: str) -> None:
+    path = processed_path(dataset)
+
+    # Un GeoPackage trae varias capas: un reporte por capa, sin la geometría.
+    if path.suffix == ".gpkg":
+        for layer in pyogrio.list_layers(path)[:, 0]:
+            frame = pyogrio.read_dataframe(path, layer=layer, read_geometry=False)
+            write_report(
+                frame,
+                f"{dataset}_{layer}",
+                f"{TITLES[dataset]} — {LAYER_NAMES[layer]}",
+            )
+        return
+
+    frame = pd.read_csv(path, **READ_OPTIONS[dataset])
+    # Con keep_default_na=False las fechas vacías llegan como texto; se convierten aquí.
+    for column in READ_OPTIONS[dataset].get("parse_dates", []):
+        frame[column] = pd.to_datetime(frame[column].replace("", None))
+
+    write_report(frame, dataset, TITLES[dataset])
 
 
 if __name__ == "__main__":
-    datasets = sys.argv[1:] or list(READ_OPTIONS)
+    datasets = sys.argv[1:] or list(TITLES)
     for name in datasets:
         profile(name)
-        print(f"{name}: {HTML_DIR / f'{name}.html'}")
+        print(f"{name}: {HTML_DIR}")
