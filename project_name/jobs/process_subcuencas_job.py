@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
 
 from project_name.config import load_dataset_config, load_logging, load_params
-from project_name.features import build_subcuencas_features
+from project_name.features import SUBC_COLUMNAS_UTILES, build_subcuencas_features
 from project_name.logging import log_execution
 from project_name.constants import REFERENCES_DIR
 
@@ -34,26 +34,39 @@ def process_subcuencas(params: dict) -> None:
     
     rutas_subcuencas = {}
     subcuencas_preview = {}
-    
+    capas_por_subcuenca = {}
+
     for nombre_dataset, dir_data in subcuencas_dir_data.items():
         dataset = load_dataset_config(
             params,
             source="inegi",
             dataset=nombre_dataset,
         )
-        preview = process_unzip_subcuenca(
+        preview, capas = process_unzip_subcuenca(
             dataset=dataset,
             rutas_subcuencas=rutas_subcuencas,
             dir_data=dir_data
         )
 
         subcuencas_preview.update(preview)
+        capas_por_subcuenca.update(capas)
+
+    subc_hermosillo_ds = load_dataset_config(
+        params,
+        source="inegi",
+        dataset="subc_hermosillo",
+    )
+    gpkg_consolidado = (
+        Path(subc_hermosillo_ds["processed"]["directory"])
+        / subc_hermosillo_ds["processed"]["filename"]
+    )
+    escribir_subc_hermosillo(capas_por_subcuenca, gpkg_consolidado)
 
     REFERENCES_DIR.mkdir(parents=True, exist_ok=True)
     generar_preview_subcuencas(subcuencas_preview,REFERENCES_DIR / f"preview_subcuencas.png",)
     
 
-def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str | Path) -> dict:
+def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str | Path) -> tuple[dict, dict]:
     ## Descomprimir el archivo ZIP descargado en data/interim/inegi/.
     raw_file = Path(dataset["raw"]["directory"]) / dataset["raw"]["filename"]
 
@@ -71,12 +84,12 @@ def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str
 
     rutas_subcuencas[dataset["interim"]["key"]] = interim_dir / dir_data
 
-    df = build_subcuencas_features(dataset["interim"]["key"],interim_dir / dir_data)
+    features = build_subcuencas_features(dataset["interim"]["key"],interim_dir / dir_data)
 
     subcuencas_preview = {}
 
     #Crearemos un package por cada subcuenca
-    for nombre_subcuenca, capas in df.items():
+    for nombre_subcuenca, capas in features.items():
 
         processed_dir = Path(dataset["processed"]["directory"]) ##/ dataset["processed"]["filename"]
         processed_dir.mkdir(parents=True, exist_ok=True)
@@ -107,7 +120,40 @@ def process_unzip_subcuenca(dataset: dict, rutas_subcuencas: dict, dir_data: str
                 driver="GPKG"
             )
 
-    return subcuencas_preview
+    return subcuencas_preview, features
+
+def escribir_subc_hermosillo(capas_por_subcuenca: dict, ruta_salida: Path) -> None:
+    """Escribe un solo GeoPackage con las capas de las subcuencas unificadas.
+
+    Cada capa (hl, dr, subc, ha, to) concatena las cuatro subcuencas y agrega
+    la columna `subcuenca` con el dataset de origen de cada fila.
+    """
+    ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+    if ruta_salida.exists():
+        ruta_salida.unlink()
+
+    print(f"Creando GeoPackage consolidado: {ruta_salida}")
+
+    for sufijo in SUBC_COLUMNAS_UTILES:
+        gdfs = [
+            capas[sufijo].assign(subcuenca=nombre)
+            for nombre, capas in capas_por_subcuenca.items()
+        ]
+
+        crs = gdfs[0].crs
+        if any(gdf.crs != crs for gdf in gdfs[1:]):
+            raise ValueError(f"CRS distintos entre subcuencas para la capa {sufijo}")
+
+        merged = gpd.GeoDataFrame(
+            pd.concat(gdfs, ignore_index=True),
+            crs=crs,
+        )
+
+        merged.to_file(
+            ruta_salida,
+            layer=sufijo.lstrip("_"),
+            driver="GPKG"
+        )
 
 def generar_preview_subcuencas(subcuencas_preview: dict,ruta_salida: Path,) -> None:
     """Genera un mapa de preview con las subcuencas y su red hidrográfica."""

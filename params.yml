@@ -179,6 +179,20 @@ sources:
           directory: "data/processed/inegi/subc_r_san_miguel"
           filename: "subc_r_san_miguel.gpkg"
 
+      # Consolidado de las cuatro subcuencas: lo genera process_subcuencas_job a
+      # partir de los datos ya extraídos; no se descarga (no tiene url ni raw).
+      subc_hermosillo:
+        name: "Red hidrográfica de las subcuencas de Hermosillo (consolidado)"
+        description: >-
+          GeoPackage consolidado con las capas hl, dr, subc, ha y to de las cuatro
+          subcuencas (La Manga, La Poza, R. San Miguel, R. Sonora-Hillo). Cada capa
+          concatena las cuatro subcuencas y cada fila lleva la columna `subcuenca`
+          con el dataset de origen: subc_la_manga, subc_la_poza, subc_r_san_miguel
+          o subc_r_son_hillo.
+        processed:
+          directory: "data/processed/inegi/subc_hermosillo"
+          filename: "subc_hermosillo.gpkg"
+
   bachometro:
     name: "Bachómetro Hermosillo"
     base_url: "https://bachometro.hermosillo.gob.mx"

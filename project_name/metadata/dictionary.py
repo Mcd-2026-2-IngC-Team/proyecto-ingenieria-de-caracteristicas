@@ -278,6 +278,26 @@ ROWS_SUBCUENCAS = {
     ),
 }
 
+# Columnas que solo existen en algunos GeoPackages. El consolidado
+# subc_hermosillo.gpkg concatena las cuatro subcuencas y marca el origen de cada
+# fila; los gpkg individuales no la llevan.
+COLUMNAS_EXTRA_GPKG = {
+    "subc_hermosillo": {
+        "subcuenca": (
+            "Subcuenca de origen de la fila: subc_la_manga, subc_la_poza, "
+            "subc_r_san_miguel o subc_r_son_hillo"
+        ),
+    },
+}
+
+
+def descripciones_capa(dataset: str, capa: str) -> dict[str, str]:
+    """Descripciones de una capa de GeoPackage, con las columnas extra del dataset."""
+    return {
+        **DESCRIPTIONS_SUBCUENCAS[capa],
+        **COLUMNAS_EXTRA_GPKG.get(dataset, {}),
+    }
+
 
 def processed_files(params: dict) -> dict[str, Path]:
     """Mapea cada dataset con salida procesada a la ruta de su archivo, según params.yml."""
@@ -364,9 +384,9 @@ def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], c
                 "nulos_pct": column["nulos_pct"],
                 "distintos": column["distintos"],
                 "rango": column["rango"],
-                "descripcion": DESCRIPTIONS_SUBCUENCAS[
-                    column["capa"]
-                ][column["column_name"]],
+                "descripcion": descripciones_capa(
+                    dataset, column["capa"]
+                )[column["column_name"]],
             }
             for column in columns
         ]
@@ -441,7 +461,7 @@ def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool
             validate_columns(
                 dataset,
                 columns,
-                DESCRIPTIONS_SUBCUENCAS[layer],
+                descripciones_capa(dataset, layer),
             )
 
         return rows_by_layer, all_columns

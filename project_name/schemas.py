@@ -261,6 +261,18 @@ TO = pa.DataFrameSchema(
     }
 )
 
+# Columna extra que solo existe en el consolidado subc_hermosillo.gpkg: indica de
+# cuál de las cuatro subcuencas proviene cada fila.
+SUBCUENCAS = ["subc_la_manga", "subc_la_poza", "subc_r_san_miguel", "subc_r_son_hillo"]
+
+SUBCUENCA_COL = {
+    "subcuenca": pa.Column(
+        pa.String,
+        checks=pa.Check.isin(SUBCUENCAS),
+        nullable=False,
+    )
+}
+
 SCHEMAS = {
     "publicaciones_aguah": PUBLICACIONES_AGUAH,
     "colonias_hermosillo": COLONIAS_HERMOSILLO,
@@ -289,4 +301,10 @@ SCHEMAS = {
     "subc_r_san_miguel_subc": SUBC,
     "subc_r_san_miguel_ha": HA,
     "subc_r_san_miguel_to": TO,
+
+    "subc_hermosillo_hl": HL.add_columns(SUBCUENCA_COL),
+    "subc_hermosillo_dr": DR.add_columns(SUBCUENCA_COL),
+    "subc_hermosillo_subc": SUBC.add_columns(SUBCUENCA_COL),
+    "subc_hermosillo_ha": HA.add_columns(SUBCUENCA_COL),
+    "subc_hermosillo_to": TO.add_columns(SUBCUENCA_COL),
 }
