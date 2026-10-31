@@ -1,6 +1,6 @@
 {
   "dataset": "subc_hermosillo",
-  "archivo": "data/processed/inegi/subc_hermosillo/subc_hermosillo.gpkg",
+  "archivo": "data/processed/inegi/hidrografia_hermosillo/subc_hermosillo.gpkg",
   "una_fila_es": {
     "hl": "Un segmento de la red hidrográfica, que representa una sección lineal del cauce o flujo de agua dentro de la subcuenca.",
     "dr": "Un punto de drenaje, que representa una ubicación donde convergen o se conectan líneas de flujo de la red hidrográfica y por donde se concentra o continúa el drenaje del agua.",
@@ -288,7 +288,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-10-29 00:20 UTC",
+    "fecha": "2026-10-31 02:35 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

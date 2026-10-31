@@ -190,8 +190,24 @@ sources:
           con el dataset de origen: subc_la_manga, subc_la_poza, subc_r_san_miguel
           o subc_r_son_hillo.
         processed:
-          directory: "data/processed/inegi/subc_hermosillo"
+          directory: "data/processed/inegi/hidrografia_hermosillo"
           filename: "subc_hermosillo.gpkg"
+
+      # Recorte a la ciudad de Hermosillo: lo genera
+      # process_hidrografia_cd_hermosillo_job a partir del consolidado y de los
+      # asentamientos del DCAH; no se descarga (no tiene url ni raw).
+      hidrografia_cd_hermosillo:
+        name: "Red hidrográfica de la ciudad de Hermosillo"
+        description: >-
+          GeoPackage con las capas hl, dr, subc, ha y to del consolidado
+          subc_hermosillo.gpkg recortadas al área edificada de la ciudad de
+          Hermosillo: la unión de los asentamientos del DCAH con
+          locality_code "0001" (una aproximación del área construida, no el
+          límite administrativo de la localidad). Conserva la columna
+          `subcuenca` con el origen de cada fila.
+        processed:
+          directory: "data/processed/inegi/hidrografia_hermosillo"
+          filename: "hidrografia_cd_hermosillo.gpkg"
 
   bachometro:
     name: "Bachómetro Hermosillo"
