@@ -307,4 +307,10 @@ SCHEMAS = {
     "subc_hermosillo_subc": SUBC.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_ha": HA.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_to": TO.add_columns(SUBCUENCA_COL),
+
+    "hidrografia_cd_hermosillo_hl": HL.add_columns(SUBCUENCA_COL),
+    "hidrografia_cd_hermosillo_dr": DR.add_columns(SUBCUENCA_COL),
+    "hidrografia_cd_hermosillo_subc": SUBC.add_columns(SUBCUENCA_COL),
+    "hidrografia_cd_hermosillo_ha": HA.add_columns(SUBCUENCA_COL),
+    "hidrografia_cd_hermosillo_to": TO.add_columns(SUBCUENCA_COL),
 }

@@ -288,6 +288,12 @@ COLUMNAS_EXTRA_GPKG = {
             "subc_r_san_miguel o subc_r_son_hillo"
         ),
     },
+    "hidrografia_cd_hermosillo": {
+        "subcuenca": (
+            "Subcuenca de origen de la fila: subc_la_manga, subc_la_poza, "
+            "subc_r_san_miguel o subc_r_son_hillo"
+        ),
+    },
 }
 
 
