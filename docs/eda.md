@@ -21,6 +21,9 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
   [`eda/subc_hermosillo_subc.html`](eda/subc_hermosillo_subc.html) (unidades de captación),
   [`eda/subc_hermosillo_ha.html`](eda/subc_hermosillo_ha.html) (cuerpos de agua),
   [`eda/subc_hermosillo_to.html`](eda/subc_hermosillo_to.html) (topónimos).
+- Auto EDA del recorte a la ciudad:
+  [`eda/hidrografia_cd_hermosillo_hl.html`](eda/hidrografia_cd_hermosillo_hl.html)
+  (red hidrográfica urbana, 437 segmentos).
 - Funciones comunes: `project_name/eda.py`.
 
 ## Datos faltantes

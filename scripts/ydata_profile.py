@@ -59,6 +59,13 @@ TITLES = {
     "publicaciones_aguah": "Publicaciones de Agua de Hermosillo en Facebook",
     "ubicaciones_aviso": "Ubicaciones mencionadas en los avisos",
     "subc_hermosillo": "Red hidrográfica de las subcuencas de Hermosillo",
+    "hidrografia_cd_hermosillo": "Red hidrográfica de la ciudad de Hermosillo",
+}
+
+# Capas a perfilar por GeoPackage (sin entrada = todas). Del recorte urbano solo
+# hl tiene filas suficientes para un reporte (437): subc=4, dr=1, ha=16, to=5.
+GPKG_LAYERS = {
+    "hidrografia_cd_hermosillo": ["hl"],
 }
 
 # Título legible de cada capa del GeoPackage consolidado.
@@ -103,7 +110,10 @@ def profile(dataset: str) -> None:
 
     # Un GeoPackage trae varias capas: un reporte por capa, sin la geometría.
     if path.suffix == ".gpkg":
+        only = GPKG_LAYERS.get(dataset)
         for layer in pyogrio.list_layers(path)[:, 0]:
+            if only is not None and layer not in only:
+                continue
             frame = pyogrio.read_dataframe(path, layer=layer, read_geometry=False)
             write_report(
                 frame,
