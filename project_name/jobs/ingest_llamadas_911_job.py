@@ -9,7 +9,7 @@ from project_name.policies.file import FilePolicy, OnExists
 
 @log_execution
 def ingest_llamadas_911(params: dict) -> None:
-    dataset = load_dataset_config(params, source="llamadas911", dataset="llamadas_911")
+    dataset = load_dataset_config(params, source="llamadas911", dataset="llamadas_911_hermosillo")
 
     policy = FilePolicy(on_exists=OnExists(dataset["download"]["on_exists"]))
 

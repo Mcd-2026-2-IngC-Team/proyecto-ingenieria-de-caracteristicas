@@ -13,14 +13,14 @@ from datetime import UTC, datetime
 import json
 from pathlib import Path
 
+import geopandas as gpd
 from loguru import logger
 import pandas as pd
-import geopandas as gpd
 
 from project_name.config import PROJECT_ROOT, load_logging, load_params
 from project_name.constants import REFERENCES_DIR
-from project_name.logging import log_execution
 from project_name.jobs.process_subcuencas_job import leer_capa
+from project_name.logging import log_execution
 
 REFERENCES_JSON_DIR = REFERENCES_DIR / "json"
 
@@ -41,6 +41,10 @@ ROWS = {
     "colonias_hermosillo": "un asentamiento humano de Hermosillo según el DCAH 2025 del INEGI",
     "ubicaciones_aviso": "un lugar mencionado en una publicación de Agua de Hermosillo",
     "baches": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
+    "llamadas_911_hermosillo": (
+        "una llamada al 911 en Hermosillo clasificada en un tipo de incidente "
+        "relacionado con inundación, fenómeno hidrometeorológico, drenaje, agua o terreno"
+    ),
 }
 
 # Columnas que deben leerse como fecha: pandas no las infiere solo desde un CSV, así
@@ -50,6 +54,7 @@ DATE_COLUMNS = {
     "colonias_hermosillo": [],
     "ubicaciones_aviso": [],
     "baches": ["date"],
+    "llamadas_911_hermosillo": ["fecha"],
 }
 
 # Claves que el CSV guardaría como número, perdiendo los ceros a la izquierda.
@@ -206,7 +211,26 @@ DESCRIPTIONS = {
         "colonia_match": "Indicador booleano que señala si colonia_original y settlement_name coinciden después de normalizar ambos nombres; es nulo cuando no existen ambos valores para realizar la comparación",
         "colonia": "Valor final asignado a la ubicación del reporte. Prioriza colonia_original; si no existe, utiliza settlement_name obtenido espacialmente y, si ambos faltan, utiliza contexto_ubicacion",
         "colonia_source": "Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso"
-    }
+    },
+    "llamadas_911_hermosillo": {
+        "colonia": (
+            "Colonia donde se reportó el incidente, en mayúsculas y sin catálogo "
+            "normalizado; texto libre del operador del 911, incluye valores "
+            "genéricos como SIN COLONIA"
+        ),
+        "tipo_incidente": (
+            "Clasificación del motivo de la llamada; solo los tipos relacionados "
+            "con inundación o agua de la selección manual sobre el catálogo completo "
+            "(34 valores de la fuente, normalizados a 32 tipos canónicos)"
+        ),
+        "fecha": "Día del incidente, de 2018-01-01 a 2025-09-30",
+        "hora": "Hora del día del incidente, entera de 0 a 23",
+        "grupo_incidente": (
+            "Grupo de la selección manual de tipos de incidente: inundacion_directa, "
+            "fenomeno_hidrometeorologico, drenaje_y_red_de_agua, "
+            "ahogamiento_acuaticos o terreno"
+        ),
+    },
 }
 
 DESCRIPTIONS_SUBCUENCAS = {

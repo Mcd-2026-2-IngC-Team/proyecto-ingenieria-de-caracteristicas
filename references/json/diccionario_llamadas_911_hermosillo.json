@@ -1,0 +1,54 @@
+{
+  "dataset": "llamadas_911_hermosillo",
+  "archivo": "data/processed/llamadas_911/llamadas_911_hermosillo.csv",
+  "una_fila_es": "una llamada al 911 en Hermosillo clasificada en un tipo de incidente relacionado con inundación, fenómeno hidrometeorológico, drenaje, agua o terreno",
+  "filas": 4176,
+  "columnas": [
+    {
+      "nombre": "colonia",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 643,
+      "rango": null,
+      "descripcion": "Colonia donde se reportó el incidente, en mayúsculas y sin catálogo normalizado; texto libre del operador del 911, incluye valores genéricos como SIN COLONIA"
+    },
+    {
+      "nombre": "tipo_incidente",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 32,
+      "rango": null,
+      "descripcion": "Clasificación del motivo de la llamada; solo los tipos relacionados con inundación o agua de la selección manual sobre el catálogo completo (34 valores de la fuente, normalizados a 32 tipos canónicos)"
+    },
+    {
+      "nombre": "fecha",
+      "tipo": "datetime64[us]",
+      "nulos_pct": 0.0,
+      "distintos": 1467,
+      "rango": "2018-01-05 – 2025-09-30",
+      "descripcion": "Día del incidente, de 2018-01-01 a 2025-09-30"
+    },
+    {
+      "nombre": "hora",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 24,
+      "rango": "0 – 23",
+      "descripcion": "Hora del día del incidente, entera de 0 a 23"
+    },
+    {
+      "nombre": "grupo_incidente",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 5,
+      "rango": null,
+      "descripcion": "Grupo de la selección manual de tipos de incidente: inundacion_directa, fenomeno_hidrometeorologico, drenaje_y_red_de_agua, ahogamiento_acuaticos o terreno"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-11-02 06:58 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}
