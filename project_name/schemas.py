@@ -164,7 +164,7 @@ HL = pa.DataFrameSchema(
             ((df["ENABLED"] == 0) & (df["ID_DRENA"] == 0))
             | ((df["ENABLED"] == 1) & (df["ID_DRENA"] >= 1))
         )
-    )
+    ),
 )
 
 
@@ -184,7 +184,7 @@ DR = pa.DataFrameSchema(
             pa.String,
             nullable=False,
         ),
-        # ID_DRENA=0 aparece exclusivamente en segmentos deshabilitados (ENABLED=0), 
+        # ID_DRENA=0 aparece exclusivamente en segmentos deshabilitados (ENABLED=0),
         # y todos los segmentos deshabilitados tienen ID_DRENA=0.
         "ID_DRENA": pa.Column(
             checks=pa.Check.greater_than_or_equal_to(1),
@@ -277,37 +277,31 @@ SCHEMAS = {
     "publicaciones_aguah": PUBLICACIONES_AGUAH,
     "colonias_hermosillo": COLONIAS_HERMOSILLO,
     "ubicaciones_aviso": UBICACIONES_AVISO,
-
     "subc_la_manga_hl": HL,
     "subc_la_manga_dr": DR,
     "subc_la_manga_subc": SUBC,
     "subc_la_manga_ha": HA,
     "subc_la_manga_to": TO,
-
     "subc_la_poza_hl": HL,
     "subc_la_poza_dr": DR,
     "subc_la_poza_subc": SUBC,
     "subc_la_poza_ha": HA,
     "subc_la_poza_to": TO,
-
     "subc_r_son_hillo_hl": HL,
     "subc_r_son_hillo_dr": DR,
     "subc_r_son_hillo_subc": SUBC,
     "subc_r_son_hillo_ha": HA,
     "subc_r_son_hillo_to": TO,
-
     "subc_r_san_miguel_hl": HL,
     "subc_r_san_miguel_dr": DR,
     "subc_r_san_miguel_subc": SUBC,
     "subc_r_san_miguel_ha": HA,
     "subc_r_san_miguel_to": TO,
-
     "subc_hermosillo_hl": HL.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_dr": DR.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_subc": SUBC.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_ha": HA.add_columns(SUBCUENCA_COL),
     "subc_hermosillo_to": TO.add_columns(SUBCUENCA_COL),
-
     "hidrografia_cd_hermosillo_hl": HL.add_columns(SUBCUENCA_COL),
     "hidrografia_cd_hermosillo_dr": DR.add_columns(SUBCUENCA_COL),
     "hidrografia_cd_hermosillo_subc": SUBC.add_columns(SUBCUENCA_COL),

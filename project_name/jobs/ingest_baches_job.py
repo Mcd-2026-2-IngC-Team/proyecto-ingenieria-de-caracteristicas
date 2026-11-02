@@ -10,6 +10,7 @@ from project_name.metadata.source import write_source_description
 
 current_year = datetime.now().year
 
+
 @log_execution
 def ingest_bachometro(params: dict) -> None:
     dataset = load_dataset_config(
@@ -32,13 +33,10 @@ def ingest_bachometro(params: dict) -> None:
 
         policy = FilePolicy(on_exists=on_exists)
 
-        client = BachometroClient(
-            http_client=HttpClient(file_policy=policy)
-        )
+        client = BachometroClient(http_client=HttpClient(file_policy=policy))
 
-        destination = (
-            Path(dataset["raw"]["directory"])
-            / dataset["raw"]["filename"].format(year=year)
+        destination = Path(dataset["raw"]["directory"]) / dataset["raw"]["filename"].format(
+            year=year
         )
 
         client.download_year(

@@ -210,7 +210,7 @@ DESCRIPTIONS = {
         "contexto_ubicacion": "Clasificación espacial del reporte según su relación con los polígonos de asentamientos, por ejemplo 'dentro_asentamiento', 'cerca_asentamiento' o 'probable_carretera_o_zona_rural'",
         "colonia_match": "Indicador booleano que señala si colonia_original y settlement_name coinciden después de normalizar ambos nombres; es nulo cuando no existen ambos valores para realizar la comparación",
         "colonia": "Valor final asignado a la ubicación del reporte. Prioriza colonia_original; si no existe, utiliza settlement_name obtenido espacialmente y, si ambos faltan, utiliza contexto_ubicacion",
-        "colonia_source": "Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso"
+        "colonia_source": "Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso",
     },
     "llamadas_911_hermosillo": {
         "colonia": (
@@ -243,7 +243,6 @@ DESCRIPTIONS_SUBCUENCAS = {
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
         "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },
-
     "dr": {
         "geometry": "Geometría puntual del punto de drenaje",
         "ID": "Identificador único del punto de drenaje",
@@ -252,20 +251,17 @@ DESCRIPTIONS_SUBCUENCAS = {
         "ID_DRENA": "Identificador del punto de drenaje",
         "ARBSUM": "Sumatoria de las longitudes de las líneas de flujo aguas arriba que confluyen en el punto de drenaje",
     },
-
     "subc": {
         "geometry": "Geometría de la unidad de captación a nivel subcuenca",
         "ID": "Identificador único de la unidad de captación",
         "CVE_SUBCUE": "Clave de la Subcuenca Hidrográfica",
     },
-
     "ha": {
         "geometry": "Geometría poligonal del cuerpo de agua",
         "IDBD": "Identificador asociado al objeto geográfico en la base de datos",
         "FC": "Código de clasificación del objeto geográfico",
         "CONDICION": "Condición de permanencia del cuerpo de agua",
     },
-
     "to": {
         "geometry": "Geometría puntual del elemento geográfico",
         "FC": "Código de clasificación del elemento geográfico",
@@ -347,7 +343,9 @@ def _format_range(non_null: pd.Series) -> str:
     return f"{minimum} – {maximum}"
 
 
-def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tuple[int, list[dict]]:
+def profile(
+    processed_file: Path, dataset: str, layer: str | None = None
+) -> tuple[int, list[dict]]:
     if processed_file.suffix == ".gpkg":
         df = leer_capa(processed_file, layer)
     else:
@@ -370,7 +368,7 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
                 }
             )
             continue
-    
+
         non_null = series.dropna()
         is_text = pd.api.types.is_string_dtype(series.dtype)
         columns.append(
@@ -388,18 +386,22 @@ def profile(processed_file: Path, dataset: str, layer: str | None = None) -> tup
     return len(df), columns
 
 
-def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], columns: list[dict]) -> dict:
+def document(
+    dataset: str, processed_file: Path, n_rows: int | dict[str, int], columns: list[dict]
+) -> dict:
     """Construye el diccionario de un dataset CSV o de un GeoPackage."""
 
-    #descriptions = DESCRIPTIONS[dataset]
-    #row_description = ROWS[dataset]
+    # descriptions = DESCRIPTIONS[dataset]
+    # row_description = ROWS[dataset]
 
     shown = (
-        processed_file.relative_to(PROJECT_ROOT) if processed_file.is_relative_to(PROJECT_ROOT) else processed_file
+        processed_file.relative_to(PROJECT_ROOT)
+        if processed_file.is_relative_to(PROJECT_ROOT)
+        else processed_file
     )
 
-    # Convertir explícitamente a formato POSIX, porque queremos 
-    # que los diccionarios sean reproducibles independientemente 
+    # Convertir explícitamente a formato POSIX, porque queremos
+    # que los diccionarios sean reproducibles independientemente
     # de si se generan en Windows o Linux
     shown = shown.as_posix()
 
@@ -414,9 +416,7 @@ def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], c
                 "nulos_pct": column["nulos_pct"],
                 "distintos": column["distintos"],
                 "rango": column["rango"],
-                "descripcion": descripciones_capa(
-                    dataset, column["capa"]
-                )[column["column_name"]],
+                "descripcion": descripciones_capa(dataset, column["capa"])[column["column_name"]],
             }
             for column in columns
         ]
@@ -430,9 +430,7 @@ def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], c
                 "nulos_pct": column["nulos_pct"],
                 "distintos": column["distintos"],
                 "rango": column["rango"],
-                "descripcion": DESCRIPTIONS[
-                    dataset
-                ][column["column_name"]],
+                "descripcion": DESCRIPTIONS[dataset][column["column_name"]],
             }
             for column in columns
         ]
@@ -455,7 +453,11 @@ def document(dataset: str, processed_file: Path, n_rows: int | dict[str, int], c
     return documented
 
 
-def write_csv(destination: Path, columns: list[dict],is_geopackage: bool = False,) -> None:
+def write_csv(
+    destination: Path,
+    columns: list[dict],
+    is_geopackage: bool = False,
+) -> None:
     fieldnames = ["nombre", "tipo", "nulos_pct", "distintos", "rango", "descripcion"]
 
     if is_geopackage:
@@ -466,11 +468,15 @@ def write_csv(destination: Path, columns: list[dict],is_geopackage: bool = False
         writer.writeheader()
         writer.writerows(columns)
 
-def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool,) -> tuple[int | dict[str, int], list[dict]]:
+
+def profile_processed_file(
+    dataset: str,
+    processed_file: Path,
+    is_geopackage: bool,
+) -> tuple[int | dict[str, int], list[dict]]:
     """Perfila y valida un archivo CSV o un GeoPackage procesado."""
 
     if is_geopackage:
-
         layers = gpd.list_layers(processed_file)["name"].tolist()
 
         all_columns = []
@@ -478,8 +484,10 @@ def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool
 
         for layer in layers:
             if layer not in DESCRIPTIONS_SUBCUENCAS:
-                raise ValueError(f"{dataset}: falta describir sus columnas {layer} en dictionary.py")
-                
+                raise ValueError(
+                    f"{dataset}: falta describir sus columnas {layer} en dictionary.py"
+                )
+
             n_rows, columns = profile(processed_file, dataset, layer)
             rows_by_layer[layer] = n_rows
 
@@ -498,7 +506,7 @@ def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool
 
     if dataset not in DESCRIPTIONS:
         raise ValueError(f"{dataset}: falta describir sus columnas en dictionary.py")
-    
+
     n_rows, columns = profile(processed_file, dataset)
 
     validate_columns(
@@ -508,6 +516,7 @@ def profile_processed_file(dataset: str,processed_file: Path,is_geopackage: bool
     )
 
     return n_rows, columns
+
 
 @log_execution
 def build_dictionaries(params: dict) -> list[Path]:
@@ -525,9 +534,9 @@ def build_dictionaries(params: dict) -> list[Path]:
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
         is_geopackage = processed_file.suffix == ".gpkg"
 
-        n_rows, columns = profile_processed_file(dataset,processed_file,is_geopackage)
+        n_rows, columns = profile_processed_file(dataset, processed_file, is_geopackage)
 
-        documented = document(dataset,processed_file,n_rows,columns)
+        documented = document(dataset, processed_file, n_rows, columns)
 
         json_destination = REFERENCES_JSON_DIR / f"diccionario_{dataset}.json"
         json_destination.write_text(
@@ -535,18 +544,21 @@ def build_dictionaries(params: dict) -> list[Path]:
         )
 
         csv_destination = REFERENCES_DIR / f"{dataset}.csv"
-        write_csv(csv_destination, documented["columnas"],is_geopackage)
+        write_csv(csv_destination, documented["columnas"], is_geopackage)
 
         n_columns = len(documented["columnas"])
 
-        logger.info(
-            "Documented {} columns → {}, {}", n_columns, csv_destination, json_destination
-        )
+        logger.info("Documented {} columns → {}, {}", n_columns, csv_destination, json_destination)
         written += [csv_destination, json_destination]
 
     return written
 
-def validate_columns(dataset: str,columns: list[dict],descriptions: dict[str, str],) -> None:
+
+def validate_columns(
+    dataset: str,
+    columns: list[dict],
+    descriptions: dict[str, str],
+) -> None:
     """Valida que las columnas tengan una descripción y que no sobren descripciones."""
 
     column_names = {column["column_name"] for column in columns}
@@ -560,6 +572,7 @@ def validate_columns(dataset: str,columns: list[dict],descriptions: dict[str, st
             f"{dataset}: columnas sin describir: {sorted(undocumented)}; "
             f"descritas pero inexistentes: {sorted(missing)}"
         )
+
 
 def main() -> None:
     params = load_params()

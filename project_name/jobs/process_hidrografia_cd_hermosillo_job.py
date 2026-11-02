@@ -17,11 +17,11 @@ CIUDAD_LOCALIDAD = "0001"
 def process_hidrografia_cd_hermosillo(params: dict) -> None:
     subc_ds = load_dataset_config(params, source="inegi", dataset="subc_hermosillo")
     ciudad_ds = load_dataset_config(params, source="inegi", dataset="hidrografia_cd_hermosillo")
-    colonias_ds = load_dataset_config(params, source="agua_hermosillo", dataset="colonias_hermosillo")
-
-    gpkg_consolidado = (
-        Path(subc_ds["processed"]["directory"]) / subc_ds["processed"]["filename"]
+    colonias_ds = load_dataset_config(
+        params, source="agua_hermosillo", dataset="colonias_hermosillo"
     )
+
+    gpkg_consolidado = Path(subc_ds["processed"]["directory"]) / subc_ds["processed"]["filename"]
     # El gpkg de colonias lo escribe process_colonias_hermosillo_job junto al CSV.
     colonias_gpkg = (
         Path(colonias_ds["processed"]["directory"]) / colonias_ds["processed"]["filename"]
@@ -32,9 +32,7 @@ def process_hidrografia_cd_hermosillo(params: dict) -> None:
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
 
     colonias = gpd.read_file(colonias_gpkg)
-    ciudad = colonias.loc[
-        colonias["locality_code"] == CIUDAD_LOCALIDAD, "geometry"
-    ].union_all()
+    ciudad = colonias.loc[colonias["locality_code"] == CIUDAD_LOCALIDAD, "geometry"].union_all()
     logger.info(
         "City polygon from {} settlements (locality_code {})",
         int((colonias["locality_code"] == CIUDAD_LOCALIDAD).sum()),

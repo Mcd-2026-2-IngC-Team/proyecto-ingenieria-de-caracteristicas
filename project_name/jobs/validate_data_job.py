@@ -10,7 +10,7 @@ from project_name.jobs.process_subcuencas_job import leer_capa
 from project_name.logging import log_execution
 from project_name.metadata.dictionary import processed_files, read_processed_csv
 from project_name.schemas import SCHEMAS
-from project_name.jobs.process_subcuencas_job import leer_capa,get_layer
+from project_name.jobs.process_subcuencas_job import leer_capa, get_layer
 
 
 def _log_failures(dataset: str, errors: pa.errors.SchemaErrors) -> None:
@@ -32,7 +32,6 @@ def _log_failures(dataset: str, errors: pa.errors.SchemaErrors) -> None:
 def validate_data(params: dict) -> None:
     failed = []
     for dataset, processed_file in processed_files(params).items():
-        
         if not processed_file.exists():
             raise FileNotFoundError(f"{processed_file} not found: run `make data` first")
 
@@ -58,19 +57,19 @@ def validate_data(params: dict) -> None:
                     _log_failures(schema_dataset, errors)
                     failed.append(schema_dataset)
                     continue
-                    
+
                 logger.info(
                     "{}: {} rows pass the quality rules",
                     schema_dataset,
                     len(df),
                 )
-    
+
         else:
             schema = SCHEMAS.get(dataset)
             if schema is None:
                 logger.info("No quality rules for {}, skipped", dataset)
                 continue
-            
+
             df = read_processed_csv(processed_file, dataset)
 
         try:

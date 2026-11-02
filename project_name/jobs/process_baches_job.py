@@ -18,23 +18,16 @@ def process_bachometro(params: dict) -> None:
 
     processed_directory = Path(dataset["processed"]["directory"])
 
-    output_file = (
-        processed_directory
-        / dataset["processed"]["filename"]
-    )
+    output_file = processed_directory / dataset["processed"]["filename"]
 
     dataframes = []
 
     for year in dataset["years"]:
-        input_file = (
-            raw_directory
-            / dataset["raw"]["filename"].format(year=year)
-        )
+        input_file = raw_directory / dataset["raw"]["filename"].format(year=year)
 
         if not input_file.exists():
             raise FileNotFoundError(
-                f"No se encontró el archivo de Bachómetro para {year}: "
-                f"{input_file}"
+                f"No se encontró el archivo de Bachómetro para {year}: {input_file}"
             )
 
         # Leer JSON generado por el ingest job
@@ -44,23 +37,14 @@ def process_bachometro(params: dict) -> None:
         df_year["year"] = year
 
         # Conversiones básicas de tipos
-        df_year["latitude"] = pd.to_numeric(
-            df_year["latitude"]
-        )
+        df_year["latitude"] = pd.to_numeric(df_year["latitude"])
 
-        df_year["longitude"] = pd.to_numeric(
-            df_year["longitude"]
-        )
+        df_year["longitude"] = pd.to_numeric(df_year["longitude"])
 
-        df_year["date"] = pd.to_datetime(
-            df_year["date"]
-        )
+        df_year["date"] = pd.to_datetime(df_year["date"])
 
         # Fecha en formato mexicano
-        df_year["date_mx"] = (
-            df_year["date"]
-            .dt.strftime("%d/%m/%Y")
-        )
+        df_year["date_mx"] = df_year["date"].dt.strftime("%d/%m/%Y")
 
         dataframes.append(df_year)
 

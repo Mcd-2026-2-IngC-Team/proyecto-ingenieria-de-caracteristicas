@@ -23,6 +23,7 @@ SHAREPOINT_URL = (
 # Descargar archivo de colonias
 # ============================================================
 
+
 def download_colonias(
     url: str,
     output_path: Path,
@@ -60,6 +61,7 @@ def download_colonias(
 # Parsear neighborhoods
 # ============================================================
 
+
 def parse_neighborhoods(value):
     """
     Convierte el campo neighborhoods en una lista de IDs.
@@ -88,9 +90,7 @@ def parse_neighborhoods(value):
             return [parsed]
 
         except (ValueError, SyntaxError):
-            print(
-                f"No se pudo interpretar neighborhoods: {value}"
-            )
+            print(f"No se pudo interpretar neighborhoods: {value}")
             return []
 
     return [value]
@@ -99,6 +99,7 @@ def parse_neighborhoods(value):
 # ============================================================
 # Obtener colonias
 # ============================================================
+
 
 def get_colonias(
     neighborhoods,
@@ -125,16 +126,13 @@ def get_colonias(
     colonias = []
 
     for neighborhood_id in neighborhoods:
-
         try:
             neighborhood_id = int(neighborhood_id)
 
         except (ValueError, TypeError):
             continue
 
-        colonia = colonia_lookup.get(
-            neighborhood_id
-        )
+        colonia = colonia_lookup.get(neighborhood_id)
 
         # Ignorar IDs que no tengan colonia
         if colonia is None or pd.isna(colonia):
@@ -156,6 +154,7 @@ def get_colonias(
 # Job principal
 # ============================================================
 
+
 def main():
 
     # --------------------------------------------------------
@@ -170,32 +169,19 @@ def main():
         dataset="baches",
     )
 
-    raw_directory = Path(
-        dataset["raw"]["directory"]
-    )
+    raw_directory = Path(dataset["raw"]["directory"])
 
-    processed_directory = Path(
-        dataset["processed"]["directory"]
-    )
+    processed_directory = Path(dataset["processed"]["directory"])
 
     # --------------------------------------------------------
     # Definir archivos
     # --------------------------------------------------------
 
-    BACHES_CSV = (
-        processed_directory
-        / "baches_hermosillo.csv"
-    )
+    BACHES_CSV = processed_directory / "baches_hermosillo.csv"
 
-    COLONIAS_CSV = (
-        raw_directory
-        / "relacion_colonia_baches_id.csv"
-    )
+    COLONIAS_CSV = raw_directory / "relacion_colonia_baches_id.csv"
 
-    OUTPUT_CSV = (
-        processed_directory
-        / "baches_hermosillo_con_colonias.csv"
-    )
+    OUTPUT_CSV = processed_directory / "baches_hermosillo_con_colonias.csv"
 
     # --------------------------------------------------------
     # Descargar archivo de colonias desde SharePoint
@@ -212,40 +198,26 @@ def main():
 
     print()
     print(f"Leyendo baches: {BACHES_CSV}")
-    print(
-        f"Leyendo relación de colonias: "
-        f"{colonias_csv}"
-    )
+    print(f"Leyendo relación de colonias: {colonias_csv}")
 
-    baches_df = pd.read_csv(
-        BACHES_CSV
-    )
+    baches_df = pd.read_csv(BACHES_CSV)
 
-    colonias_df = pd.read_csv(
-        colonias_csv
-    )
+    colonias_df = pd.read_csv(colonias_csv)
 
     # --------------------------------------------------------
     # Validaciones
     # --------------------------------------------------------
 
     if "neighborhoods" not in baches_df.columns:
-        raise ValueError(
-            "baches_hermosillo.csv no contiene "
-            "la columna 'neighborhoods'."
-        )
+        raise ValueError("baches_hermosillo.csv no contiene la columna 'neighborhoods'.")
 
     if "neighborhood_id" not in colonias_df.columns:
         raise ValueError(
-            "relacion_colonia_baches_id.csv no contiene "
-            "la columna 'neighborhood_id'."
+            "relacion_colonia_baches_id.csv no contiene la columna 'neighborhood_id'."
         )
 
     if "colonia" not in colonias_df.columns:
-        raise ValueError(
-            "relacion_colonia_baches_id.csv no contiene "
-            "la columna 'colonia'."
-        )
+        raise ValueError("relacion_colonia_baches_id.csv no contiene la columna 'colonia'.")
 
     # --------------------------------------------------------
     # Limpiar IDs
@@ -256,14 +228,9 @@ def main():
         errors="coerce",
     )
 
-    colonias_df = colonias_df.dropna(
-        subset=["neighborhood_id"]
-    )
+    colonias_df = colonias_df.dropna(subset=["neighborhood_id"])
 
-    colonias_df["neighborhood_id"] = (
-        colonias_df["neighborhood_id"]
-        .astype(int)
-    )
+    colonias_df["neighborhood_id"] = colonias_df["neighborhood_id"].astype(int)
 
     # --------------------------------------------------------
     # Crear lookup
@@ -275,37 +242,24 @@ def main():
     # }
     # --------------------------------------------------------
 
-    colonia_lookup = (
-        colonias_df
-        .set_index("neighborhood_id")["colonia"]
-        .to_dict()
-    )
+    colonia_lookup = colonias_df.set_index("neighborhood_id")["colonia"].to_dict()
 
-    print(
-        f"Colonias disponibles: "
-        f"{len(colonia_lookup)}"
-    )
+    print(f"Colonias disponibles: {len(colonia_lookup)}")
 
     # --------------------------------------------------------
     # Parsear neighborhoods
     # --------------------------------------------------------
 
-    neighborhoods_parsed = (
-        baches_df["neighborhoods"]
-        .apply(parse_neighborhoods)
-    )
+    neighborhoods_parsed = baches_df["neighborhoods"].apply(parse_neighborhoods)
 
     # --------------------------------------------------------
     # Crear columna colonia
     # --------------------------------------------------------
 
-    baches_df["colonia"] = (
-        neighborhoods_parsed
-        .apply(
-            lambda ids: get_colonias(
-                ids,
-                colonia_lookup,
-            )
+    baches_df["colonia"] = neighborhoods_parsed.apply(
+        lambda ids: get_colonias(
+            ids,
+            colonia_lookup,
         )
     )
 
@@ -315,26 +269,14 @@ def main():
 
     total = len(baches_df)
 
-    con_colonia = (
-        baches_df["colonia"]
-        .ne("")
-        .sum()
-    )
+    con_colonia = baches_df["colonia"].ne("").sum()
 
-    sin_colonia = (
-        total - con_colonia
-    )
+    sin_colonia = total - con_colonia
 
     print()
     print(f"Total de baches: {total}")
-    print(
-        f"Baches con colonia: "
-        f"{con_colonia}"
-    )
-    print(
-        f"Baches sin colonia: "
-        f"{sin_colonia}"
-    )
+    print(f"Baches con colonia: {con_colonia}")
+    print(f"Baches sin colonia: {sin_colonia}")
 
     # --------------------------------------------------------
     # Guardar resultado
@@ -352,10 +294,7 @@ def main():
     )
 
     print()
-    print(
-        f"Archivo generado: "
-        f"{OUTPUT_CSV}"
-    )
+    print(f"Archivo generado: {OUTPUT_CSV}")
 
 
 # ============================================================

@@ -10,8 +10,8 @@ from project_name.policies.file import FilePolicy, OnExists
 
 @log_execution
 def ingest_subcuencas(params: dict) -> None:
-# Ingestión de subcuencas de Sonora. Cada subcuenca se descarga de manera independiente en data/raw/inegi/. 
-# Deben estar definidas en params.yml bajo sources.inegi.subcuencas.
+    # Ingestión de subcuencas de Sonora. Cada subcuenca se descarga de manera independiente en data/raw/inegi/.
+    # Deben estar definidas en params.yml bajo sources.inegi.subcuencas.
     subcuencas = [
         "subc_la_manga",
         "subc_la_poza",
@@ -40,8 +40,8 @@ def ingest_subcuenca(params: dict, dataset: dict) -> None:
     client = InegiClient(http_client=HttpClient(file_policy=policy))
 
     client.download(
-            url=dataset["url"],
-            destination=destination,
+        url=dataset["url"],
+        destination=destination,
     )
 
     write_source_description(

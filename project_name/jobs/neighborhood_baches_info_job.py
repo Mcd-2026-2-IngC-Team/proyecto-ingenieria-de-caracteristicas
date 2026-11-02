@@ -25,15 +25,9 @@ dataset = load_dataset_config(
 )
 processed_directory = Path(dataset["processed"]["directory"])
 
-INPUT_CSV = (
-    processed_directory
-    / "baches_hermosillo.csv"
-)
+INPUT_CSV = processed_directory / "baches_hermosillo.csv"
 
-OUTPUT_CSV = (
-    processed_directory
-    / "relacion_colonia_baches_id.csv"
-)
+OUTPUT_CSV = processed_directory / "relacion_colonia_baches_id.csv"
 
 print("CWD:", Path.cwd())
 print("INPUT:", INPUT_CSV)
@@ -55,6 +49,7 @@ XSRF_TOKEN = "eyJpdiI6IlZGa1pId0lYYnBCaldXQzNHbFdIYVE9PSIsInZhbHVlIjoiTjF0SVJtYW
 # ============================================================
 # Crear sesión HTTP
 # ============================================================
+
 
 def create_session():
     """
@@ -82,6 +77,7 @@ def create_session():
 # ============================================================
 # Parsear HTML
 # ============================================================
+
 
 def parse_neighborhood_info(neighborhood_id, html):
     """
@@ -134,11 +130,7 @@ def parse_neighborhood_info(neighborhood_id, html):
         # México
 
         elif "," in text and "Colonias:" not in text:
-
-            parts = [
-                part.strip()
-                for part in text.split(",")
-            ]
+            parts = [part.strip() for part in text.split(",")]
 
             if len(parts) >= 1:
                 calle = parts[0]
@@ -157,6 +149,7 @@ def parse_neighborhood_info(neighborhood_id, html):
 # ============================================================
 # Consultar información de un ID
 # ============================================================
+
 
 def get_neighborhood_info(session, neighborhood_id):
     """
@@ -189,6 +182,7 @@ def get_neighborhood_info(session, neighborhood_id):
 # Extraer IDs del CSV
 # ============================================================
 
+
 def extract_neighborhood_ids(df):
     """
     Lee la columna 'neighborhoods' y obtiene todos los IDs.
@@ -207,13 +201,11 @@ def extract_neighborhood_ids(df):
     neighborhood_ids = set()
 
     for value in df["neighborhoods"].dropna():
-
         # ----------------------------------------
         # Si viene como string
         # ----------------------------------------
 
         if isinstance(value, str):
-
             try:
                 parsed = ast.literal_eval(value)
 
@@ -224,7 +216,6 @@ def extract_neighborhood_ids(df):
                     neighborhood_ids.add(parsed)
 
             except (ValueError, SyntaxError):
-
                 # Por si el valor es simplemente:
                 # "1224"
 
@@ -232,17 +223,13 @@ def extract_neighborhood_ids(df):
                     neighborhood_ids.add(int(value))
 
                 except ValueError:
-                    print(
-                        f"No se pudo interpretar "
-                        f"neighborhoods: {value}"
-                    )
+                    print(f"No se pudo interpretar neighborhoods: {value}")
 
         # ----------------------------------------
         # Si ya es un número
         # ----------------------------------------
 
         elif isinstance(value, (int, float)):
-
             neighborhood_ids.add(int(value))
 
         # ----------------------------------------
@@ -250,19 +237,16 @@ def extract_neighborhood_ids(df):
         # ----------------------------------------
 
         elif isinstance(value, (list, tuple, set)):
-
             neighborhood_ids.update(value)
 
     # Convertimos todo a int y ordenamos
-    return sorted(
-        int(neighborhood_id)
-        for neighborhood_id in neighborhood_ids
-    )
+    return sorted(int(neighborhood_id) for neighborhood_id in neighborhood_ids)
 
 
 # ============================================================
 # Job
 # ============================================================
+
 
 def main():
 
@@ -275,10 +259,7 @@ def main():
     df = pd.read_csv(INPUT_CSV)
 
     if "neighborhoods" not in df.columns:
-        raise ValueError(
-            "El CSV no contiene una columna "
-            "llamada 'neighborhoods'."
-        )
+        raise ValueError("El CSV no contiene una columna llamada 'neighborhoods'.")
 
     # --------------------------------------------------------
     # Obtener IDs únicos
@@ -288,10 +269,7 @@ def main():
 
     total = len(neighborhood_ids)
 
-    print(
-        f"Se encontraron {total} "
-        "neighborhood IDs únicos."
-    )
+    print(f"Se encontraron {total} neighborhood IDs únicos.")
 
     # --------------------------------------------------------
     # Crear sesión
@@ -309,14 +287,9 @@ def main():
         neighborhood_ids,
         start=1,
     ):
-
-        print(
-            f"[{index}/{total}] "
-            f"Procesando ID {neighborhood_id}"
-        )
+        print(f"[{index}/{total}] Procesando ID {neighborhood_id}")
 
         try:
-
             info = get_neighborhood_info(
                 session,
                 neighborhood_id,
@@ -331,7 +304,6 @@ def main():
             # )
 
         except requests.RequestException as error:
-
             # print(
             #     f"    Error obteniendo ID "
             #     f"{neighborhood_id}: {error}"

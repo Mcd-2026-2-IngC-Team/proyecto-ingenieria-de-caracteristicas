@@ -48,19 +48,11 @@ def main() -> None:
         dataset="baches",
     )
 
-    processed_directory = Path(
-        dataset["processed"]["directory"]
-    )
+    processed_directory = Path(dataset["processed"]["directory"])
 
-    input_file = (
-        processed_directory
-        / "relacion_colonia_baches_id.csv"
-    )
+    input_file = processed_directory / "relacion_colonia_baches_id.csv"
 
-    output_file = (
-        processed_directory
-        / "relacion_colonia_baches_id_clean.csv"
-    )
+    output_file = processed_directory / "relacion_colonia_baches_id_clean.csv"
 
     clean_neighborhoods(
         input_file=input_file,
