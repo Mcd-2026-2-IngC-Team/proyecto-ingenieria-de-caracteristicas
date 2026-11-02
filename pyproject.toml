@@ -31,6 +31,7 @@ dependencies = [
     "pyod>=3.6",
     "pyogrio>=0.11",
     "pytest",
+    "python-calamine>=0.9.0",
     "python-dotenv",
     # >=6.0.2 (not 6.0.3): paddleocr>=3.7 (in the "ocr" extra) pins pyyaml==6.0.2 exactly.
     "pyyaml>=6.0.2",

@@ -297,7 +297,7 @@ sources:
     license: "CC-BY-4.0"
 
     datasets:
-      llamadas_911:
+      llamadas_911_hermosillo:
         name: "Registro de llamadas al 911, Hermosillo 2018–2025"
         url: "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025/resolve/main/213.xlsx"
         description: >-
@@ -312,6 +312,10 @@ sources:
         raw:
           directory: "data/raw/llamadas911"
           filename: "llamadas_911_hermosillo.xlsx"
+
+        processed:
+          directory: "data/processed/llamadas_911"
+          filename: "llamadas_911_hermosillo.csv"
 
 
 ocr:
