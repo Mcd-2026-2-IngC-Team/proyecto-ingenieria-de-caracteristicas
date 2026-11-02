@@ -291,6 +291,28 @@ sources:
           directory: "data/processed/aguah"
           filename: "ubicaciones_aviso.csv"
 
+  llamadas911:
+    name: "Llamadas de emergencia 911 por colonia, Hermosillo 2018–2025 (Hugging Face: Marcelinux)"
+    url: "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025"
+    license: "CC-BY-4.0"
+
+    datasets:
+      llamadas_911:
+        name: "Registro de llamadas al 911, Hermosillo 2018–2025"
+        url: "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025/resolve/main/213.xlsx"
+        description: >-
+          Una fila por llamada al 911 en Hermosillo entre 2018 y 2025
+          (~2.3 millones). Un solo archivo Excel con una hoja por año (2018–2025);
+          columnas: COLONIA (nombre en texto libre), TIPO DE INCIDENTE (475
+          categorías), FECHA y HORA. Sin coordenadas ni colonia_id: la ubicación
+          es el nombre de colonia tal cual lo capturó el operador.
+        documentation:
+          - "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025"
+
+        raw:
+          directory: "data/raw/llamadas911"
+          filename: "llamadas_911_hermosillo.xlsx"
+
 
 ocr:
   device: "auto"
