@@ -20,6 +20,7 @@ dependencies = [
     "fiona>=1.10.1",
     "geopandas>=1.1",
     "httpx2>=2.12.0",
+    "ipywidgets>=8.1.9",
     "loguru",
     "marimo>=0.24.0",
     "matplotlib>=3.11.1",
@@ -36,12 +37,16 @@ dependencies = [
     "pyyaml>=6.0.2",
     "requests>=2.34.2",
     "ruff",
+    "setuptools<81",
     "scikit-learn>=1.9",
     "scipy>=1.16",
     "seaborn>=0.13.2",
     "tqdm",
     "typer",
     "umap-learn>=0.5.12",
+    "contextily>=1.7.1",
+    "plotly>=7.1.0",
+    "h3>=4.5.0",
 ]
 requires-python = "~=3.13.0"
 

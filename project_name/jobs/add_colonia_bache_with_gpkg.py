@@ -760,29 +760,85 @@ print(baches_final.isna().sum())
 
 # Dataset reducido para el pipeline final.
 # Se conserva TODA la tabla, no solo .head().
-baches_clean = baches_final.loc[(baches_final['contexto_ubicacion'] != "dentro_asentamiento")
-                                & (baches_final['contexto_ubicacion'] != "cerca_asentamiento")
-                                & (baches_final['colonia'].isna()),
-    [
-        "contexto_ubicacion",
-        "fuera_asentamiento",
-        "distance_to_colonia_m",
-        "latitude",
-        "longitude",
-        "date",
-        "neighborhoods",
-        "description",
-        "year",
-        "date_mx",
-        "colonia",
-        "colonia_source",
-    ]
+# baches_clean = baches_final.loc[(baches_final['contexto_ubicacion'] != "dentro_asentamiento")
+#                                 & (baches_final['contexto_ubicacion'] != "cerca_asentamiento")
+#                                 & (baches_final['colonia'].isna()),
+#     [
+#         "contexto_ubicacion",
+#         "fuera_asentamiento",
+#         "distance_to_colonia_m",
+#         "latitude",
+#         "longitude",
+#         "date",
+#         "neighborhoods",
+#         "description",
+#         "year",
+#         "date_mx",
+#         "colonia",
+#         "colonia_source",
+#     ]
+# ].copy()
+
+# print(len(baches_clean))
+
+# print("\nPreview baches_clean:")
+# print(baches_clean.head())
+
+# ============================================================
+# Seleccionar columnas finales
+# ============================================================
+
+FINAL_COLUMNS = [
+    "id",
+    "latitude",
+    "longitude",
+    "date",
+    'date_mx',
+    "year",
+    "material",
+    "description",
+    "neighborhoods",
+    "colonia",
+    "colonia_source",
+    "settlement_type",
+    "distance_to_colonia_m",
+    "colonia_match",
+    "contexto_ubicacion"
+]
+
+baches_clean = baches_final[
+    FINAL_COLUMNS
 ].copy()
 
-print(len(baches_clean))
 
-print("\nPreview baches_clean:")
-print(baches_clean.head())
+# ============================================================
+# Validaciones finales
+# ============================================================
+
+print("\n--- Dataset limpio ---")
+
+print(
+    "Shape:",
+    baches_clean.shape,
+)
+
+print(
+    "\nColumnas finales:",
+    baches_clean.columns.tolist(),
+)
+
+print(
+    "\nValores NA:"
+)
+
+print(
+    baches_clean.isna().sum()
+)
+
+print("\nPreview:")
+print(
+    baches_clean.head()
+)
 
 
 # ============================================================
@@ -791,14 +847,28 @@ print(baches_clean.head())
 #
 # Cuando valides los resultados puedes descomentar:
 #
+# OUTPUT_PATH = (
+#     baches_processed_directory
+#     / "baches_hermosillo_colonia_filled.csv"
+# )
+
+# baches_final.to_csv(
+#     OUTPUT_PATH,
+#     index=False,
+# )
+
+# print(f"\nArchivo guardado en: {OUTPUT_PATH}")
+
 OUTPUT_PATH = (
     baches_processed_directory
-    / "baches_hermosillo_colonia_filled.csv"
+    / "baches_hermosillo_filled.csv"
 )
 
-baches_final.to_csv(
+baches_clean.to_csv(
     OUTPUT_PATH,
     index=False,
 )
 
-print(f"\nArchivo guardado en: {OUTPUT_PATH}")
+print(
+    f"\nArchivo guardado en: {OUTPUT_PATH}"
+)
