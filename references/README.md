@@ -17,3 +17,7 @@ rango no se publica: su mínimo y su máximo serían valores reales sin agregar.
 `data/raw/` (la descarga original, con su `FUENTE.txt`, ver
 `project_name/metadata/source.py`) documenta de dónde sale cada dataset; este README
 documenta qué forma tiene una vez procesado.
+
+El esquema entidad–relación entre datasets (llaves, uniones por nombre y relaciones
+espaciales) está en [`esquema_datos.md`](esquema_datos.md), con un diagrama en
+mermaid.
