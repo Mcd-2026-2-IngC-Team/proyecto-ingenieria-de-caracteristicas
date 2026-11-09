@@ -44,6 +44,7 @@ data: download ## Download every raw source and build the processed datasets
 	uv run python -m project_name.jobs.process_subcuencas_job
 	uv run python -m project_name.jobs.validate_data_job
 
+
 ## descomentar este si se quiere descargar la relación bache colonia directamente del api, de lo contrario
 ## se descargará desde una carpeta en one drive. Para la api se requiere actualizar las credenciales
 ## uv run python -m project_name.jobs.neighborhood_baches_info_job
@@ -51,6 +52,9 @@ data: download ## Download every raw source and build the processed datasets
 
 download: ## Download every raw source in parallel, each with its FUENTE.txt
 	uv run python -m project_name.jobs.download_job
+
+quality:
+	uv run python -m project_name.jobs.data_quality_baches_job
 
 validate: ## Check data/processed against the quality rules in project_name/schemas.py
 	uv run python -m project_name.jobs.validate_data_job

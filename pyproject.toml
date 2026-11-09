@@ -44,6 +44,9 @@ dependencies = [
     "tqdm",
     "typer",
     "umap-learn>=0.5.12",
+    "contextily>=1.7.1",
+    "plotly>=7.1.0",
+    "h3>=4.5.0",
 ]
 requires-python = "~=3.13.0"
 

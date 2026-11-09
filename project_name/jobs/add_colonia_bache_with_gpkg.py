@@ -793,13 +793,17 @@ FINAL_COLUMNS = [
     "latitude",
     "longitude",
     "date",
+    'date_mx',
     "year",
     "material",
     "description",
     "neighborhoods",
     "colonia",
     "colonia_source",
-    "settlement_type"
+    "settlement_type",
+    "distance_to_colonia_m",
+    "colonia_match",
+    "contexto_ubicacion"
 ]
 
 baches_clean = baches_final[
