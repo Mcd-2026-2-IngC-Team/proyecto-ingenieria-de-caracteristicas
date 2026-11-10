@@ -41,53 +41,65 @@ def read_checksums(checksums_file: Path) -> dict[str, str]:
     return checksums
 
 
-@log_execution
-def write_snapshot(root: Path, backups_dir: Path) -> Path:
-    checksums = compute_checksums(root)
-    snapshot_checksums = {p: d for p, d in checksums.items() if p not in PDU_FILES}
-    pdu_checksums = {p: d for p, d in checksums.items() if p in PDU_FILES}
+def write_checksums(checksums: dict[str, str], checksums_file: Path) -> None:
+    checksums_file.write_text(
+        "".join(f"{digest}  {path}\n" for path, digest in checksums.items())
+    )
 
-    CHECKSUMS_FILE.write_text(
-        "".join(f"{digest}  {path}\n" for path, digest in snapshot_checksums.items())
-    )
-    CHECKSUMS_PDU_FILE.write_text(
-        "".join(f"{digest}  {path}\n" for path, digest in pdu_checksums.items())
-    )
-    logger.info(
-        "Wrote {} + {} checksums → {} , {}",
-        len(snapshot_checksums), len(pdu_checksums), CHECKSUMS_FILE, CHECKSUMS_PDU_FILE,
-    )
+
+@log_execution
+def write_snapshot(
+    root: Path,
+    checksums_file: Path,
+    backups_dir: Path,
+    *,
+    exclude: set[str] | None = None,
+    exclude_checksums_file: Path | None = None,
+) -> Path:
+    checksums = compute_checksums(root)
+    exclude = exclude or set()
+    kept = {p: d for p, d in checksums.items() if p not in exclude}
+    write_checksums(kept, checksums_file)
+    if exclude_checksums_file is not None:
+        write_checksums(
+            {p: d for p, d in checksums.items() if p in exclude},
+            exclude_checksums_file,
+        )
+        logger.info(
+            "Wrote {} + {} checksums → {} , {}",
+            len(kept), len(checksums) - len(kept), checksums_file, exclude_checksums_file,
+        )
+    else:
+        logger.info("Wrote {} checksums → {}", len(kept), checksums_file)
 
     backups_dir.mkdir(parents=True, exist_ok=True)
     archive = backups_dir / f"external_snapshot_{datetime.now(UTC):%Y%m%d}.tar.gz"
     with tarfile.open(archive, "w:gz") as tar:
-        for relative_path in snapshot_checksums:
+        for relative_path in kept:
             tar.add(root / relative_path, arcname=f"external/{relative_path}")
     logger.info("Wrote snapshot archive → {}", archive)
     return archive
 
 
 @log_execution
-def verify_snapshot(root: Path) -> dict[str, dict[str, list[str]]]:
+def verify_snapshot(
+    root: Path, checksums_file: Path, *, pdu_group: bool | None = None
+) -> dict[str, list[str]]:
     actual = compute_checksums(root)
-    problems = {}
-    for name, checksums_file, pdu_group in (
-        ("data/external", CHECKSUMS_FILE, False),
-        ("data/external (PDU)", CHECKSUMS_PDU_FILE, True),
-    ):
-        expected = read_checksums(checksums_file)
-        actual_group = {p for p in actual if (p in PDU_FILES) == pdu_group}
-        problems[name] = {
-            "missing": sorted(expected.keys() - actual_group),
-            "changed": sorted(
-                p for p in expected.keys() & actual_group if expected[p] != actual[p]
-            ),
-            "unexpected": sorted(actual_group - expected.keys()),
-        }
-        logger.info(
-            "Verified {} files in {}: {}",
-            len(expected), name, {k: len(v) for k, v in problems[name].items()},
-        )
+    if pdu_group is not None:
+        actual = {p: d for p, d in actual.items() if (p in PDU_FILES) == pdu_group}
+    expected = read_checksums(checksums_file)
+    problems = {
+        "missing": sorted(expected.keys() - actual.keys()),
+        "changed": sorted(
+            p for p in expected.keys() & actual.keys() if expected[p] != actual[p]
+        ),
+        "unexpected": sorted(actual.keys() - expected.keys()),
+    }
+    logger.info(
+        "Verified {} files in {}: {}",
+        len(expected), checksums_file, {k: len(v) for k, v in problems.items()},
+    )
     return problems
 
 
@@ -116,13 +128,21 @@ def main() -> None:
     )
 
     if args.write:
-        archive = write_snapshot(EXTERNAL_DIR, BACKUPS_DIR)
+        archive = write_snapshot(
+            EXTERNAL_DIR, CHECKSUMS_FILE, BACKUPS_DIR,
+            exclude=PDU_FILES, exclude_checksums_file=CHECKSUMS_PDU_FILE,
+        )
         print(f"Checksums: {CHECKSUMS_FILE.relative_to(PROJECT_ROOT)}")
         print(f"Checksums: {CHECKSUMS_PDU_FILE.relative_to(PROJECT_ROOT)}")
         print(f"Snapshot:  {archive.relative_to(PROJECT_ROOT)}  (súbelo a OneDrive)")
         return
 
-    problems = verify_snapshot(EXTERNAL_DIR)
+    problems = {
+        "data/external": verify_snapshot(EXTERNAL_DIR, CHECKSUMS_FILE, pdu_group=False),
+        "data/external (PDU)": verify_snapshot(
+            EXTERNAL_DIR, CHECKSUMS_PDU_FILE, pdu_group=True
+        ),
+    }
     for name, group in problems.items():
         for kind, paths in group.items():
             for path in paths:
