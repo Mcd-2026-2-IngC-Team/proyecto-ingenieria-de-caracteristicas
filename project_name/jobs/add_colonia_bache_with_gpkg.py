@@ -37,7 +37,9 @@ def normalize_name(value):
 
     value = str(value).strip().upper()
     value = unicodedata.normalize("NFKD", value)
-    value = "".join(char for char in value if not unicodedata.combining(char))
+    value = "".join(
+        char for char in value if not unicodedata.combining(char)
+    )
     value = " ".join(value.split())
 
     return value if value else pd.NA
@@ -66,13 +68,23 @@ baches_ds = load_dataset_config(
 # Paths
 # ============================================================
 
-colonias_processed_directory = Path(colonias_ds["processed"]["directory"])
+colonias_processed_directory = Path(
+    colonias_ds["processed"]["directory"]
+)
 
-baches_processed_directory = Path(baches_ds["processed"]["directory"])
+baches_processed_directory = Path(
+    baches_ds["processed"]["directory"]
+)
 
-GPKG_PATH = colonias_processed_directory / "colonias_hermosillo.gpkg"
+GPKG_PATH = (
+    colonias_processed_directory
+    / "colonias_hermosillo.gpkg"
+)
 
-BACHES_PATH = baches_processed_directory / "baches_hermosillo_con_colonias.csv"
+BACHES_PATH = (
+    baches_processed_directory
+    / "baches_hermosillo_con_colonias.csv"
+)
 
 
 # ============================================================
@@ -80,10 +92,14 @@ BACHES_PATH = baches_processed_directory / "baches_hermosillo_con_colonias.csv"
 # ============================================================
 
 if not GPKG_PATH.exists():
-    raise FileNotFoundError(f"No se encontró el GPKG: {GPKG_PATH}")
+    raise FileNotFoundError(
+        f"No se encontró el GPKG: {GPKG_PATH}"
+    )
 
 if not BACHES_PATH.exists():
-    raise FileNotFoundError(f"No se encontró el CSV de baches: {BACHES_PATH}")
+    raise FileNotFoundError(
+        f"No se encontró el CSV de baches: {BACHES_PATH}"
+    )
 
 
 # ============================================================
@@ -95,7 +111,9 @@ print("\n--- Layers GPKG ---")
 print(layers)
 
 if "colonias_hermosillo" not in layers:
-    raise ValueError("No existe la layer 'colonias_hermosillo' en el GPKG.")
+    raise ValueError(
+        "No existe la layer 'colonias_hermosillo' en el GPKG."
+    )
 
 colonias = gpd.read_file(
     GPKG_PATH,
@@ -140,7 +158,10 @@ required_baches_columns = {
 
 missing_columns = required_baches_columns - set(baches.columns)
 if missing_columns:
-    raise ValueError(f"Faltan columnas necesarias en baches: {missing_columns}")
+    raise ValueError(
+        "Faltan columnas necesarias en baches: "
+        f"{missing_columns}"
+    )
 
 required_colonias_columns = {
     "colonia_id",
@@ -152,14 +173,20 @@ required_colonias_columns = {
 
 missing_columns = required_colonias_columns - set(colonias.columns)
 if missing_columns:
-    raise ValueError(f"Faltan columnas necesarias en GPKG: {missing_columns}")
+    raise ValueError(
+        "Faltan columnas necesarias en GPKG: "
+        f"{missing_columns}"
+    )
 
 
 # ============================================================
 # Limpiar colonia original
 # ============================================================
 
-baches["colonia"] = baches["colonia"].replace(r"^\s*$", pd.NA, regex=True)
+baches["colonia"] = (
+    baches["colonia"]
+    .replace(r"^\s*$", pd.NA, regex=True)
+)
 
 print(
     "\nBaches sin colonia original:",
@@ -282,7 +309,9 @@ baches_joined["contexto_ubicacion"] = pd.NA
 baches_joined.loc[within_mask, "fuera_asentamiento"] = False
 baches_joined.loc[within_mask, "contexto_ubicacion"] = "dentro_asentamiento"
 
-unmatched_indices = baches_joined.index[baches_joined["settlement_name"].isna()].unique()
+unmatched_indices = baches_joined.index[
+    baches_joined["settlement_name"].isna()
+].unique()
 
 if len(unmatched_indices) > 0:
     baches_missing = baches_geo.loc[
@@ -303,10 +332,14 @@ if len(unmatched_indices) > 0:
     )
 
     # Puede haber empates exactos. Conservamos una fila por punto.
-    nearest = nearest.sort_values(
-        "distance_to_colonia_m",
-        na_position="last",
-    ).loc[lambda df: ~df.index.duplicated(keep="first")]
+    nearest = (
+        nearest
+        .sort_values(
+            "distance_to_colonia_m",
+            na_position="last",
+        )
+        .loc[lambda df: ~df.index.duplicated(keep="first")]
+    )
 
     # Para todos los puntos fuera de polígonos, guardar la distancia
     # real al polígono de colonia más cercano, aunque esté demasiado
@@ -319,8 +352,11 @@ if len(unmatched_indices) > 0:
     # --------------------------------------------------------
     # 2A. Asignar colonia solo si está suficientemente cerca
     # --------------------------------------------------------
-    nearest_assign_mask = nearest["settlement_name"].notna() & nearest["distance_to_colonia_m"].le(
-        MAX_NEAREST_DISTANCE_M
+    nearest_assign_mask = (
+        nearest["settlement_name"].notna()
+        & nearest["distance_to_colonia_m"].le(
+            MAX_NEAREST_DISTANCE_M
+        )
     )
 
     nearest_matched = nearest.loc[nearest_assign_mask].copy()
@@ -333,7 +369,9 @@ if len(unmatched_indices) > 0:
     ]
 
     for column in columns_to_fill:
-        baches_joined.loc[nearest_matched.index, column] = nearest_matched[column]
+        baches_joined.loc[nearest_matched.index, column] = (
+            nearest_matched[column]
+        )
 
     baches_joined.loc[
         nearest_matched.index,
@@ -343,9 +381,12 @@ if len(unmatched_indices) > 0:
     # --------------------------------------------------------
     # 2B. Clasificar contexto según distancia a asentamiento
     # --------------------------------------------------------
-    near_settlement_mask = nearest["distance_to_colonia_m"].notna() & nearest[
-        "distance_to_colonia_m"
-    ].le(DISTANCE_TO_SETTLEMENT_M)
+    near_settlement_mask = (
+        nearest["distance_to_colonia_m"].notna()
+        & nearest["distance_to_colonia_m"].le(
+            DISTANCE_TO_SETTLEMENT_M
+        )
+    )
     near_settlement_indices = nearest.index[near_settlement_mask]
 
     baches_joined.loc[
@@ -357,8 +398,11 @@ if len(unmatched_indices) > 0:
         "contexto_ubicacion",
     ] = "cerca_asentamiento"
 
-    outside_mask = nearest["distance_to_colonia_m"].notna() & nearest["distance_to_colonia_m"].gt(
-        DISTANCE_TO_SETTLEMENT_M
+    outside_mask = (
+        nearest["distance_to_colonia_m"].notna()
+        & nearest["distance_to_colonia_m"].gt(
+            DISTANCE_TO_SETTLEMENT_M
+        )
     )
     outside_indices = nearest.index[outside_mask]
 
@@ -387,36 +431,50 @@ if len(unmatched_indices) > 0:
         int(outside_mask.sum()),
     )
 
-    valid_distances = nearest["distance_to_colonia_m"].dropna()
+    valid_distances = nearest[
+        "distance_to_colonia_m"
+    ].dropna()
 
     if not valid_distances.empty:
         print("\nDistribución de distancia al asentamiento más cercano (m):")
-        print(valid_distances.describe(percentiles=[0.50, 0.75, 0.90, 0.95, 0.99]))
+        print(
+            valid_distances.describe(
+                percentiles=[0.50, 0.75, 0.90, 0.95, 0.99]
+            )
+        )
 
-baches_joined["fuera_asentamiento"] = baches_joined["fuera_asentamiento"].astype("boolean")
+baches_joined["fuera_asentamiento"] = (
+    baches_joined["fuera_asentamiento"].astype("boolean")
+)
 
 
 # ============================================================
 # Renombrar y normalizar colonia original
 # ============================================================
 
-baches_joined = baches_joined.rename(columns={"colonia": "colonia_original"})
-
-baches_joined["colonia_original"] = baches_joined["colonia_original"].replace(
-    r"^\s*$", pd.NA, regex=True
+baches_joined = baches_joined.rename(
+    columns={"colonia": "colonia_original"}
 )
 
-baches_joined["settlement_name"] = baches_joined["settlement_name"].replace(
-    r"^\s*$", pd.NA, regex=True
+baches_joined["colonia_original"] = (
+    baches_joined["colonia_original"]
+    .replace(r"^\s*$", pd.NA, regex=True)
+)
+
+baches_joined["settlement_name"] = (
+    baches_joined["settlement_name"]
+    .replace(r"^\s*$", pd.NA, regex=True)
 )
 
 # Normalizamos AMBOS lados con exactamente la misma función.
-baches_joined["colonia_original_normalized"] = baches_joined["colonia_original"].apply(
-    normalize_name
+baches_joined["colonia_original_normalized"] = (
+    baches_joined["colonia_original"]
+    .apply(normalize_name)
 )
 
-baches_joined["settlement_name_normalized"] = baches_joined["settlement_name"].apply(
-    normalize_name
+baches_joined["settlement_name_normalized"] = (
+    baches_joined["settlement_name"]
+    .apply(normalize_name)
 )
 
 
@@ -445,7 +503,10 @@ baches_joined.loc[
     ]
 )
 
-baches_joined["colonia_match"] = baches_joined["colonia_match"].astype("boolean")
+baches_joined["colonia_match"] = (
+    baches_joined["colonia_match"]
+    .astype("boolean")
+)
 
 
 # ============================================================
@@ -455,8 +516,9 @@ baches_joined["colonia_match"] = baches_joined["colonia_match"].astype("boolean"
 # Prioridad:
 # 1. colonia_original
 # 2. settlement_name obtenido espacialmente
-baches_joined["colonia"] = baches_joined["colonia_original"].fillna(
-    baches_joined["settlement_name"]
+baches_joined["colonia"] = (
+    baches_joined["colonia_original"]
+    .fillna(baches_joined["settlement_name"])
 )
 
 
@@ -501,7 +563,8 @@ for method in ["within", "nearest"]:
 # sobre el tipo de ubicación.
 
 contexto_fallback_mask = (
-    baches_joined["colonia"].isna() & baches_joined["contexto_ubicacion"].notna()
+    baches_joined["colonia"].isna()
+    & baches_joined["contexto_ubicacion"].notna()
 )
 
 baches_joined.loc[
@@ -537,20 +600,31 @@ print(
 )
 
 print("\n--- spatial_match_method ---")
-print(baches_joined["spatial_match_method"].value_counts(dropna=False))
+print(
+    baches_joined["spatial_match_method"]
+    .value_counts(dropna=False)
+)
 
 print("\n--- colonia_match ---")
-print(baches_joined["colonia_match"].value_counts(dropna=False))
+print(
+    baches_joined["colonia_match"]
+    .value_counts(dropna=False)
+)
 
 print("\n--- colonia_source ---")
-print(baches_joined["colonia_source"].value_counts(dropna=False))
+print(
+    baches_joined["colonia_source"]
+    .value_counts(dropna=False)
+)
 
 
 # ============================================================
 # Mostrar discrepancias
 # ============================================================
 
-discrepancias = baches_joined[baches_joined["colonia_match"].eq(False)]
+discrepancias = baches_joined[
+    baches_joined["colonia_match"].eq(False)
+]
 
 print("\nDiscrepancias:", len(discrepancias))
 print(
@@ -575,7 +649,9 @@ print(
 # Mostrar puntos recuperados por nearest
 # ============================================================
 
-nearest_rows = baches_joined[baches_joined["spatial_match_method"].eq("nearest")]
+nearest_rows = baches_joined[
+    baches_joined["spatial_match_method"].eq("nearest")
+]
 
 print(
     "\nBaches asignados mediante nearest:",
@@ -601,7 +677,9 @@ print(
 # Mostrar los que siguen sin colonia
 # ============================================================
 
-sin_colonia = baches_joined[baches_joined["colonia"].isna()]
+sin_colonia = baches_joined[
+    baches_joined["colonia"].isna()
+]
 
 print(
     "\nBaches que siguen sin colonia:",
@@ -658,9 +736,15 @@ colonia_columns = [
     "colonia_source",
 ]
 
-other_columns = [column for column in baches_final.columns if column not in colonia_columns]
+other_columns = [
+    column
+    for column in baches_final.columns
+    if column not in colonia_columns
+]
 
-baches_final = baches_final[other_columns + colonia_columns]
+baches_final = baches_final[
+    other_columns + colonia_columns
+]
 
 
 # ============================================================
@@ -676,30 +760,85 @@ print(baches_final.isna().sum())
 
 # Dataset reducido para el pipeline final.
 # Se conserva TODA la tabla, no solo .head().
-baches_clean = baches_final.loc[
-    (baches_final["contexto_ubicacion"] != "dentro_asentamiento")
-    & (baches_final["contexto_ubicacion"] != "cerca_asentamiento")
-    & (baches_final["colonia"].isna()),
-    [
-        "contexto_ubicacion",
-        "fuera_asentamiento",
-        "distance_to_colonia_m",
-        "latitude",
-        "longitude",
-        "date",
-        "neighborhoods",
-        "description",
-        "year",
-        "date_mx",
-        "colonia",
-        "colonia_source",
-    ],
+# baches_clean = baches_final.loc[(baches_final['contexto_ubicacion'] != "dentro_asentamiento")
+#                                 & (baches_final['contexto_ubicacion'] != "cerca_asentamiento")
+#                                 & (baches_final['colonia'].isna()),
+#     [
+#         "contexto_ubicacion",
+#         "fuera_asentamiento",
+#         "distance_to_colonia_m",
+#         "latitude",
+#         "longitude",
+#         "date",
+#         "neighborhoods",
+#         "description",
+#         "year",
+#         "date_mx",
+#         "colonia",
+#         "colonia_source",
+#     ]
+# ].copy()
+
+# print(len(baches_clean))
+
+# print("\nPreview baches_clean:")
+# print(baches_clean.head())
+
+# ============================================================
+# Seleccionar columnas finales
+# ============================================================
+
+FINAL_COLUMNS = [
+    "id",
+    "latitude",
+    "longitude",
+    "date",
+    'date_mx',
+    "year",
+    "material",
+    "description",
+    "neighborhoods",
+    "colonia",
+    "colonia_source",
+    "settlement_type",
+    "distance_to_colonia_m",
+    "colonia_match",
+    "contexto_ubicacion"
+]
+
+baches_clean = baches_final[
+    FINAL_COLUMNS
 ].copy()
 
-print(len(baches_clean))
 
-print("\nPreview baches_clean:")
-print(baches_clean.head())
+# ============================================================
+# Validaciones finales
+# ============================================================
+
+print("\n--- Dataset limpio ---")
+
+print(
+    "Shape:",
+    baches_clean.shape,
+)
+
+print(
+    "\nColumnas finales:",
+    baches_clean.columns.tolist(),
+)
+
+print(
+    "\nValores NA:"
+)
+
+print(
+    baches_clean.isna().sum()
+)
+
+print("\nPreview:")
+print(
+    baches_clean.head()
+)
 
 
 # ============================================================
@@ -708,11 +847,28 @@ print(baches_clean.head())
 #
 # Cuando valides los resultados puedes descomentar:
 #
-OUTPUT_PATH = baches_processed_directory / "baches_hermosillo_colonia_filled.csv"
+# OUTPUT_PATH = (
+#     baches_processed_directory
+#     / "baches_hermosillo_colonia_filled.csv"
+# )
 
-baches_final.to_csv(
+# baches_final.to_csv(
+#     OUTPUT_PATH,
+#     index=False,
+# )
+
+# print(f"\nArchivo guardado en: {OUTPUT_PATH}")
+
+OUTPUT_PATH = (
+    baches_processed_directory
+    / "baches_hermosillo_filled.csv"
+)
+
+baches_clean.to_csv(
     OUTPUT_PATH,
     index=False,
 )
 
-print(f"\nArchivo guardado en: {OUTPUT_PATH}")
+print(
+    f"\nArchivo guardado en: {OUTPUT_PATH}"
+)
