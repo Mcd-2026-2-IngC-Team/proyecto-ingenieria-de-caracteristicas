@@ -127,7 +127,9 @@ def cargar_capa(ruta_subcuenca: str | Path, sufijo: str, columnas: list[str]) ->
     return df[columnas].copy()
 
 
-def build_subcuencas_features(nombre_subcuenca: str, ruta_subcuenca: str | Path) -> pd.DataFrame:
+def build_subcuencas_features(
+    nombre_subcuenca: str, ruta_subcuenca: str | Path
+) -> dict[str, dict[str, gpd.GeoDataFrame]]:
     # Crearemos un diccionario anidado en dataframes, contendra nombre_subcuenta -> sufijo -> datafram_limpio
     dataframes = {}
 

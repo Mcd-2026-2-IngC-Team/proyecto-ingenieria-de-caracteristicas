@@ -8,6 +8,7 @@
 | `facebook/images/<csv>/` (imágenes + `manifest_*.csv`) | `make extract-images` | Las URLs de las imágenes expiran |
 | `facebook/ocr/<csv>/ocr_*.csv` (+ `.meta.json`) | `make ocr` (PaddleOCR-VL-1.6) en Yuca/ACARUS | Depende de hardware y versiones; ver cada `.meta.json` |
 | `distritos_sectores_hermosillo_PDU_2025.csv` | Transcripción manual de la Tabla III.1 del PDU de Hermosillo 2025+ (sectores y distritos con sus colonias) | El original es un PDF oficial; el CSV se transcribió a mano |
+| `equivalencias_colonias_911.csv` | Revisión manual: nombres de colonia del 911 sin emparejar → nombre correcto del catálogo DCAH (columna `OK`) | Las equivalencias se decidieron a mano; no son regenerables |
 
 Por eso el proyecto los trata como un insumo congelado: el archivo comprimido vive
 en OneDrive (privado: son posts de Facebook y pueden tener datos personales) y en
@@ -44,6 +45,24 @@ Pasos:
 2. Colócalo en `data/external/`.
 3. `make verify-data` debe terminar con
    `data/external (PDU) coincide con data/external_PDU.sha256`.
+
+## CSV de equivalencias de colonias del 911
+
+`equivalencias_colonias_911.csv` sí viaja dentro del `external_snapshot_*.tar.gz`,
+pero también se comparte suelto en el mismo SharePoint que el CSV del PDU, por si
+solo se necesita ese archivo:
+
+- **Ubicación:** SharePoint Unison (carpeta `public-data-ing-2026`) —
+  https://unisonmx-my.sharepoint.com/:f:/r/personal/a226230014_unison_mx/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fa226230014%5Funison%5Fmx%2FDocuments%2F1er%20Semestre%2FIng%2E%20Caracter%C3%ADsticas%2Fpublic%2Ddata%2Ding%2D2026&share=cgpZe0YOjR6YQKQF3FvXhosUEgUBSeFfgx3rQCxduezmOz%2D0PQ
+- **Acceso:** pedirlo al equipo (cuentas `@unison.mx`).
+
+Pasos:
+
+1. Descarga `equivalencias_colonias_911.csv` del enlace.
+2. Colócalo en `data/external/`.
+3. `make verify-data` debe terminar con
+   `data/external coincide con data/external.sha256`
+   (está dentro del snapshot principal, no del grupo PDU).
 
 ## Cómo publicar una nueva versión
 
