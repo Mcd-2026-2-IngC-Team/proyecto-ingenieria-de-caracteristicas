@@ -61,6 +61,7 @@ DATE_COLUMNS = {
 READ_DTYPES = {
     "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
     "ubicaciones_aviso": {"colonia_id": str},
+    "llamadas_911_hermosillo": {"colonia_id": str},
 }
 
 # Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
@@ -229,6 +230,17 @@ DESCRIPTIONS = {
             "Grupo de la selección manual de tipos de incidente: inundacion_directa, "
             "fenomeno_hidrometeorologico, drenaje_y_red_de_agua, "
             "ahogamiento_acuaticos o terreno"
+        ),
+        "colonia_id": (
+            "Clave geoestadística del asentamiento (cvegeo del INEGI) a la que se "
+            "resolvió la colonia del 911 por nombre normalizado, primero contra el "
+            "catálogo DCAH y después con equivalencias revisadas a mano "
+            "(data/external/equivalencias_colonias_911.csv); vacío si no se resolvió"
+        ),
+        "colonia_source": (
+            "Cómo se resolvió colonia_id: catalogo = coincidencia directa por nombre "
+            "normalizado; equivalencia = vía equivalencias_colonias_911.csv; "
+            "vacío cuando no se resolvió"
         ),
     },
 }
@@ -583,7 +595,7 @@ def main() -> None:
     )
 
     for destination in build_dictionaries(params):
-        print(f"diccionario → {destination.relative_to(PROJECT_ROOT)}")
+        print(f"diccionario -> {destination.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

@@ -4,3 +4,5 @@ tipo_incidente,str,0.0,32,,"Clasificación del motivo de la llamada; solo los ti
 fecha,datetime64[us],0.0,1467,2018-01-05 – 2025-09-30,"Día del incidente, de 2018-01-01 a 2025-09-30"
 hora,int64,0.0,24,0 – 23,"Hora del día del incidente, entera de 0 a 23"
 grupo_incidente,str,0.0,5,,"Grupo de la selección manual de tipos de incidente: inundacion_directa, fenomeno_hidrometeorologico, drenaje_y_red_de_agua, ahogamiento_acuaticos o terreno"
+colonia_id,str,19.492337164750957,381,,"Clave geoestadística del asentamiento (cvegeo del INEGI) a la que se resolvió la colonia del 911 por nombre normalizado, primero contra el catálogo DCAH y después con equivalencias revisadas a mano (data/external/equivalencias_colonias_911.csv); vacío si no se resolvió"
+colonia_source,str,19.492337164750957,2,,Cómo se resolvió colonia_id: catalogo = coincidencia directa por nombre normalizado; equivalencia = vía equivalencias_colonias_911.csv; vacío cuando no se resolvió

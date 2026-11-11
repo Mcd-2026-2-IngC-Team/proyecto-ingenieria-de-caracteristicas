@@ -1,6 +1,6 @@
 {
   "dataset": "baches",
-  "archivo": "data/processed/bachometro/baches_hermosillo.csv",
+  "archivo": "data/processed/bachometro/baches_hermosillo_colonia_filled.csv",
   "una_fila_es": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
   "filas": 38975,
   "columnas": [
@@ -16,7 +16,7 @@
       "nombre": "latitude",
       "tipo": "float64",
       "nulos_pct": 0.0,
-      "distintos": 36084,
+      "distintos": 36085,
       "rango": "-38.9874506 – 50.937531",
       "descripcion": "Latitud del reporte de bache"
     },
@@ -24,7 +24,7 @@
       "nombre": "longitude",
       "tipo": "float64",
       "nulos_pct": 0.0,
-      "distintos": 36047,
+      "distintos": 36048,
       "rango": "-122.4194155 – 121.2755118",
       "descripcion": "Longitud del reporte de bache"
     },
@@ -83,10 +83,114 @@
       "distintos": 1367,
       "rango": null,
       "descripcion": "Fecha del reporte en formato mexicano (dd/mm/aaaa)"
+    },
+    {
+      "nombre": "colonia_original",
+      "tipo": "str",
+      "nulos_pct": 54.02437459910199,
+      "distintos": 351,
+      "rango": null,
+      "descripcion": "Nombre de la colonia obtenido originalmente a partir de la información del Bachómetro; puede no estar disponible"
+    },
+    {
+      "nombre": "colonia_original_normalized",
+      "tipo": "str",
+      "nulos_pct": 54.02437459910199,
+      "distintos": 332,
+      "rango": null,
+      "descripcion": "Versión normalizada de colonia_original, convertida a mayúsculas, sin acentos, sin espacios iniciales o finales y con espacios internos estandarizados, utilizada para comparación"
+    },
+    {
+      "nombre": "settlement_name",
+      "tipo": "str",
+      "nulos_pct": 1.5343168697883258,
+      "distintos": 665,
+      "rango": null,
+      "descripcion": "Nombre del asentamiento o colonia obtenido espacialmente a partir del archivo GPKG de colonias de Hermosillo"
+    },
+    {
+      "nombre": "settlement_name_normalized",
+      "tipo": "str",
+      "nulos_pct": 1.5343168697883258,
+      "distintos": 665,
+      "rango": null,
+      "descripcion": "Versión normalizada de settlement_name, utilizada para comparar de forma consistente el nombre espacial con colonia_original"
+    },
+    {
+      "nombre": "settlement_type",
+      "tipo": "str",
+      "nulos_pct": 1.5343168697883258,
+      "distintos": 12,
+      "rango": null,
+      "descripcion": "Tipo de asentamiento correspondiente al polígono identificado en el GPKG, por ejemplo COLONIA, FRACCIONAMIENTO o BARRIO"
+    },
+    {
+      "nombre": "colonia_id",
+      "tipo": "float64",
+      "nulos_pct": 1.5343168697883258,
+      "distintos": 679,
+      "rango": "2603000010001.0 – 2603003430028.0",
+      "descripcion": "Identificador único de la colonia o asentamiento correspondiente al polígono del GPKG"
+    },
+    {
+      "nombre": "spatial_match_method",
+      "tipo": "str",
+      "nulos_pct": 1.5343168697883258,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Método utilizado para asociar espacialmente el reporte con una colonia: 'within' si el punto está dentro del polígono, 'nearest' si se asignó mediante la colonia más cercana, o nulo si no se realizó asociación espacial"
+    },
+    {
+      "nombre": "distance_to_colonia_m",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 3713,
+      "rango": "0.0 – 17082646.6891762",
+      "descripcion": "Distancia en metros desde el punto del reporte hasta el polígono de colonia más cercano; es 0 cuando el punto se encuentra dentro de un polígono"
+    },
+    {
+      "nombre": "fuera_asentamiento",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Indicador booleano que señala si el reporte se encuentra a una distancia mayor al umbral definido respecto al asentamiento más cercano"
+    },
+    {
+      "nombre": "contexto_ubicacion",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 3,
+      "rango": null,
+      "descripcion": "Clasificación espacial del reporte según su relación con los polígonos de asentamientos, por ejemplo 'dentro_asentamiento', 'cerca_asentamiento' o 'probable_carretera_o_zona_rural'"
+    },
+    {
+      "nombre": "colonia_match",
+      "tipo": "object",
+      "nulos_pct": 54.42206542655549,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Indicador booleano que señala si colonia_original y settlement_name coinciden después de normalizar ambos nombres; es nulo cuando no existen ambos valores para realizar la comparación"
+    },
+    {
+      "nombre": "colonia",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 922,
+      "rango": null,
+      "descripcion": "Valor final asignado a la ubicación del reporte. Prioriza colonia_original; si no existe, utiliza settlement_name obtenido espacialmente y, si ambos faltan, utiliza contexto_ubicacion"
+    },
+    {
+      "nombre": "colonia_source",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": null,
+      "descripcion": "Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso"
     }
   ],
   "generado": {
-    "fecha": "2026-09-25 03:22 UTC",
+    "fecha": "2026-11-11 00:04 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

@@ -304,8 +304,11 @@ sources:
           Una fila por llamada al 911 en Hermosillo entre 2018 y 2025
           (~2.3 millones). Un solo archivo Excel con una hoja por año (2018–2025);
           columnas: COLONIA (nombre en texto libre), TIPO DE INCIDENTE (475
-          categorías), FECHA y HORA. Sin coordenadas ni colonia_id: la ubicación
-          es el nombre de colonia tal cual lo capturó el operador.
+          categorías), FECHA y HORA. Sin coordenadas: la ubicación
+          es el nombre de colonia tal cual lo capturó el operador. El archivo
+          procesado agrega colonia_id (cvegeo del INEGI) resuelto por nombre
+          normalizado contra el catálogo DCAH, más colonia_source que distingue
+          coincidencia directa de equivalencia manual.
         documentation:
           - "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025"
 

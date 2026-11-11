@@ -1,7 +1,7 @@
 nombre,tipo,nulos_pct,distintos,rango,descripcion
 id_row,int64,0.0,38975,1 – 38975,"Identificador secuencial de la fila, asignado al combinar los años"
-latitude,float64,0.0,36084,-38.9874506 – 50.937531,Latitud del reporte de bache
-longitude,float64,0.0,36047,-122.4194155 – 121.2755118,Longitud del reporte de bache
+latitude,float64,0.0,36085,-38.9874506 – 50.937531,Latitud del reporte de bache
+longitude,float64,0.0,36048,-122.4194155 – 121.2755118,Longitud del reporte de bache
 date,datetime64[us],0.0,1367,2021-09-17 – 2026-09-24,Fecha del reporte de bache
 neighborhoods,str,0.0,1253,,IDs de la(s) colonia(s) del Bachómetro asociadas al reporte
 material,int64,0.0,2,1 – 2,Código del tipo de material/pavimento reportado por el Bachómetro
@@ -9,3 +9,16 @@ description,str,0.0,34334,,"Descripción en texto libre del reporte, escrita por
 id,int64,0.0,38975,1 – 48590,Identificador del reporte en el Bachómetro
 year,int64,0.0,6,2021 – 2026,"Año de la fuente de datos, según bachometro.hermosillo.gob.mx"
 date_mx,str,0.0,1367,,Fecha del reporte en formato mexicano (dd/mm/aaaa)
+colonia_original,str,54.02437459910199,351,,Nombre de la colonia obtenido originalmente a partir de la información del Bachómetro; puede no estar disponible
+colonia_original_normalized,str,54.02437459910199,332,,"Versión normalizada de colonia_original, convertida a mayúsculas, sin acentos, sin espacios iniciales o finales y con espacios internos estandarizados, utilizada para comparación"
+settlement_name,str,1.5343168697883258,665,,Nombre del asentamiento o colonia obtenido espacialmente a partir del archivo GPKG de colonias de Hermosillo
+settlement_name_normalized,str,1.5343168697883258,665,,"Versión normalizada de settlement_name, utilizada para comparar de forma consistente el nombre espacial con colonia_original"
+settlement_type,str,1.5343168697883258,12,,"Tipo de asentamiento correspondiente al polígono identificado en el GPKG, por ejemplo COLONIA, FRACCIONAMIENTO o BARRIO"
+colonia_id,float64,1.5343168697883258,679,2603000010001.0 – 2603003430028.0,Identificador único de la colonia o asentamiento correspondiente al polígono del GPKG
+spatial_match_method,str,1.5343168697883258,2,,"Método utilizado para asociar espacialmente el reporte con una colonia: 'within' si el punto está dentro del polígono, 'nearest' si se asignó mediante la colonia más cercana, o nulo si no se realizó asociación espacial"
+distance_to_colonia_m,float64,0.0,3713,0.0 – 17082646.6891762,Distancia en metros desde el punto del reporte hasta el polígono de colonia más cercano; es 0 cuando el punto se encuentra dentro de un polígono
+fuera_asentamiento,bool,0.0,2,False – True,Indicador booleano que señala si el reporte se encuentra a una distancia mayor al umbral definido respecto al asentamiento más cercano
+contexto_ubicacion,str,0.0,3,,"Clasificación espacial del reporte según su relación con los polígonos de asentamientos, por ejemplo 'dentro_asentamiento', 'cerca_asentamiento' o 'probable_carretera_o_zona_rural'"
+colonia_match,object,54.42206542655549,2,,Indicador booleano que señala si colonia_original y settlement_name coinciden después de normalizar ambos nombres; es nulo cuando no existen ambos valores para realizar la comparación
+colonia,str,0.0,922,,"Valor final asignado a la ubicación del reporte. Prioriza colonia_original; si no existe, utiliza settlement_name obtenido espacialmente y, si ambos faltan, utiliza contexto_ubicacion"
+colonia_source,str,0.0,4,,"Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso"

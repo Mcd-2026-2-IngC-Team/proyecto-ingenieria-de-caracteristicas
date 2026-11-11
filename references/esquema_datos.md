@@ -13,7 +13,7 @@ erDiagram
     publicaciones_aguah ||--o{ ubicaciones_aviso : tiene_menciones
     colonias_hermosillo ||--o{ ubicaciones_aviso : contiene
     colonias_hermosillo ||--o{ baches : colonia_normalizada
-    colonias_hermosillo ||--o{ llamadas_911_hermosillo : colonia_aproximada
+    colonias_hermosillo ||--o{ llamadas_911_hermosillo : colonia_id
     subc ||--o{ hl : pertenece_a
     dr ||--o{ hl : identifica_drenaje
     colonias_hermosillo }o--o{ hl : interseccion_espacial
@@ -99,6 +99,8 @@ erDiagram
         datetime fecha
         int64 hora
         string grupo_incidente
+        string colonia_id FK
+        string colonia_source
     }
 
     subc {
@@ -170,8 +172,13 @@ erDiagram
   nearest ≤500 m) con su metodología de match (`spatial_match_method`,
   `distance_to_colonia_m`, `contexto_ubicacion`).
 - **`llamadas_911.colonia` es texto libre del operador** (incluye `SIN COLONIA` y
-  nombres sin catálogo): no es una llave real; las libretas la unen a
-  `colonias_hermosillo` por `settlement_name_normalized` con ~70% de emparejamiento.
+  nombres sin catálogo): no es una llave real. El job `add_colonia_llamada_job`
+  la resuelve a `colonia_id` por nombre normalizado contra `colonias_hermosillo`
+  y luego con equivalencias revisadas a mano
+  (`data/external/equivalencias_colonias_911.csv`); `colonia_source` distingue
+  `catalogo` de `equivalencia` y queda vacío (~20%) cuando no se resolvió —
+  nombres genéricos, localidades fuera de la ciudad o variantes del 911 sin
+  equivalente en el catálogo.
 - **`colonias_hermosillo` ↔ hidrografía** es una relación puramente espacial
   (intersección de polígonos con segmentos `hl`/`ha` en las libretas); no hay
   columna que la declare. `dr` es un solo punto de drenaje por el área urbana.

@@ -43,10 +43,26 @@
       "distintos": 5,
       "rango": null,
       "descripcion": "Grupo de la selección manual de tipos de incidente: inundacion_directa, fenomeno_hidrometeorologico, drenaje_y_red_de_agua, ahogamiento_acuaticos o terreno"
+    },
+    {
+      "nombre": "colonia_id",
+      "tipo": "str",
+      "nulos_pct": 19.492337164750957,
+      "distintos": 381,
+      "rango": null,
+      "descripcion": "Clave geoestadística del asentamiento (cvegeo del INEGI) a la que se resolvió la colonia del 911 por nombre normalizado, primero contra el catálogo DCAH y después con equivalencias revisadas a mano (data/external/equivalencias_colonias_911.csv); vacío si no se resolvió"
+    },
+    {
+      "nombre": "colonia_source",
+      "tipo": "str",
+      "nulos_pct": 19.492337164750957,
+      "distintos": 2,
+      "rango": null,
+      "descripcion": "Cómo se resolvió colonia_id: catalogo = coincidencia directa por nombre normalizado; equivalencia = vía equivalencias_colonias_911.csv; vacío cuando no se resolvió"
     }
   ],
   "generado": {
-    "fecha": "2026-11-02 06:58 UTC",
+    "fecha": "2026-11-11 00:04 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },
