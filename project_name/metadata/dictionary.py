@@ -252,6 +252,8 @@ DESCRIPTIONS_SUBCUENCAS = {
         "CVE_SUBC": "Clave de la subcuenca hidrográfica",
         "CONDICION": "Descripción de la condición del drenaje",
         "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
+        "LEVEL_1": "Nivel de corriente del segmento a nivel de subcuenca; -1 sin clasificar",
+        "ARBSUM_1": "Sumatoria de las longitudes de las líneas de flujo aguas arriba del segmento, a nivel de subcuenca",
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
         "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },

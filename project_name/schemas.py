@@ -146,6 +146,15 @@ HL = pa.DataFrameSchema(
             checks=pa.Check(lambda value: (value == -1) | (value >= 1)),
             nullable=False,
         ),
+        "LEVEL_1": pa.Column(
+            pa.Int64,
+            checks=pa.Check(lambda value: (value == -1) | (value >= 1)),
+            nullable=False,
+        ),
+        "ARBSUM_1": pa.Column(
+            checks=pa.Check.greater_than_or_equal_to(0),
+            nullable=False,
+        ),
         "ID_DRENA": pa.Column(
             checks=pa.Check.greater_than_or_equal_to(0),
             nullable=False,

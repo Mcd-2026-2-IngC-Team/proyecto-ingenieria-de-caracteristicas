@@ -115,6 +115,8 @@ erDiagram
         string CVE_SUBC FK
         string CONDICION
         int64 ORDER_1
+        int64 LEVEL_1
+        float ARBSUM_1
         int64 ID_DRENA FK
         int64 ENABLED
         string subcuenca
@@ -183,7 +185,10 @@ erDiagram
   (intersección de polígonos con segmentos `hl`/`ha` en las libretas); no hay
   columna que la declare. `dr` es un solo punto de drenaje por el área urbana.
 - En `hl`, `ORDER_1` es el orden de Strahler del segmento (≥4 colector principal,
-  -1 sin clasificar) e `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
+  -1 sin clasificar), `LEVEL_1` el nivel de corriente (-1 sin clasificar) y
+  `ARBSUM_1` la suma de las longitudes de las líneas de flujo aguas arriba del
+  segmento; los tres son indicadores de hidromorfometría calculados por el INEGI
+  a nivel de subcuenca. `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
   segmento.
 - Los perfiles completos por columna (nulos, distintos, rango, descripción) están
   en los diccionarios de esta misma carpeta (`<dataset>.csv` /

@@ -9,6 +9,8 @@ SUBC_COLUMNS_HL = [
     "CVE_SUBC",
     "CONDICION",
     "ORDER_1",
+    "LEVEL_1",
+    "ARBSUM_1",
     "ID_DRENA",
     "ENABLED",
 ]
