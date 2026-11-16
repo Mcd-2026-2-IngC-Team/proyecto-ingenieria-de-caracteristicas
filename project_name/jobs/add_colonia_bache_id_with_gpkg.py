@@ -773,6 +773,12 @@ print(baches_joined["colonia_id_method"].value_counts(dropna=False))
 print("Con colonia_id:", baches_joined["colonia_id"].notna().sum())
 print("Sin colonia_id:", baches_joined["colonia_id"].isna().sum())
 
+# asignar id 0 a colonias fuera de la ciudad
+baches_joined.loc[baches_joined["colonia_id"].isna(), "colonia_id"] = '0'
+print("Con colonia_id:", baches_joined["colonia_id"].notna().sum())
+print("Sin colonia_id:", baches_joined["colonia_id"].isna().sum())
+
+
 
 # ============================================================
 # Estadísticas finales

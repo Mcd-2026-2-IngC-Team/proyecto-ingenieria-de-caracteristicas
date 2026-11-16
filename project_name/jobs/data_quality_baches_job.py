@@ -19,7 +19,7 @@ import pandas as pd
 
 FINAL_COLUMNS = [
     "id", "latitude", "longitude", "date", "date_mx", "year",
-    "material", "description", "colonia",
+    "material", "description", "colonia", "colonia_id"
 ]
 
 
