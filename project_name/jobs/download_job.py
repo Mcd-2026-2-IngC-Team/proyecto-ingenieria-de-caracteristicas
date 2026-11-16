@@ -7,6 +7,7 @@ from project_name.jobs.ingest_baches_job import ingest_bachometro
 from project_name.jobs.ingest_dcah_job import ingest_dcah
 from project_name.jobs.ingest_llamadas_911_job import ingest_llamadas_911
 from project_name.jobs.ingest_mg_streets_job import ingest_mg_streets
+from project_name.jobs.ingest_precipitacion_job import ingest_precipitacion
 from project_name.jobs.ingest_subcuencas import ingest_subcuencas
 from project_name.logging import log_execution
 
@@ -16,6 +17,7 @@ INGEST_JOBS = (
     ingest_bachometro,
     ingest_subcuencas,
     ingest_llamadas_911,
+    ingest_precipitacion,
 )
 
 

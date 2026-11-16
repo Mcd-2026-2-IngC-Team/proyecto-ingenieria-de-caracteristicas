@@ -16,9 +16,9 @@
       "nombre": "tipo_incidente",
       "tipo": "str",
       "nulos_pct": 0.0,
-      "distintos": 32,
+      "distintos": 28,
       "rango": null,
-      "descripcion": "Clasificación del motivo de la llamada; solo los tipos relacionados con inundación o agua de la selección manual sobre el catálogo completo (34 valores de la fuente, normalizados a 32 tipos canónicos)"
+      "descripcion": "Clasificación del motivo de la llamada; solo los tipos relacionados con inundación o agua de la selección manual sobre el catálogo completo (34 valores de la fuente, normalizados a 28 tipos canónicos)"
     },
     {
       "nombre": "fecha",
@@ -46,7 +46,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-11-02 06:58 UTC",
+    "fecha": "2026-11-16 18:46 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

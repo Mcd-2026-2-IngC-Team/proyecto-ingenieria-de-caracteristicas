@@ -231,7 +231,7 @@ sources:
 
         processed:
           directory: "data/processed/bachometro"
-          filename: "baches_hermosillo_colonia_filled.csv"
+          filename: "baches_hermosillo.csv"
 
   agua_hermosillo:
     name: "Agua de Hermosillo: datos derivados para el tablero de desabasto"
@@ -316,6 +316,41 @@ sources:
         processed:
           directory: "data/processed/llamadas_911"
           filename: "llamadas_911_hermosillo.csv"
+
+
+  open_meteo:
+    name: "Open-Meteo, API de archivo histórico (combinación de modelos de reanálisis por defecto)"
+    url: "https://open-meteo.com/en/docs/historical-weather-api"
+    license: "CC-BY-4.0"
+
+    datasets:
+      precipitacion_hermosillo:
+        name: "Precipitación diaria en Hermosillo 2018–2026"
+        url: "https://archive-api.open-meteo.com/v1/archive"
+        description: >-
+          Una fila por día con la precipitación acumulada (mm) y las horas con lluvia en
+          el punto de la mancha urbana de Hermosillo. Es una estimación de modelo que
+          promedia una zona de varios kilómetros, no una estación: suaviza las tormentas
+          convectivas del monzón, así que sirve para ubicar los días y semanas de lluvia,
+          no para medir la lámina en una colonia. No está confirmado qué modelo usa la API
+          para este punto.
+        documentation:
+          - "https://open-meteo.com/en/docs/historical-weather-api"
+        query:
+          latitude: 29.0892
+          longitude: -110.9613
+          start_date: "2018-01-01"
+          end_date: "2026-09-30"
+          daily: "precipitation_sum,precipitation_hours"
+          timezone: "America/Hermosillo"
+
+        raw:
+          directory: "data/raw/precipitacion"
+          filename: "precipitacion_hermosillo.json"
+
+        processed:
+          directory: "data/processed/precipitacion"
+          filename: "precipitacion_hermosillo.csv"
 
 
 ocr:

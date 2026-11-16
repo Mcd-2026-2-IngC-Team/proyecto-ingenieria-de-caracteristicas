@@ -221,7 +221,7 @@ DESCRIPTIONS = {
         "tipo_incidente": (
             "Clasificación del motivo de la llamada; solo los tipos relacionados "
             "con inundación o agua de la selección manual sobre el catálogo completo "
-            "(34 valores de la fuente, normalizados a 32 tipos canónicos)"
+            "(34 valores de la fuente, normalizados a 28 tipos canónicos)"
         ),
         "fecha": "Día del incidente, de 2018-01-01 a 2025-09-30",
         "hora": "Hora del día del incidente, entera de 0 a 23",
