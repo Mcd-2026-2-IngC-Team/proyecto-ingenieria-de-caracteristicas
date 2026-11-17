@@ -13,7 +13,7 @@ erDiagram
     publicaciones_aguah ||--o{ ubicaciones_aviso : tiene_menciones
     colonias_hermosillo ||--o{ ubicaciones_aviso : contiene
     colonias_hermosillo ||--o{ baches : colonia_normalizada
-    colonias_hermosillo ||--o{ llamadas_911_hermosillo : colonia_aproximada
+    colonias_hermosillo ||--o{ llamadas_911_hermosillo : colonia_id
     subc ||--o{ hl : pertenece_a
     dr ||--o{ hl : identifica_drenaje
     colonias_hermosillo }o--o{ hl : interseccion_espacial
@@ -99,6 +99,8 @@ erDiagram
         datetime fecha
         int64 hora
         string grupo_incidente
+        string colonia_id FK
+        string colonia_source
     }
 
     subc {
@@ -113,6 +115,8 @@ erDiagram
         string CVE_SUBC FK
         string CONDICION
         int64 ORDER_1
+        int64 LEVEL_1
+        float ARBSUM_1
         int64 ID_DRENA FK
         int64 ENABLED
         string subcuenca
@@ -170,13 +174,21 @@ erDiagram
   nearest ≤500 m) con su metodología de match (`spatial_match_method`,
   `distance_to_colonia_m`, `contexto_ubicacion`).
 - **`llamadas_911.colonia` es texto libre del operador** (incluye `SIN COLONIA` y
-  nombres sin catálogo): no es una llave real; las libretas la unen a
-  `colonias_hermosillo` por `settlement_name_normalized` con ~70% de emparejamiento.
+  nombres sin catálogo): no es una llave real. El job `add_colonia_llamada_job`
+  la resuelve a `colonia_id` por nombre normalizado contra `colonias_hermosillo`
+  y luego con equivalencias revisadas a mano
+  (`data/external/equivalencias_colonias_911.csv`); `colonia_source` distingue
+  `catalogo` de `equivalencia` y queda vacío (~20%) cuando no se resolvió —
+  nombres genéricos, localidades fuera de la ciudad o variantes del 911 sin
+  equivalente en el catálogo.
 - **`colonias_hermosillo` ↔ hidrografía** es una relación puramente espacial
   (intersección de polígonos con segmentos `hl`/`ha` en las libretas); no hay
   columna que la declare. `dr` es un solo punto de drenaje por el área urbana.
 - En `hl`, `ORDER_1` es el orden de Strahler del segmento (≥4 colector principal,
-  -1 sin clasificar) e `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
+  -1 sin clasificar), `LEVEL_1` el nivel de corriente (-1 sin clasificar) y
+  `ARBSUM_1` la suma de las longitudes de las líneas de flujo aguas arriba del
+  segmento; los tres son indicadores de hidromorfometría calculados por el INEGI
+  a nivel de subcuenca. `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
   segmento.
 - Los perfiles completos por columna (nulos, distintos, rango, descripción) están
   en los diccionarios de esta misma carpeta (`<dataset>.csv` /

@@ -3,6 +3,8 @@ hl,ID,int64,0.0,437,2983925 – 13228992,Identificador único del segmento de la
 hl,CVE_SUBC,str,0.0,4,,Clave de la subcuenca hidrográfica
 hl,CONDICION,str,0.0,3,,Descripción de la condición del drenaje
 hl,ORDER_1,int64,0.0,5,-1 – 4,Magnitud de orden (clasificación de Strahler) a nivel de subcuenca
+hl,LEVEL_1,int64,0.0,8,-1 – 7,Nivel de corriente del segmento a nivel de subcuenca; -1 sin clasificar
+hl,ARBSUM_1,float64,0.0,435,0.0 – 139833.7864,"Sumatoria de las longitudes de las líneas de flujo aguas arriba del segmento, a nivel de subcuenca"
 hl,ID_DRENA,int32,0.0,6,0 – 8,Identificador del punto de drenaje al que corresponde el segmento
 hl,ENABLED,int32,0.0,2,0 – 1,Indicador que señala si el segmento está habilitado para formar parte de la red geométrica
 hl,subcuenca,str,0.0,4,,"Subcuenca de origen de la fila: subc_la_manga, subc_la_poza, subc_r_san_miguel o subc_r_son_hillo"

@@ -61,6 +61,7 @@ DATE_COLUMNS = {
 READ_DTYPES = {
     "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
     "ubicaciones_aviso": {"colonia_id": str},
+    "llamadas_911_hermosillo": {"colonia_id": str},
 }
 
 # Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
@@ -230,6 +231,17 @@ DESCRIPTIONS = {
             "fenomeno_hidrometeorologico, drenaje_y_red_de_agua, "
             "ahogamiento_acuaticos o terreno"
         ),
+        "colonia_id": (
+            "Clave geoestadística del asentamiento (cvegeo del INEGI) a la que se "
+            "resolvió la colonia del 911 por nombre normalizado, primero contra el "
+            "catálogo DCAH y después con equivalencias revisadas a mano "
+            "(data/external/equivalencias_colonias_911.csv); vacío si no se resolvió"
+        ),
+        "colonia_source": (
+            "Cómo se resolvió colonia_id: catalogo = coincidencia directa por nombre "
+            "normalizado; equivalencia = vía equivalencias_colonias_911.csv; "
+            "vacío cuando no se resolvió"
+        ),
     },
 }
 
@@ -240,6 +252,8 @@ DESCRIPTIONS_SUBCUENCAS = {
         "CVE_SUBC": "Clave de la subcuenca hidrográfica",
         "CONDICION": "Descripción de la condición del drenaje",
         "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
+        "LEVEL_1": "Nivel de corriente del segmento a nivel de subcuenca; -1 sin clasificar",
+        "ARBSUM_1": "Sumatoria de las longitudes de las líneas de flujo aguas arriba del segmento, a nivel de subcuenca",
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
         "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },
@@ -583,7 +597,7 @@ def main() -> None:
     )
 
     for destination in build_dictionaries(params):
-        print(f"diccionario → {destination.relative_to(PROJECT_ROOT)}")
+        print(f"diccionario -> {destination.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":
