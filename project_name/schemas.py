@@ -9,6 +9,10 @@ from datetime import UTC, datetime
 
 import pandera.pandas as pa
 
+from project_name.features import GRUPOS_INCIDENTE_911
+from project_name.hydro_context import CONTEXT_NAMES, PROXIMITY_LEVELS
+from project_name.jobs.process_llamadas_911_job import TIPOS_INCIDENTE_EQUIVALENTES
+
 # Caja amplia alrededor del municipio de Hermosillo (incluye Bahía de Kino e Isla
 # Tiburón); basta para detectar coordenadas invertidas o de otro estado.
 HERMOSILLO_BOUNDS = {"lat": (27.5, 30.5), "lon": (-113.0, -110.0)}
@@ -123,6 +127,120 @@ UBICACIONES_AVISO = pa.DataFrameSchema(
         ),
     ],
     unique=["post_id", "location_type", "raw_text"],
+)
+
+# Tipo canónico de incidente -> su grupo; las variantes ortográficas ya se unificaron.
+GRUPO_DE_TIPO_911 = {
+    tipo: grupo
+    for grupo, tipos in GRUPOS_INCIDENTE_911.items()
+    for tipo in tipos
+    if tipo not in TIPOS_INCIDENTE_EQUIVALENTES
+}
+
+LLAMADAS_911_HERMOSILLO = pa.DataFrameSchema(
+    {
+        "colonia": pa.Column(),
+        "tipo_incidente": pa.Column(checks=pa.Check.isin(list(GRUPO_DE_TIPO_911))),
+        "fecha": pa.Column(),
+        "hora": pa.Column(checks=pa.Check.in_range(0, 23)),
+        "grupo_incidente": pa.Column(checks=pa.Check.isin(list(GRUPOS_INCIDENTE_911))),
+        "colonia_id": pa.Column(checks=COLONIA_ID, nullable=True),
+        "colonia_source": pa.Column(
+            checks=pa.Check.isin(["catalogo", "equivalencia"]), nullable=True
+        ),
+    },
+    checks=[
+        pa.Check(
+            lambda df: df["tipo_incidente"].map(GRUPO_DE_TIPO_911) == df["grupo_incidente"],
+            name="tipo_incidente_in_its_group",
+        ),
+        pa.Check(
+            lambda df: df["colonia_id"].isna() == df["colonia_source"].isna(),
+            name="colonia_source_only_when_colonia_id",
+        ),
+    ],
+)
+
+PRECIPITACION_HERMOSILLO = pa.DataFrameSchema(
+    {
+        "date": pa.Column(unique=True),
+        "precipitation_mm": pa.Column(checks=pa.Check.ge(0)),
+        "precipitation_hours": pa.Column(checks=pa.Check.in_range(0, 24)),
+        "month": pa.Column(checks=pa.Check.in_range(1, 12)),
+        "is_rain_day": pa.Column(),
+    },
+    checks=[
+        pa.Check(
+            lambda df: df["is_rain_day"] == df["precipitation_mm"].ge(1),
+            name="is_rain_day_is_1mm_or_more",
+        ),
+        pa.Check(lambda df: df["year"] == df["date"].dt.year, name="year_matches_date"),
+    ],
+)
+
+BACHES = pa.DataFrameSchema(
+    {
+        # Sin rango de coordenadas: el Bachómetro trae 266 puntos fuera del municipio y
+        # el procesado los conserva (ver docs/cinco_v_datos.md).
+        "id": pa.Column(unique=True),
+        "date": pa.Column(),
+        "material": pa.Column(checks=pa.Check.isin([1, 2])),
+        "year": pa.Column(checks=pa.Check.in_range(2021, datetime.now(UTC).year)),
+    }
+)
+
+BACHES_CON_COLONIA = pa.DataFrameSchema(
+    {
+        "id": pa.Column(unique=True),
+        "date": pa.Column(),
+        # 0 cuando el bache no cae en ningún asentamiento ni cerca de uno.
+        "colonia_id": pa.Column(checks=pa.Check.str_matches(r"^(\d{13}|0)$")),
+        "colonia_source": pa.Column(
+            checks=pa.Check.isin(["spatial_within", "spatial_nearest", "contexto_ubicacion"])
+        ),
+        "contexto_ubicacion": pa.Column(
+            checks=pa.Check.isin(
+                ["dentro_asentamiento", "cerca_asentamiento", "probable_carretera_o_zona_rural"]
+            )
+        ),
+        "distance_to_colonia_m": pa.Column(checks=pa.Check.ge(0)),
+    },
+    checks=[
+        pa.Check(
+            lambda df: df["colonia_id"].eq("0") == df["colonia_source"].eq("contexto_ubicacion"),
+            name="colonia_id_zero_only_without_colonia",
+        ),
+        pa.Check(
+            lambda df: (
+                df["colonia_source"].eq("spatial_within")
+                == df["contexto_ubicacion"].eq("dentro_asentamiento")
+            ),
+            name="within_matches_contexto",
+        ),
+    ],
+)
+
+COLONIAS_CONTEXTO_HIDROGRAFICO = pa.DataFrameSchema(
+    {
+        "colonia_id": pa.Column(checks=COLONIA_ID, unique=True),
+        **{f"id_seg_{k}": pa.Column(checks=pa.Check.ge(1)) for k in (1, 2, 3)},
+        **{f"dist_seg_{k}": pa.Column(checks=pa.Check.ge(0)) for k in (1, 2, 3)},
+        "proximity_level": pa.Column(checks=pa.Check.isin(PROXIMITY_LEVELS)),
+        "context": pa.Column(checks=pa.Check.isin(list(CONTEXT_NAMES))),
+        "context_name": pa.Column(checks=pa.Check.isin(list(CONTEXT_NAMES.values()))),
+    },
+    checks=[
+        pa.Check(
+            lambda df: (
+                (df["dist_seg_1"] <= df["dist_seg_2"]) & (df["dist_seg_2"] <= df["dist_seg_3"])
+            ),
+            name="segments_sorted_by_distance",
+        ),
+        pa.Check(
+            lambda df: df["context"].map(CONTEXT_NAMES) == df["context_name"],
+            name="context_name_matches_context",
+        ),
+    ],
 )
 
 HL = pa.DataFrameSchema(
@@ -286,6 +404,11 @@ SCHEMAS = {
     "publicaciones_aguah": PUBLICACIONES_AGUAH,
     "colonias_hermosillo": COLONIAS_HERMOSILLO,
     "ubicaciones_aviso": UBICACIONES_AVISO,
+    "llamadas_911_hermosillo": LLAMADAS_911_HERMOSILLO,
+    "precipitacion_hermosillo": PRECIPITACION_HERMOSILLO,
+    "baches": BACHES,
+    "baches_con_colonia": BACHES_CON_COLONIA,
+    "colonias_contexto_hidrografico": COLONIAS_CONTEXTO_HIDROGRAFICO,
     "subc_la_manga_hl": HL,
     "subc_la_manga_dr": DR,
     "subc_la_manga_subc": SUBC,

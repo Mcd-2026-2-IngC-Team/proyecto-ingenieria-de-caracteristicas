@@ -40,7 +40,11 @@ ROWS = {
     ),
     "colonias_hermosillo": "un asentamiento humano de Hermosillo según el DCAH 2025 del INEGI",
     "ubicaciones_aviso": "un lugar mencionado en una publicación de Agua de Hermosillo",
-    "baches": "un reporte ciudadano de bache en el Bachómetro de Hermosillo",
+    "baches": ("un bache atendido según el Bachómetro de Hermosillo; la fecha es la de atención"),
+    "baches_con_colonia": (
+        "un bache atendido según el Bachómetro de Hermosillo, con el asentamiento del "
+        "DCAH 2025 que le toca por ubicación"
+    ),
     "llamadas_911_hermosillo": (
         "una llamada al 911 en Hermosillo clasificada en un tipo de incidente "
         "relacionado con inundación, fenómeno hidrometeorológico, drenaje, agua o terreno"
@@ -59,6 +63,7 @@ DATE_COLUMNS = {
     "colonias_hermosillo": [],
     "ubicaciones_aviso": [],
     "baches": ["date"],
+    "baches_con_colonia": ["date"],
     "llamadas_911_hermosillo": ["fecha"],
     "precipitacion_hermosillo": ["date"],
     "colonias_contexto_hidrografico": [],
@@ -70,6 +75,7 @@ READ_DTYPES = {
     "ubicaciones_aviso": {"colonia_id": str},
     "llamadas_911_hermosillo": {"colonia_id": str},
     "colonias_contexto_hidrografico": {"colonia_id": str},
+    "baches_con_colonia": {"colonia_id": str},
 }
 
 # Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
@@ -198,28 +204,61 @@ DESCRIPTIONS = {
     },
     "baches": {
         "id_row": "Identificador secuencial de la fila, asignado al combinar los años",
-        "latitude": "Latitud del reporte de bache",
-        "longitude": "Longitud del reporte de bache",
-        "date": "Fecha del reporte de bache",
-        "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al reporte",
-        "material": "Código del tipo de material/pavimento reportado por el Bachómetro",
-        "description": "Descripción en texto libre del reporte, escrita por el ciudadano",
-        "id": "Identificador del reporte en el Bachómetro",
-        "year": "Año de la fuente de datos, según bachometro.hermosillo.gob.mx",
-        "date_mx": "Fecha del reporte en formato mexicano (dd/mm/aaaa)",
-        "colonia_original": "Nombre de la colonia obtenido originalmente a partir de la información del Bachómetro; puede no estar disponible",
-        "colonia_original_normalized": "Versión normalizada de colonia_original, convertida a mayúsculas, sin acentos, sin espacios iniciales o finales y con espacios internos estandarizados, utilizada para comparación",
-        "settlement_name": "Nombre del asentamiento o colonia obtenido espacialmente a partir del archivo GPKG de colonias de Hermosillo",
-        "settlement_name_normalized": "Versión normalizada de settlement_name, utilizada para comparar de forma consistente el nombre espacial con colonia_original",
-        "settlement_type": "Tipo de asentamiento correspondiente al polígono identificado en el GPKG, por ejemplo COLONIA, FRACCIONAMIENTO o BARRIO",
-        "colonia_id": "Identificador único de la colonia o asentamiento correspondiente al polígono del GPKG",
-        "spatial_match_method": "Método utilizado para asociar espacialmente el reporte con una colonia: 'within' si el punto está dentro del polígono, 'nearest' si se asignó mediante la colonia más cercana, o nulo si no se realizó asociación espacial",
-        "distance_to_colonia_m": "Distancia en metros desde el punto del reporte hasta el polígono de colonia más cercano; es 0 cuando el punto se encuentra dentro de un polígono",
-        "fuera_asentamiento": "Indicador booleano que señala si el reporte se encuentra a una distancia mayor al umbral definido respecto al asentamiento más cercano",
-        "contexto_ubicacion": "Clasificación espacial del reporte según su relación con los polígonos de asentamientos, por ejemplo 'dentro_asentamiento', 'cerca_asentamiento' o 'probable_carretera_o_zona_rural'",
-        "colonia_match": "Indicador booleano que señala si colonia_original y settlement_name coinciden después de normalizar ambos nombres; es nulo cuando no existen ambos valores para realizar la comparación",
-        "colonia": "Valor final asignado a la ubicación del reporte. Prioriza colonia_original; si no existe, utiliza settlement_name obtenido espacialmente y, si ambos faltan, utiliza contexto_ubicacion",
-        "colonia_source": "Fuente utilizada para determinar el valor final de colonia: 'original' si proviene del Bachómetro, 'spatial_within' si se obtuvo por inclusión en un polígono, 'spatial_nearest' si se obtuvo por proximidad espacial o 'contexto_ubicacion' si se utilizó la clasificación espacial como último recurso",
+        "latitude": "Latitud del bache atendido",
+        "longitude": "Longitud del bache atendido",
+        "date": (
+            "Fecha de atención del bache (no la de su aparición ni la de un reporte ciudadano)"
+        ),
+        "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al bache",
+        "material": "Código del tipo de material/pavimento que registra el Bachómetro",
+        "description": (
+            "Descripción en texto libre del Bachómetro; la mayoría empieza con 'Bacheo en'"
+        ),
+        "id": "Identificador del bache en el Bachómetro",
+        "year": "Año del archivo de la fuente, según bachometro.hermosillo.gob.mx",
+        "date_mx": "Fecha de atención en formato mexicano (dd/mm/aaaa)",
+    },
+    "baches_con_colonia": {
+        "id": "Identificador del bache en el Bachómetro; une con baches",
+        "latitude": "Latitud del bache atendido",
+        "longitude": "Longitud del bache atendido",
+        "date": "Fecha de atención del bache",
+        "date_mx": "Fecha de atención en formato mexicano (dd/mm/aaaa)",
+        "year": "Año del archivo de la fuente, según bachometro.hermosillo.gob.mx",
+        "material": "Código del tipo de material/pavimento que registra el Bachómetro",
+        "description": (
+            "Descripción en texto libre del Bachómetro; la mayoría empieza con 'Bacheo en'"
+        ),
+        "neighborhoods": "IDs de la(s) colonia(s) del Bachómetro asociadas al bache",
+        "colonia": (
+            "Nombre del asentamiento asignado; si no hubo asentamiento, el valor de "
+            "contexto_ubicacion"
+        ),
+        "colonia_id": (
+            "Clave geoestadística del asentamiento (cvegeo del INEGI); une con "
+            "colonias_hermosillo. 0 si no se asignó asentamiento"
+        ),
+        "colonia_source": (
+            "Cómo se asignó la colonia: spatial_within (el punto cae dentro del "
+            "polígono), spatial_nearest (asentamiento más cercano, a 500 m o menos) o "
+            "contexto_ubicacion (sin asentamiento)"
+        ),
+        "settlement_type": (
+            "Tipo del asentamiento asignado: COLONIA, FRACCIONAMIENTO, PRIVADA...; "
+            "nulo si no hubo asentamiento"
+        ),
+        "distance_to_colonia_m": (
+            "Distancia en metros del punto al polígono del asentamiento más cercano; 0 "
+            "cuando cae dentro"
+        ),
+        "colonia_match": (
+            "Si la colonia de origen del Bachómetro coincide con la asignada por "
+            "ubicación; nulo cuando no hay colonia de origen para comparar"
+        ),
+        "contexto_ubicacion": (
+            "Relación del punto con los asentamientos: dentro_asentamiento, "
+            "cerca_asentamiento o probable_carretera_o_zona_rural"
+        ),
     },
     "llamadas_911_hermosillo": {
         "colonia": (

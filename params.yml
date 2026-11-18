@@ -246,6 +246,18 @@ sources:
           directory: "data/processed/bachometro"
           filename: "baches_hermosillo.csv"
 
+      # Lo generan add_colonia_name_to_bache_job y add_colonia_bache_id_with_gpkg a
+      # partir de baches_hermosillo.csv; no se descarga.
+      baches_con_colonia:
+        name: "Baches atendidos con colonia del DCAH"
+        description: >-
+          Los mismos baches de baches_hermosillo.csv con el asentamiento del DCAH 2025
+          que les toca por ubicación (dentro del polígono, o el más cercano a 500 m o
+          menos) y la distancia a él.
+        processed:
+          directory: "data/processed/bachometro"
+          filename: "baches_hermosillo_filled.csv"
+
   agua_hermosillo:
     name: "Agua de Hermosillo: datos derivados para el tablero de desabasto"
     description: >-

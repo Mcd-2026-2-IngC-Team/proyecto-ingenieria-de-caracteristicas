@@ -1,0 +1,17 @@
+nombre,tipo,nulos_pct,distintos,rango,descripcion
+id,int64,0.0,39018,1 – 48655,Identificador del bache en el Bachómetro; une con baches
+latitude,float64,0.0,36127,-38.9874506 – 50.937531,Latitud del bache atendido
+longitude,float64,0.0,36091,-122.4194155 – 121.2755118,Longitud del bache atendido
+date,datetime64[us],0.0,1369,2021-09-17 – 2026-09-28,Fecha de atención del bache
+date_mx,str,0.0,1369,,Fecha de atención en formato mexicano (dd/mm/aaaa)
+year,int64,0.0,6,2021 – 2026,"Año del archivo de la fuente, según bachometro.hermosillo.gob.mx"
+material,int64,0.0,2,1 – 2,Código del tipo de material/pavimento que registra el Bachómetro
+description,str,0.0,34367,,Descripción en texto libre del Bachómetro; la mayoría empieza con 'Bacheo en'
+neighborhoods,str,0.0,1253,,IDs de la(s) colonia(s) del Bachómetro asociadas al bache
+colonia,str,0.0,667,,"Nombre del asentamiento asignado; si no hubo asentamiento, el valor de contexto_ubicacion"
+colonia_id,str,0.0,680,,Clave geoestadística del asentamiento (cvegeo del INEGI); une con colonias_hermosillo. 0 si no se asignó asentamiento
+colonia_source,str,0.0,3,,"Cómo se asignó la colonia: spatial_within (el punto cae dentro del polígono), spatial_nearest (asentamiento más cercano, a 500 m o menos) o contexto_ubicacion (sin asentamiento)"
+settlement_type,str,1.5351888871802757,12,,"Tipo del asentamiento asignado: COLONIA, FRACCIONAMIENTO, PRIVADA...; nulo si no hubo asentamiento"
+distance_to_colonia_m,float64,0.0,3719,0.0 – 17082646.6891762,Distancia en metros del punto al polígono del asentamiento más cercano; 0 cuando cae dentro
+colonia_match,float64,100.0,0,,Si la colonia de origen del Bachómetro coincide con la asignada por ubicación; nulo cuando no hay colonia de origen para comparar
+contexto_ubicacion,str,0.0,3,,"Relación del punto con los asentamientos: dentro_asentamiento, cerca_asentamiento o probable_carretera_o_zona_rural"

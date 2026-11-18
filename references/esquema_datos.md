@@ -1,19 +1,24 @@
 # Esquema de los datos procesados
 
-Diagrama entidad–relación de los datasets de `data/processed/` usados en las
+Diagrama entidad-relación de los datasets de `data/processed/` usados en las
 libretas de análisis. Hay una entidad por dataset y, en el caso de
 `hidrografia_cd_hermosillo.gpkg`, una por capa (`hl`, `dr`, `ha`, `subc`, `to`).
 
-Las relaciones en **línea continua** (`--`) son llaves reales entre columnas; las
-de **línea punteada** (`..`) no son restricciones declaradas: se resuelven en los
-jobs o en las libretas (unión por nombre normalizado o unión espacial).
+Las relaciones en línea continua (`--`) son llaves reales entre columnas; las de
+línea punteada (`..`) no son restricciones declaradas: se resuelven en los jobs o
+en las libretas (unión por fecha, por nombre normalizado o espacial).
 
 ```mermaid
 erDiagram
     publicaciones_aguah ||--o{ ubicaciones_aviso : tiene_menciones
     colonias_hermosillo ||--o{ ubicaciones_aviso : contiene
-    colonias_hermosillo ||--o{ baches : colonia_normalizada
+    colonias_hermosillo ||--o{ baches : colonia_id
     colonias_hermosillo ||--o{ llamadas_911_hermosillo : colonia_id
+    colonias_hermosillo ||--o| colonias_contexto_hidrografico : colonia_id
+    precipitacion_hermosillo ||..o{ llamadas_911_hermosillo : fecha
+    precipitacion_hermosillo ||..o{ baches : fecha_de_atencion
+    precipitacion_hermosillo ||..o{ publicaciones_aguah : fecha_de_publicacion
+    hl ||..o{ colonias_contexto_hidrografico : id_seg_1_2_3
     subc ||--o{ hl : pertenece_a
     dr ||--o{ hl : identifica_drenaje
     colonias_hermosillo }o--o{ hl : interseccion_espacial
@@ -81,16 +86,21 @@ erDiagram
 
     baches {
         int64 id PK
-        int64 id_row
         float latitude
         float longitude
         datetime date
-        string neighborhoods
+        datetime date_mx
+        int64 year
         int64 material
         string description
-        int64 year
-        string date_mx
-        string colonia_id FK
+        string neighborhoods
+        string colonia
+        int64 colonia_id FK
+        string colonia_source
+        string settlement_type
+        float distance_to_colonia_m
+        float colonia_match
+        string contexto_ubicacion
     }
 
     llamadas_911_hermosillo {
@@ -101,6 +111,33 @@ erDiagram
         string grupo_incidente
         string colonia_id FK
         string colonia_source
+    }
+
+    precipitacion_hermosillo {
+        datetime date PK
+        float precipitation_mm
+        float precipitation_hours
+        int64 year
+        int64 month
+        boolean is_rain_day
+    }
+
+    colonias_contexto_hidrografico {
+        int64 colonia_id PK
+        int64 id_seg_1 FK
+        float dist_seg_1
+        int64 id_seg_2 FK
+        float dist_seg_2
+        int64 id_seg_3 FK
+        float dist_seg_3
+        string proximity_level
+        float order_median
+        int64 order_max
+        float level_median
+        int64 level_min
+        float proximity_ord
+        int64 context
+        string context_name
     }
 
     subc {
@@ -158,38 +195,51 @@ erDiagram
 | `publicaciones_aguah` | `data/processed/aguah/publicaciones_aguah.csv` | Una publicación de Facebook de Agua de Hermosillo |
 | `ubicaciones_aviso` | `data/processed/aguah/ubicaciones_aviso.csv` | Una mención de un lugar (colonia o cruce) dentro de una publicación |
 | `colonias_hermosillo` | `data/processed/aguah/colonias_hermosillo.gpkg` (y `.csv`) | Un asentamiento del catálogo DCAH/INEGI con su polígono |
-| `baches` | `data/processed/bachometro/baches_hermosillo.csv` | Un reporte ciudadano de bache del Bachómetro |
-| `llamadas_911_hermosillo` | `data/processed/llamadas_911/llamadas_911_hermosillo.csv` | Una llamada al 911 por incidente relacionado con agua |
+| `baches` | `data/processed/bachometro/baches_hermosillo_filled.csv` | Un bache atendido del Bachómetro (la fecha es la de atención), con su colonia |
+| `llamadas_911_hermosillo` | `data/processed/llamadas_911/llamadas_911_hermosillo.csv` | Una llamada al 911 por incidente relacionado con agua o terreno |
+| `precipitacion_hermosillo` | `data/processed/precipitacion/precipitacion_hermosillo.csv` | Un día con la lluvia estimada por Open-Meteo en un punto de la ciudad |
+| `colonias_contexto_hidrografico` | `data/processed/inegi/hidrografia_hermosillo/colonias_contexto_hidrografico.csv` | Una de las 762 colonias de la ciudad con sus 3 tramos de cauce más cercanos y su contexto hidrográfico |
 | `subc`, `hl`, `dr`, `ha`, `to` | `data/processed/inegi/hidrografia_hermosillo/hidrografia_cd_hermosillo.gpkg` | Capas INEGI 1:50 000: unidad de captación, cauces, puntos de drenaje, cuerpos de agua y topónimos |
 
 ## Notas
 
-- **`ubicaciones_aviso` no tiene llave primaria propia**: cada fila es una mención;
-  la misma publicación puede mencionar muchas colonias y cruces (`post_id` se repite).
+- `ubicaciones_aviso` no tiene llave primaria propia: cada fila es una mención; la
+  misma publicación puede mencionar muchas colonias y cruces (`post_id` se repite).
   `colonia_id` es nulo (~2.4%) cuando `match_method` es `unmatched`, y `lat`/`lon`
   solo existen en `cruce_geocodificado`.
-- **`baches` ↔ `colonias_hermosillo`** se resuelve espacialmente: el Bachómetro usa
-  sus propios IDs de colonia (`neighborhoods`, no empatables a `colonia_id`). La
-  variante `baches_hermosillo_colonia_filled.csv` agrega `colonia_id` (within +
-  nearest ≤500 m) con su metodología de match (`spatial_match_method`,
-  `distance_to_colonia_m`, `contexto_ubicacion`).
-- **`llamadas_911.colonia` es texto libre del operador** (incluye `SIN COLONIA` y
-  nombres sin catálogo): no es una llave real. El job `add_colonia_llamada_job`
-  la resuelve a `colonia_id` por nombre normalizado contra `colonias_hermosillo`
-  y luego con equivalencias revisadas a mano
-  (`data/external/equivalencias_colonias_911.csv`); `colonia_source` distingue
-  `catalogo` de `equivalencia` y queda vacío (~20%) cuando no se resolvió —
-  nombres genéricos, localidades fuera de la ciudad o variantes del 911 sin
-  equivalente en el catálogo.
-- **`colonias_hermosillo` ↔ hidrografía** es una relación puramente espacial
-  (intersección de polígonos con segmentos `hl`/`ha` en las libretas); no hay
-  columna que la declare. `dr` es un solo punto de drenaje por el área urbana.
-- En `hl`, `ORDER_1` es el orden de Strahler del segmento (≥4 colector principal,
-  -1 sin clasificar), `LEVEL_1` el nivel de corriente (-1 sin clasificar) y
+- `baches` y `colonias_hermosillo` se unen en el job `add_colonia_bache_id_with_gpkg`:
+  el Bachómetro usa sus propios IDs de colonia (`neighborhoods`, no empatables a
+  `colonia_id`), así que `baches_hermosillo_filled.csv` asigna `colonia_id` por
+  ubicación (dentro del polígono, o la colonia más cercana a 500 m o menos).
+  `colonia_source` dice cómo (`spatial_within`, `spatial_nearest`) y vale
+  `contexto_ubicacion` con `colonia_id` = 0 cuando no hubo colonia; en este archivo
+  `colonia_id` es entero, mientras que en `colonias_hermosillo` es texto de 13 dígitos.
+- `llamadas_911.colonia` es texto libre del operador (incluye `SIN COLONIA` y nombres
+  sin catálogo): no es una llave real. El job `add_colonia_llamada_job` la resuelve a
+  `colonia_id` por nombre normalizado contra `colonias_hermosillo` y luego con
+  equivalencias revisadas a mano (`data/external/equivalencias_colonias_911.csv`);
+  `colonia_source` distingue `catalogo` de `equivalencia` y queda vacío (~20%) cuando
+  no se resolvió: nombres genéricos, localidades fuera de la ciudad o variantes del
+  911 sin equivalente en el catálogo.
+- `precipitacion_hermosillo` se une por fecha: con `llamadas_911_hermosillo.fecha`,
+  con la fecha de atención de `baches.date` y con el día de
+  `publicaciones_aguah.published_at`. Hay una sola serie para toda la ciudad, así que
+  no se relaciona con las colonias.
+- `colonias_contexto_hidrografico` tiene una fila por colonia de la ciudad (762 de los
+  783 asentamientos de `colonias_hermosillo`, los de `locality_code` 0001). `id_seg_1`
+  a `id_seg_3` son los `ID` de los tres tramos `hl` más cercanos al centroide, tomados
+  de `subc_hermosillo.gpkg` (no del recorte urbano) y `dist_seg_*` sus distancias en
+  metros; `context` va de 0 a 3 y `context_name` es su etiqueta (0 Lejos de la red,
+  1 Junto a colectores, 2 Arroyos menores muy cerca, 3 Los más cercanos).
+- `colonias_hermosillo` y la hidrografía se relacionan solo por ubicación
+  (intersección de polígonos con segmentos `hl`/`ha` en las libretas); no hay columna
+  que la declare. `dr` es un solo punto de drenaje por el área urbana.
+- En `hl`, `ORDER_1` es el orden de Strahler del segmento (4 o más: colector
+  principal; -1 sin clasificar), `LEVEL_1` el nivel de corriente (-1 sin clasificar) y
   `ARBSUM_1` la suma de las longitudes de las líneas de flujo aguas arriba del
-  segmento; los tres son indicadores de hidromorfometría calculados por el INEGI
-  a nivel de subcuenca. `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
+  segmento; los tres son indicadores de hidromorfometría calculados por el INEGI a
+  nivel de subcuenca. `ID_DRENA` apunta al punto de drenaje `dr` que recibe el
   segmento.
-- Los perfiles completos por columna (nulos, distintos, rango, descripción) están
-  en los diccionarios de esta misma carpeta (`<dataset>.csv` /
+- Los perfiles completos por columna (nulos, distintos, rango, descripción) están en
+  los diccionarios de esta misma carpeta (`<dataset>.csv` /
   `json/diccionario_<dataset>.json`).
