@@ -726,6 +726,9 @@ baches_joined["colonia_id"] = (
 baches_joined["colonia_id_method"] = (
     baches_joined["colonia_original_normalized"]
     .map({name: match[1] for name, match in name_matches.items()})
+    # Texto desde el inicio: si ningún nombre empareja la columna nace numérica
+    # (toda NaN) y pandas 3 no permite escribir después "spatial_within".
+    .astype("string")
 )
 
 # 2) Fallback geográfico: ID del polígono GPKG, validado contra el CSV.

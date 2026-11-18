@@ -54,6 +54,24 @@
     },
     {
       "capa": "hl",
+      "nombre": "LEVEL_1",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 8,
+      "rango": "-1 – 7",
+      "descripcion": "Nivel de corriente del segmento a nivel de subcuenca; -1 sin clasificar"
+    },
+    {
+      "capa": "hl",
+      "nombre": "ARBSUM_1",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 4880,
+      "rango": "0.0 – 3280700.622",
+      "descripcion": "Sumatoria de las longitudes de las líneas de flujo aguas arriba del segmento, a nivel de subcuenca"
+    },
+    {
+      "capa": "hl",
       "nombre": "ID_DRENA",
       "tipo": "int32",
       "nulos_pct": 0.0,
@@ -243,7 +261,7 @@
     }
   ],
   "generado": {
-    "fecha": "2026-09-26 00:55 UTC",
+    "fecha": "2026-11-11 18:19 UTC",
     "comando": "make dictionary",
     "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
   },

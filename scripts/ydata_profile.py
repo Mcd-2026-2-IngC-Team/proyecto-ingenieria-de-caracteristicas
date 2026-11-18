@@ -68,6 +68,18 @@ GPKG_LAYERS = {
     "hidrografia_cd_hermosillo": ["hl"],
 }
 
+# Filtros previos al perfil, por (dataset, capa). En hl, los ENABLED=0 son
+# ciclos y bifurcaciones deshabilitados de la red geométrica: sus indicadores
+# de hidromorfometría valen -1/0 por convención y distorsionan las
+# correlaciones que queremos observar (ORDER_1, LEVEL_1, ARBSUM_1).
+GPKG_FILTERS = {
+    ("subc_hermosillo", "hl"): {
+        "query": "ENABLED == 1",
+        "drop": ["ENABLED"],
+        "sufijo": " — solo segmentos habilitados",
+    },
+}
+
 # Título legible de cada capa del GeoPackage consolidado.
 LAYER_NAMES = {
     "hl": "red hidrográfica",
@@ -115,10 +127,13 @@ def profile(dataset: str) -> None:
             if only is not None and layer not in only:
                 continue
             frame = pyogrio.read_dataframe(path, layer=layer, read_geometry=False)
+            filtro = GPKG_FILTERS.get((dataset, layer), {})
+            if filtro:
+                frame = frame.query(filtro["query"]).drop(columns=filtro["drop"])
             write_report(
                 frame,
                 f"{dataset}_{layer}",
-                f"{TITLES[dataset]} — {LAYER_NAMES[layer]}",
+                f"{TITLES[dataset]} — {LAYER_NAMES[layer]}{filtro.get('sufijo', '')}",
             )
         return
 

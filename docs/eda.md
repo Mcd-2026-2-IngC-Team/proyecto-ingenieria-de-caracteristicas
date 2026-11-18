@@ -16,7 +16,10 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
   [`eda/ubicaciones_aviso.html`](eda/ubicaciones_aviso.html). Los genera `make profile`
   (`scripts/ydata_profile.py`, entorno aislado porque ydata-profiling exige pandas<3).
 - Auto EDA del consolidado de subcuencas (una capa por reporte):
-  [`eda/subc_hermosillo_hl.html`](eda/subc_hermosillo_hl.html) (red hidrográfica),
+  [`eda/subc_hermosillo_hl.html`](eda/subc_hermosillo_hl.html) (red hidrográfica;
+  45,968 segmentos habilitados — se excluyen los 550 con `ENABLED = 0`, ciclos y
+  bifurcaciones fuera de la red geométrica cuyos indicadores valen -1/0 por
+  convención y distorsionan las correlaciones),
   [`eda/subc_hermosillo_dr.html`](eda/subc_hermosillo_dr.html) (puntos de drenaje),
   [`eda/subc_hermosillo_subc.html`](eda/subc_hermosillo_subc.html) (unidades de captación),
   [`eda/subc_hermosillo_ha.html`](eda/subc_hermosillo_ha.html) (cuerpos de agua),
@@ -24,7 +27,12 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 - Auto EDA del recorte a la ciudad:
   [`eda/hidrografia_cd_hermosillo_hl.html`](eda/hidrografia_cd_hermosillo_hl.html)
   (red hidrográfica urbana, 437 segmentos).
-- Funciones comunes: `project_name/eda.py`.
+- `notebooks/08-exploracion-redefinicion.ipynb` (fuente: `notebooks/marimo/08-exploracion-redefinicion.py`):
+  `llamadas_911_hermosillo.csv` (4,176), `precipitacion_hermosillo.csv` (3,195 días),
+  `baches_hermosillo.csv` (39,018), `publicaciones_aguah.csv` (5,200), colonias y red
+  hidrográfica. Resultados en [`redefinicion.md`](redefinicion.md) y
+  [`reporte_hallazgos.md`](reporte_hallazgos.md).
+- Funciones comunes: `project_name/eda.py` y `project_name/water_events.py`.
 
 ## Datos faltantes
 
@@ -42,6 +50,11 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | colonias | sin menciones en avisos | 221 (28.2%), 206 en la ciudad | Fraccionamientos, residenciales y privadas sobre todo | Bandera `mentioned` |
 | ubicaciones | `lat`, `lon` | 14,794 (91.0%) | Estructural: solo `cruce_geocodificado` tiene punto | Sin imputar; centroide de la colonia |
 | ubicaciones | `colonia_id` | 383 (2.4%) | MAR: exactamente `unmatched`; 33% de los cruces del OCR, 20% del texto | Excluir de conteos por colonia |
+| llamadas 911 | colonia sin nombre único en la ciudad | 818 (19.6%) sin colonia de la ciudad tras catálogo y equivalencias; 57 "SIN COLONIA" | Nombre libre del operador; localidades fuera de la ciudad | Excluir de análisis por colonia; series temporales completas |
+| llamadas 911 | `fenomeno_hidrometeorologico` antes de 2025 | 0 llamadas de 2018 a 2024 | Cambio de catálogo | No comparar entre años |
+| baches | `year` distinto al año de `date` | 1,584 | `year` es el archivo de origen | Usar `date` |
+| baches | fuera del recuadro de la ciudad | 511 | Coordenadas inválidas | Excluir de mapas |
+| baches | repetidos (coordenada, fecha y texto) | 152 | Doble envío | Sin depurar |
 
 - `pd.read_csv` convierte la cadena vacía en `NaN`; los notebooks leen `publicaciones_aguah.csv`
   con `keep_default_na=False` para separar vacíos de nulos.
@@ -59,6 +72,8 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | ubicaciones | menciones por publicación (log) | Tukey | 57 publicaciones (32 a 91 menciones) | |
 | ubicaciones | distancia del cruce al centroide / raíz del área | Tukey | 40 cruces | 0.06 con PyOD |
 | ubicaciones | lat, lon, distancia al centroide | IForest, ECOD, LOF (`contamination=0.02`) | 30, 30, 29 | IForest y ECOD 0.43; LOF 0.04 a 0.05 |
+| llamadas 911 diarias | residuo contra mediana móvil de 29 días | Tukey (k = 3), solo lado alto | incluido en 36 días con 2 o más votos | 0.33 con IForest y ECOD |
+| llamadas 911 diarias | conteo, residuo, día del año (seno y coseno) | IForest, ECOD, LOF (`contamination=0.01`) | 36 días con 2 o más votos: 83% en julio a septiembre, 36% tras lluvia de 10 mm o más | IForest y ECOD 0.61; LOF 0.02 a 0.04 |
 
 | Dataset | Anomalía | Filas | Tipo |
 |---|---|---:|---|
@@ -94,6 +109,12 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | ubicaciones | `source_field`, `has_image` | V de Cramér | 0.30 |
 | ubicaciones | `n_colonias`, `spread_km` (por publicación) | Spearman | 0.82 |
 | ubicaciones | `n_colonias`, `reactions_angry` (por publicación) | Spearman | 0.30 |
+| lluvia y 911 | lluvia del día, llamadas por inundación el mismo día | Spearman | 0.30 |
+| lluvia y 911 | lluvia del día, llamadas por terreno el mismo día | Spearman | 0.31 |
+| lluvia y 911 | lluvia del día, llamadas por drenaje el mismo día | Spearman | 0.11 |
+| lluvia y baches | lluvia del día, reportes de baches el mismo día | Spearman | 0.00 |
+| lluvia y aguah | lluvia del día, emergencias el mismo día | Spearman | 0.01 |
+| 911 por colonia | % de inundación, distancia al cauce | Spearman | 0.04 |
 
 ## Reducción de dimensión
 
@@ -103,16 +124,19 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | publicaciones | Texto (TF-IDF + SVD 50) | 5,200 × 50 | | 0.72 | 0.99 | 0.98 |
 | colonias | Área, centroide y menciones (ciudad) | 762 × 10 | 54% | 0.90 | 0.98 | 0.98 |
 | ubicaciones | Huella territorial por publicación | 3,788 × 11 | 49% | 0.95 | 1.00 | 1.00 |
+| llamadas 911 | Perfil mensual por colonia (5 o más llamadas) | 168 × 12 | 54% | 0.84 | 0.89 | 0.87 |
 
 - Interacción: los grupos de t-SNE y UMAP los definen sobre todo las variables binarias de
   entrada; coloreados por `event_type` y por periodo (no son entrada) los colores se mezclan.
 - Texto: `corte_programado` y `restablecimiento` forman islas; "otro" se divide en muchas islas.
 - Colonias: las 206 colonias de la ciudad sin menciones forman un grupo aparte en los tres métodos.
 - Ubicaciones: el número de colonias distintas ordena las tres proyecciones.
+- Llamadas 911: PC1 (33%) contrasta julio (−0.49) con agosto (0.84); nube continua sin grupos;
+  Spearman de PC1 con la distancia al cauce −0.18.
 
 ## Consulta con los usuarios
 
-Público del tablero por definir (README). Preguntas registradas en la sección 7 de cada
+Público del tablero: Protección Civil municipal y C5 (README). Preguntas registradas en la sección 7 de cada
 notebook; estado: pendiente.
 
 | Dataset | Pregunta | Estado |

@@ -1,20 +1,39 @@
 from pathlib import Path
 
+import pandas as pd
+
 from project_name.config import load_dataset_config, load_logging, load_params
 from project_name.features import clean_llamadas_911, load_llamadas_911
 from project_name.logging import log_execution
 
 # El catálogo de TIPO DE INCIDENTE del 911 tiene valores duplicados por
 # ortografía: un mismo concepto fue capturado como dos cadenas distintas.
-# Ambos valores pasan el filtro de GRUPOS_INCIDENTE_911 y aquí se unifican
-# al valor mayoritario del catálogo:
-#   "ÁRBOL CAÍDO O POR CAER" (45 llamadas) -> "ARBOL CAÍDO O POR CAER" (1,723)
-#   "VIALIDAD EN MAL ESTADO-BACHES" (28)   -> "VIALIDAD EN MAL ESTADO" (221)
-# Resultado: 34 valores del catálogo quedan en 32 tipos canónicos.
+# Ambos valores pasan el filtro de GRUPOS_INCIDENTE_911 (siempre en el mismo
+# grupo) y aquí se unifican al valor mayoritario del catálogo:
+#   "ÁRBOL CAÍDO O POR CAER" (45 llamadas)          -> "ARBOL CAÍDO O POR CAER" (1,723)
+#   "VIALIDAD EN MAL ESTADO-BACHES" (28)            -> "VIALIDAD EN MAL ESTADO" (221)
+#   "INUNDACIÓN" (24)                               -> "INUNDACIONES" (399)
+#   "ALCANTARILLA-REGISTRO SIN TAPA" (16)           -> "ALCANTARILLA SIN TAPA" (990)
+#   "AHOGAMIENTO-SUMERSIÓN" (4)                     -> "AHOGAMIENTO" (74)
+#   "HUNDIMIENTOS / ... EN SUELO/ ..." (2)          -> "HUNDIMIENTOS / AGRIETAMIENTOS/ ..." (365)
+# "HURACANES-CAÍDA DE ÁRBOL" no se unifica: es una categoría del protocolo de
+# huracanes, no una variante ortográfica de árbol caído.
+# Resultado: 34 valores del catálogo quedan en 28 tipos canónicos.
 TIPOS_INCIDENTE_EQUIVALENTES = {
     "ÁRBOL CAÍDO O POR CAER": "ARBOL CAÍDO O POR CAER",
     "VIALIDAD EN MAL ESTADO-BACHES": "VIALIDAD EN MAL ESTADO",
+    "INUNDACIÓN": "INUNDACIONES",
+    "ALCANTARILLA-REGISTRO SIN TAPA": "ALCANTARILLA SIN TAPA",
+    "AHOGAMIENTO-SUMERSIÓN": "AHOGAMIENTO",
+    "HUNDIMIENTOS / AGRIETAMIENTOS EN SUELO/ INESTABILIDAD DE LADERA": (
+        "HUNDIMIENTOS / AGRIETAMIENTOS/ INESTABILIDAD DE LADERA"
+    ),
 }
+
+
+def unify_tipos_incidente(df: pd.DataFrame) -> pd.DataFrame:
+    """Reemplaza las variantes ortográficas de tipo_incidente por su valor canónico."""
+    return df.assign(tipo_incidente=df["tipo_incidente"].replace(TIPOS_INCIDENTE_EQUIVALENTES))
 
 
 @log_execution
@@ -37,7 +56,7 @@ def process_llamadas_911(params: dict) -> None:
     print(f"{len(df)} llamadas crudas")
 
     df = clean_llamadas_911(df)
-    df["tipo_incidente"] = df["tipo_incidente"].replace(TIPOS_INCIDENTE_EQUIVALENTES)
+    df = unify_tipos_incidente(df)
     print(f"{len(df)} llamadas con tipo de incidente seleccionado, sin nulos")
     print(df["grupo_incidente"].value_counts().to_string())
 

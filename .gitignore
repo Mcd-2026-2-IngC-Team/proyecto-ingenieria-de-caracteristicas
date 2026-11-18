@@ -207,3 +207,17 @@ cython_debug/
 .pypirc
 
 notebooks/marimo/__marimo__
+
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc

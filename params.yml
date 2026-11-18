@@ -209,6 +209,19 @@ sources:
           directory: "data/processed/inegi/hidrografia_hermosillo"
           filename: "hidrografia_cd_hermosillo.gpkg"
 
+      # Lo genera process_contexto_hidrografico_job con el método de
+      # notebooks/AAMM/09 (project_name/hydro_context.py); no se descarga.
+      colonias_contexto_hidrografico:
+        name: "Contexto hidrográfico de las colonias de Hermosillo"
+        description: >-
+          Una fila por colonia de la ciudad con los tres tramos de cauce más cercanos a
+          su centroide, su nivel de cercanía, el orden de Strahler y el nivel de
+          corriente de esos tramos, y el contexto hidrográfico que resulta de agruparlas
+          con KMeans (k=4).
+        processed:
+          directory: "data/processed/inegi/hidrografia_hermosillo"
+          filename: "colonias_contexto_hidrografico.csv"
+
   bachometro:
     name: "Bachómetro Hermosillo"
     base_url: "https://bachometro.hermosillo.gob.mx"
@@ -231,7 +244,7 @@ sources:
 
         processed:
           directory: "data/processed/bachometro"
-          filename: "baches_hermosillo_colonia_filled.csv"
+          filename: "baches_hermosillo.csv"
 
   agua_hermosillo:
     name: "Agua de Hermosillo: datos derivados para el tablero de desabasto"
@@ -304,8 +317,11 @@ sources:
           Una fila por llamada al 911 en Hermosillo entre 2018 y 2025
           (~2.3 millones). Un solo archivo Excel con una hoja por año (2018–2025);
           columnas: COLONIA (nombre en texto libre), TIPO DE INCIDENTE (475
-          categorías), FECHA y HORA. Sin coordenadas ni colonia_id: la ubicación
-          es el nombre de colonia tal cual lo capturó el operador.
+          categorías), FECHA y HORA. Sin coordenadas: la ubicación
+          es el nombre de colonia tal cual lo capturó el operador. El archivo
+          procesado agrega colonia_id (cvegeo del INEGI) resuelto por nombre
+          normalizado contra el catálogo DCAH, más colonia_source que distingue
+          coincidencia directa de equivalencia manual.
         documentation:
           - "https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025"
 
@@ -316,6 +332,41 @@ sources:
         processed:
           directory: "data/processed/llamadas_911"
           filename: "llamadas_911_hermosillo.csv"
+
+
+  open_meteo:
+    name: "Open-Meteo, API de archivo histórico (combinación de modelos de reanálisis por defecto)"
+    url: "https://open-meteo.com/en/docs/historical-weather-api"
+    license: "CC-BY-4.0"
+
+    datasets:
+      precipitacion_hermosillo:
+        name: "Precipitación diaria en Hermosillo 2018–2026"
+        url: "https://archive-api.open-meteo.com/v1/archive"
+        description: >-
+          Una fila por día con la precipitación acumulada (mm) y las horas con lluvia en
+          el punto de la mancha urbana de Hermosillo. Es una estimación de modelo que
+          promedia una zona de varios kilómetros, no una estación: suaviza las tormentas
+          convectivas del monzón, así que sirve para ubicar los días y semanas de lluvia,
+          no para medir la lámina en una colonia. No está confirmado qué modelo usa la API
+          para este punto.
+        documentation:
+          - "https://open-meteo.com/en/docs/historical-weather-api"
+        query:
+          latitude: 29.0892
+          longitude: -110.9613
+          start_date: "2018-01-01"
+          end_date: "2026-09-30"
+          daily: "precipitation_sum,precipitation_hours"
+          timezone: "America/Hermosillo"
+
+        raw:
+          directory: "data/raw/precipitacion"
+          filename: "precipitacion_hermosillo.json"
+
+        processed:
+          directory: "data/processed/precipitacion"
+          filename: "precipitacion_hermosillo.csv"
 
 
 ocr:

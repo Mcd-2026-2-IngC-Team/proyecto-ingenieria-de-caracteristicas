@@ -45,6 +45,11 @@ ROWS = {
         "una llamada al 911 en Hermosillo clasificada en un tipo de incidente "
         "relacionado con inundación, fenómeno hidrometeorológico, drenaje, agua o terreno"
     ),
+    "precipitacion_hermosillo": "un día de lluvia estimada para un punto de la ciudad",
+    "colonias_contexto_hidrografico": (
+        "una colonia de la ciudad (localidad 0001) con sus cauces cercanos y su contexto "
+        "hidrográfico"
+    ),
 }
 
 # Columnas que deben leerse como fecha: pandas no las infiere solo desde un CSV, así
@@ -55,12 +60,16 @@ DATE_COLUMNS = {
     "ubicaciones_aviso": [],
     "baches": ["date"],
     "llamadas_911_hermosillo": ["fecha"],
+    "precipitacion_hermosillo": ["date"],
+    "colonias_contexto_hidrografico": [],
 }
 
 # Claves que el CSV guardaría como número, perdiendo los ceros a la izquierda.
 READ_DTYPES = {
     "colonias_hermosillo": {"colonia_id": str, "locality_code": str, "postal_code": str},
     "ubicaciones_aviso": {"colonia_id": str},
+    "llamadas_911_hermosillo": {"colonia_id": str},
+    "colonias_contexto_hidrografico": {"colonia_id": str},
 }
 
 # Columnas de texto donde "vacío" es un valor válido, no un faltante. En el CSV un texto
@@ -221,7 +230,7 @@ DESCRIPTIONS = {
         "tipo_incidente": (
             "Clasificación del motivo de la llamada; solo los tipos relacionados "
             "con inundación o agua de la selección manual sobre el catálogo completo "
-            "(34 valores de la fuente, normalizados a 32 tipos canónicos)"
+            "(34 valores de la fuente, normalizados a 28 tipos canónicos)"
         ),
         "fecha": "Día del incidente, de 2018-01-01 a 2025-09-30",
         "hora": "Hora del día del incidente, entera de 0 a 23",
@@ -229,6 +238,54 @@ DESCRIPTIONS = {
             "Grupo de la selección manual de tipos de incidente: inundacion_directa, "
             "fenomeno_hidrometeorologico, drenaje_y_red_de_agua, "
             "ahogamiento_acuaticos o terreno"
+        ),
+        "colonia_id": (
+            "Clave geoestadística del asentamiento (cvegeo del INEGI) a la que se "
+            "resolvió la colonia del 911 por nombre normalizado, primero contra el "
+            "catálogo DCAH y después con equivalencias revisadas a mano "
+            "(data/external/equivalencias_colonias_911.csv); vacío si no se resolvió"
+        ),
+        "colonia_source": (
+            "Cómo se resolvió colonia_id: catalogo = coincidencia directa por nombre "
+            "normalizado; equivalencia = vía equivalencias_colonias_911.csv; "
+            "vacío cuando no se resolvió"
+        ),
+    },
+    "precipitacion_hermosillo": {
+        "date": "Día, en hora local de Hermosillo; llave primaria",
+        "precipitation_mm": (
+            "Lluvia acumulada del día en mm, estimada por Open-Meteo para el punto "
+            "29.0892, -110.9613; no es una medición de estación"
+        ),
+        "precipitation_hours": "Horas del día con lluvia según la misma estimación",
+        "year": "Año de date",
+        "month": "Mes de date, de 1 a 12",
+        "is_rain_day": "Verdadero si precipitation_mm es de 1 mm o más",
+    },
+    "colonias_contexto_hidrografico": {
+        "colonia_id": "Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria",
+        "id_seg_1": "ID del tramo de cauce (capa hl) más cercano al centroide de la colonia",
+        "dist_seg_1": "Distancia en metros del centroide al tramo id_seg_1 (EPSG:6372)",
+        "id_seg_2": "ID del segundo tramo de cauce más cercano",
+        "dist_seg_2": "Distancia en metros al tramo id_seg_2",
+        "id_seg_3": "ID del tercer tramo de cauce más cercano",
+        "dist_seg_3": "Distancia en metros al tramo id_seg_3",
+        "proximity_level": (
+            "Nivel de cercanía a la red: Muy cercano, Cercano, Lejano o Muy lejano "
+            "(KMeans k=4 sobre las tres distancias)"
+        ),
+        "order_median": "Mediana del orden de Strahler (ORDER_1) de los tramos cercanos habilitados",
+        "order_max": "Máximo del orden de Strahler de los tramos cercanos habilitados",
+        "level_median": "Mediana del nivel de corriente (LEVEL_1; 1 = cauce principal)",
+        "level_min": "Mínimo del nivel de corriente de los tramos cercanos habilitados",
+        "proximity_ord": "proximity_level como ordinal: 0 = Muy cercano a 3 = Muy lejano",
+        "context": (
+            "Contexto hidrográfico (KMeans k=4 sobre las cinco variables estandarizadas): "
+            "0, 1, 2 o 3"
+        ),
+        "context_name": (
+            "Nombre del contexto: Lejos de la red, Junto a colectores, Arroyos menores "
+            "muy cerca o Los más cercanos"
         ),
     },
 }
@@ -240,6 +297,8 @@ DESCRIPTIONS_SUBCUENCAS = {
         "CVE_SUBC": "Clave de la subcuenca hidrográfica",
         "CONDICION": "Descripción de la condición del drenaje",
         "ORDER_1": "Magnitud de orden (clasificación de Strahler) a nivel de subcuenca",
+        "LEVEL_1": "Nivel de corriente del segmento a nivel de subcuenca; -1 sin clasificar",
+        "ARBSUM_1": "Sumatoria de las longitudes de las líneas de flujo aguas arriba del segmento, a nivel de subcuenca",
         "ID_DRENA": "Identificador del punto de drenaje al que corresponde el segmento",
         "ENABLED": "Indicador que señala si el segmento está habilitado para formar parte de la red geométrica",
     },
@@ -583,7 +642,7 @@ def main() -> None:
     )
 
     for destination in build_dictionaries(params):
-        print(f"diccionario → {destination.relative_to(PROJECT_ROOT)}")
+        print(f"diccionario -> {destination.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1359 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,mexico,es-noshorthands,es-nosectiondot]{babel}
+\spanishplainpercent
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[section]{placeins}
+\usepackage[hidelinks]{hyperref}
+
+% Flotantes: más espacio para tablas en páginas con texto y páginas de flotantes alineadas arriba.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\hypersetup{pdftitle={Lluvia, cauces y emergencias urbanas en Hermosillo: reporte técnico}}
+
+% Rutas e identificadores en monoespaciado, con cortes de línea en / . _ y -.
+\newcommand{\cod}[1]{\nolinkurl{#1}}
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do\_\do\-}
+
+\renewcommand*{\descriptionlabel}[1]{\hspace\labelsep\normalfont #1}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.15}
+
+% Origen de las cifras, en este orden:
+% 1. Salidas guardadas de notebooks/08-exploracion-redefinicion.ipynb,
+%    notebooks/09-historia-lluvia-911.ipynb y notebooks/10-lluvia-contexto-hidrografico.ipynb.
+% 2. Código y parámetros: project_name/water_events.py, project_name/hydro_context.py,
+%    project_name/jobs/*.py, params.yml, Makefile.
+% 3. references/reporte_tecnico_hidrografico.pdf y references/reporte_sectores_hidrograficos.pdf
+%    (cifras "publicadas"), y salidas guardadas de notebooks/AAMM/09-AAMM-ml-exploration.ipynb.
+% 4. Inspección de solo lectura de data/raw, data/external y data/processed (corte del
+%    16 de noviembre de 2026), marcada en el texto como "verificación de solo lectura".
+
+\begin{document}
+
+\begin{center}
+  {\LARGE Lluvia, cauces y emergencias urbanas en Hermosillo: reporte técnico\par}
+  \vspace{0.3em}
+  {\large Datos, definiciones, decisiones y trazabilidad de las cifras\par}
+  \vspace{0.8em}
+  Jorge Gamez Lopez (a211205228@unison.mx)\\
+  Enrique Alejandro Giottonini Herrera (a220212781@unison.mx)\\
+  Ana Patricia Hoyos Lopez (a215206792@unison.mx)\\
+  Andrea Angelica Manzanares Muciño (a226230014@unison.mx)\\[0.5em]
+  Ingeniería de características, maestría en ciencia de datos. Corte de los datos: 16 de noviembre de 2026.
+\end{center}
+
+\section{Resumen técnico e introducción}
+\label{sec:intro}
+
+\subsection{Resumen}
+
+Se integraron ocho fuentes alrededor de dos llaves, la fecha y la colonia: 4,176 llamadas al 911 \cite{marcelinux2025} de 28 tipos de incidente ligados al agua y al terreno (seleccionadas de 2,297,081 llamadas crudas), la precipitación diaria de Open-Meteo \cite{zippenfenig2023} en un punto de la ciudad (3,195 días), las 762 colonias de la ciudad del DCAH 2025 \cite{inegidcah}, la Red Hidrográfica 1:50\,000 del INEGI \cite{inegired}, 39,018 reportes del Bachómetro \cite{bachometro}, 5,200 publicaciones de Agua de Hermosillo \cite{aguah}, los ejes de vialidad del Marco Geoestadístico \cite{inegimg} y la Tabla III.1 del PDU \cite{implanpdu}. El 80.4\% de las llamadas se ubicó en una colonia de la ciudad con el catálogo del INEGI y una tabla de equivalencias revisada a mano.
+
+Cuándo. Dentro de junio a octubre, el conteo diario de llamadas por inundación en los 8 días que siguen a una lluvia de 10~mm o más es 21.70 veces el de días secos; terreno 3.66 y drenaje 2.47. Dentro del mismo mes la respuesta se sostiene (inundación más alta en 14 de 26 meses comparables y más baja en 2). Dónde. Las colonias se agruparon con K-Means en cuatro contextos hidrográficos según los tres cauces más cercanos; el contexto junto a colectores principales tiene la tasa más alta de avisos (175.1 por km$^2$) y de llamadas de superficie (4.25 por km$^2$). Puente. Dentro del mismo mes, las llamadas ligadas a la lluvia suben 3.49 veces junto a colectores (intervalo bootstrap del 90\%: 1.72 a 7.18) y 1.45 veces lejos de la red (0.98 a 2.18): la red explica algo más que la posición, con evidencia moderada. La fecha del Bachómetro es la de atención del bache, así que esa fuente solo sirve para comparar lugares.
+
+\subsection{Dos preguntas y un puente}
+
+El proyecto avanzó en dos líneas que compartían datos pero no pregunta.
+
+\begin{itemize}
+  \item Línea A, cuándo: ¿cuánto aumentan las llamadas al 911 cuando llueve, qué tipos responden y a qué hora? Notebooks \cod{notebooks/08-exploracion-redefinicion.ipynb} y \cod{notebooks/09-historia-lluvia-911.ipynb}; la unidad es el día.
+  \item Línea B, dónde: ¿la posición de una colonia frente a la red hidrográfica explica dónde se concentran los reportes ligados al agua? Libretas \cod{notebooks/AAMM/05} a \cod{09} y el reporte técnico hidrográfico (\cod{references/reporte_tecnico_hidrografico.pdf}); la unidad es la colonia.
+  \item Puente: la primera pregunta abierta de la línea B fue ``¿es la red o solo la geografía?''. \cod{notebooks/10-lluvia-contexto-hidrografico.ipynb} la responde con el método de la línea A aplicado por contexto hidrográfico: si un contexto no solo tiene más llamadas por km$^2$, sino que sus llamadas suben más tras la lluvia, la red explica algo que la posición sola no explica.
+\end{itemize}
+
+Pregunta integrada: ¿cuánto aumentan las emergencias urbanas reportadas al 911 en Hermosillo cuando llueve, qué tipos de incidente responden y en qué contextos hidrográficos responden más?
+
+\subsection{Relación con los reportes ejecutivos}
+
+Hay dos reportes ejecutivos. \cod{docs/reporte/reporte.pdf} (``Lluvia y emergencias urbanas en Hermosillo'') responde, para Protección Civil municipal y el C5, cuándo llama la ciudad al 911 por la lluvia, qué piden y a qué hora, dónde, y si pasa lo mismo con baches y agua potable. \cod{references/reporte_sectores_hidrograficos.pdf} (``Sectores hidrográficos y emergencias urbanas en Hermosillo'') describe los cuatro contextos hidrográficos y sus tasas por km$^2$. Este reporte técnico sustituye al reporte técnico de cada línea: dice de dónde sale cada cifra de los dos ejecutivos, con qué definición se calculó, qué decisiones la sostienen, cuáles cifras cambiaron entre las dos líneas y por qué (sección~\ref{sec:reconc}), y qué tan firme es. La sección~\ref{sec:traza} contiene la trazabilidad.
+
+\section{Fuentes y datasets}
+\label{sec:fuentes}
+
+Las tablas~\ref{tab:crudas-origen} y \ref{tab:crudas-forma} describen las ocho fuentes crudas y la tabla~\ref{tab:procesados} los datasets procesados. Los tamaños son bytes en disco divididos entre $10^6$ (verificación de solo lectura del 16 de noviembre de 2026); filas y columnas se contaron sobre los archivos del corte. Las dimensiones del DCAH, el Marco Geoestadístico, la Red Hidrográfica y Facebook vienen de \cod{docs/cinco_v_datos.md} y sus tamaños coinciden con los actuales en disco.
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Fuentes crudas: origen, licencia, formato y tamaño. MB: tamaño en disco de los archivos descargados, sin \cod{FUENTE.txt}.}
+  \label{tab:crudas-origen}
+  \begin{tabularx}{\textwidth}{L{2.6cm} Y L{2.3cm} L{2.1cm} r}
+    \toprule
+    Fuente & Origen & Licencia & Formato & MB \\
+    \midrule
+    Llamadas al 911 & Hugging Face, Marcelinux: \cod{huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025} (archivo \cod{213.xlsx}) & CC-BY-4.0 & Excel, una hoja por año & 52.8 \\
+    Precipitación & Open-Meteo, API de archivo histórico: \cod{archive-api.open-meteo.com/v1/archive} & CC-BY-4.0 & JSON & 0.1 \\
+    Bachómetro & H. Ayuntamiento de Hermosillo: \cod{bachometro.hermosillo.gob.mx/mapa/ajax} & no declarada & JSON, uno por año & 8.2 \\
+    DCAH 2025 & INEGI, paquete nacional, miembro \cod{26_sonora.zip} bajado por rango & Términos de Libre Uso del INEGI & Shapefile, CSV, TXT & 15.5 \\
+    Marco Geoestadístico 2025, capa \cod{26e} & INEGI, paquete de Sonora, solo la capa de ejes de vialidad & Términos de Libre Uso del INEGI & Shapefile & 66.3 \\
+    Red Hidrográfica 1:50\,000, ed. 2.0 & INEGI, cuatro subcuencas: La Poza, R. Sonora-Hermosillo, La Manga, R. San Miguel & Términos de Libre Uso del INEGI & Shapefile, 5 capas por subcuenca & 50.8 \\
+    Agua de Hermosillo & Página oficial de Facebook, extraída con un scraper de Apify; imágenes y OCR con PaddleOCR-VL 1.6 (snapshot v1, \cod{data/SNAPSHOT.md}); incluye \cod{equivalencias_colonias_911.csv} & no declarada; snapshot privado & CSV, imágenes, CSV de OCR & 210.0 \\
+    PDU de Hermosillo 2025+, Tabla III.1 & IMPLAN Hermosillo; transcrita a mano a \cod{distritos_sectores_hermosillo_PDU_2025.csv} & no declarada & CSV & no disponible \\
+    \midrule
+    Total & & & & 403.7 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El CSV del PDU no está en la máquina del corte: se descarga aparte (\cod{data/SNAPSHOT.md}) y solo alimentó la primera sectorización de la línea B (sección~\ref{sec:espacial}); ningún job de \texttt{make data} lo lee. La tabla de equivalencias del 911 viaja dentro del snapshot de \cod{data/external} y se cuenta en sus 210.0~MB (0.02~MB): 294 nombres de colonia del 911 revisados, 144 con equivalencia en el catálogo.
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Fuentes crudas: periodo, granularidad, dimensiones, job de ingesta y ruta. Los jobs están en \cod{project_name/jobs/} y los corre \texttt{make download}, salvo Facebook y el PDU, que son insumos congelados.}
+  \label{tab:crudas-forma}
+  \begin{tabularx}{\textwidth}{L{2.2cm} L{2.3cm} Y L{2.4cm} L{3.9cm}}
+    \toprule
+    Fuente & Periodo & Granularidad temporal y espacial & Registros $\times$ columnas & Job y ruta \\
+    \midrule
+    Llamadas al 911 & 2018-01-01 a 2025-09-30 & Una llamada con fecha y hora entera; ubicación solo como nombre de colonia en texto libre, sin coordenadas & 2,297,081 $\times$ 4 (8 hojas; 475 tipos de incidente) & \cod{ingest_llamadas_911_job}; \cod{data/raw/llamadas911/llamadas_911_hermosillo.xlsx} \\
+    Precipitación & 2018-01-01 a 2026-09-30 & Diaria en hora local (\cod{America/Hermosillo}); un punto solicitado (29.0892, $-110.9613$); la API devolvió las coordenadas 29.06854, $-110.975876$ y elevación de 210~m & 3,195 días $\times$ 2 variables (\cod{precipitation_sum}, \cod{precipitation_hours}) & \cod{ingest_precipitacion_job}; \cod{data/raw/precipitacion/precipitacion_hermosillo.json} \\
+    Bachómetro & 2021-09-17 a 2026-10-03 & Un reporte con fecha de atención y punto (latitud, longitud) & 39,106 $\times$ 7 (el procesado del 28 de septiembre de 2026 tiene 39,018) & \cod{ingest_baches_job}; \cod{data/raw/bachometro/baches_2021.json} a \cod{baches_2026.json} \\
+    DCAH 2025 & Edición 2025, actualización 11/2025 & Estática; polígono por asentamiento, EPSG:6372 & 2,699 asentamientos de Sonora $\times$ 10 & \cod{ingest_dcah_job}; \cod{data/raw/inegi/dcah/dcah_2025_26_sonora.zip} \\
+    Marco Geoestadístico & Edición 2025 & Estática; línea por tramo de calle, EPSG:6372 & 229,303 tramos $\times$ 11; 41,538 en la ciudad & \cod{ingest_mg_streets_job}; \cod{data/raw/inegi/mg/} \\
+    Red Hidrográfica & Segmentos fechados de 1998 a 2010 & Estática; líneas, puntos y polígonos, EPSG:4019 & 48,023 geometrías; 3 a 22 atributos por capa & \cod{ingest_subcuencas}; \cod{data/raw/inegi/subc_*/} \\
+    Agua de Hermosillo & 2020-12-07 a 2026-09-14 & Una publicación con fecha y hora; lugares solo en texto & 5,200 publicaciones en 7 CSV; 3,203 imágenes & sin job de descarga; \cod{data/external/} \\
+    PDU, Tabla III.1 & Generación 2025+ & Estática; listas de colonias por distrito y sector, sin geometría & 74 distritos, 9 sectores (salida guardada de \cod{AAMM/09}) & sin job; \cod{data/external/} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Datasets procesados. Todos los produce \texttt{make data}. Uso: papel en la pregunta integrada. Las rutas son relativas a \cod{data/processed/}.}
+  \label{tab:procesados}
+  \begin{tabularx}{\textwidth}{L{3.7cm} L{2.2cm} r L{1.9cm} L{2.9cm} Y}
+    \toprule
+    Dataset y ruta & Filas $\times$ columnas & MB & Periodo & Job & Uso \\
+    \midrule
+    \cod{llamadas_911/llamadas_911_hermosillo.csv} & 4,176 $\times$ 7 & 0.36 & 2018-01-05 a 2025-09-30 & \cod{process_llamadas_911_job}, \cod{add_colonia_llamada_job} & Serie principal: 28 tipos, 5 grupos, \cod{colonia_id} \\
+    \cod{precipitacion/precipitacion_hermosillo.csv} & 3,195 $\times$ 6 & 0.10 & 2018-01-01 a 2026-09-30 & \cod{process_precipitacion_job} & Variable explicativa, unida por fecha \\
+    \cod{aguah/colonias_hermosillo.csv} y \cod{.gpkg} & 783 $\times$ 10, más polígono & 0.09 y 0.75 & DCAH 2025 & \cod{process_colonias_hermosillo_job} & Llave \cod{colonia_id}; 762 asentamientos con \cod{locality_code} 0001 \\
+    \cod{inegi/subc_*/subc_*.gpkg} & 4 archivos, 5 capas cada uno & 36.06 & 1998 a 2010 & \cod{process_subcuencas_job} & Insumo del consolidado \\
+    \cod{inegi/hidrografia_hermosillo/subc_hermosillo.gpkg} & capas \cod{hl} 46,518; \cod{dr} 36; \cod{subc} 4; \cod{ha} 744; \cod{to} 124 & 36.48 & 1998 a 2010 & \cod{process_subcuencas_job} & Distancia al cauce y tramos cercanos (capa \cod{hl}) \\
+    \cod{inegi/hidrografia_hermosillo/hidrografia_cd_hermosillo.gpkg} & capas \cod{hl} 437; \cod{dr} 1; \cod{subc} 4; \cod{ha} 16; \cod{to} 5 & 0.48 & 1998 a 2010 & \cod{process_hidrografia_cd_hermosillo_job} & Descripción de la red urbana; no lo leen los notebooks 08 a 10 \\
+    \cod{inegi/hidrografia_hermosillo/colonias_contexto_hidrografico.csv} & 762 $\times$ 15 & 0.11 & estático & \cod{process_contexto_hidrografico_job} & Contexto hidrográfico por \cod{colonia_id} \\
+    \cod{bachometro/baches_hermosillo.csv} & 39,018 $\times$ 10 & 5.53 & 2021-09-17 a 2026-09-28 & \cod{process_baches_job} & Contraste temporal \\
+    \cod{bachometro/baches_hermosillo_filled.csv} & 39,018 $\times$ 16 & 8.48 & igual & \cod{add_colonia_bache_id_with_gpkg} & Baches con \cod{colonia_id}: tasas por contexto \\
+    \cod{aguah/publicaciones_aguah.csv} & 5,200 $\times$ 32 & 4.22 & 2020-12-07 a 2026-09-14 & \cod{process_publicaciones_aguah_job} & Contraste y texto \\
+    \cod{aguah/ubicaciones_aviso.csv} & 16,261 $\times$ 8 & 1.34 & igual que las publicaciones & \cod{process_ubicaciones_aviso_job} & Avisos por colonia: tasas por contexto \\
+    \midrule
+    Total & & 94.00 & & & \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+En \cod{data/processed/bachometro/} quedan además dos archivos que \texttt{make data} ya no escribe ni lee ningún notebook del análisis (\cod{baches_hermosillo_con_colonias.csv}, 5.57~MB, y \cod{relacion_colonia_baches_id.csv}, 0.01~MB); con ellos el directorio suma 99.6~MB.
+
+\subsection{Las cinco V, unificadas}
+
+La tabla~\ref{tab:cincov} une la descripción de las cinco V de \cod{docs/cinco_v_datos.md} (corte del 28 de septiembre de 2026, seis fuentes) con las fuentes y productos que se agregaron después: el 911, la precipitación, el PDU, la colonia de baches y llamadas y el contexto hidrográfico.
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Las cinco V de los datos del proyecto al corte del 16 de noviembre de 2026.}
+  \label{tab:cincov}
+  \begin{tabularx}{\textwidth}{L{1.8cm} Y}
+    \toprule
+    V & Hechos \\
+    \midrule
+    Volumen & 403.7~MB crudos: Facebook 210.0 (de ellos 171.9 de imágenes), Marco Geoestadístico 66.3, 911 52.8, Red Hidrográfica 50.8, DCAH 15.5, Bachómetro 8.2, lluvia 0.1. 94.00~MB procesados en los once artefactos de la tabla~\ref{tab:procesados}, de los cuales 73.02 son GeoPackages de la red. Las tablas que entran al análisis caben en memoria: la mayor tiene 46,518 tramos. \\
+    Velocidad & Bachómetro continuo (16.1 reportes al día en 2022 y 36.1 en 2026, \cod{docs/cinco_v_datos.md}); \texttt{make download} vuelve a bajar el año en curso. Precipitación diaria, descargada en una petición con política \cod{skip}. 911: archivo estático hasta septiembre de 2025. INEGI: anual o sin actualización (red de 1998 a 2010). Facebook y PDU: congelados. \\
+    Variedad & JSON (Bachómetro, lluvia), Excel (911), shapefiles (INEGI), CSV con texto libre e imágenes con OCR (Facebook), tabla transcrita a mano (PDU). Tres sistemas de referencia: EPSG:6372, 4019 y 4326; las distancias se miden en EPSG:6372. \\
+    Veracidad & sha256 en cada \cod{FUENTE.txt} y en \cod{data/external.sha256}; reglas Pandera en \cod{project_name/schemas.py} para publicaciones, colonias, ubicaciones y las cinco capas de la red; sin reglas para el 911, la lluvia, los baches ni el contexto. Hechos de calidad en la sección~\ref{sec:prep} y la tabla~\ref{tab:cobertura}. \\
+    Valor & Dos llaves integran todo: \cod{colonia_id} (clave geoestadística del DCAH) une llamadas, baches, avisos y contextos; la fecha une la lluvia con el 911, los baches y las publicaciones. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Cobertura y datos faltantes}
+\label{sec:cobertura}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Cobertura de cada fuente (salida \cod{coverage_table} del notebook 08) y ventana de meses completos que usa el análisis (\cod{COVERAGE} en \cod{water_events.py}).}
+  \label{tab:cobertura}
+  \begin{tabular}{lrlll}
+    \toprule
+    Fuente & Filas & Primer registro & Último registro & Ventana del análisis \\
+    \midrule
+    Lluvia & 3,195 & 2018-01-01 & 2026-09-30 & 2018-01-01 a 2026-09-30 \\
+    911 & 4,176 & 2018-01-05 & 2025-09-30 & 2018-01-01 a 2025-09-30 \\
+    Baches & 39,018 & 2021-09-17 & 2026-09-28 & 2022-01-01 a 2026-09-30 \\
+    Agua de Hermosillo & 5,200 & 2020-12-07 & 2026-09-14 & 2021-01-01 a 2026-07-31 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item Ventanas comunes: lluvia y 911, enero de 2018 a septiembre de 2025 (la que usan los notebooks 09 y 10 y el estudio de evento del 911); lluvia, 911 y baches, enero de 2022 a septiembre de 2025.
+  \item Huecos: ninguna fuente tiene un mes sin registros dentro de su periodo (salida \cod{gaps} del notebook 08, listas vacías). Agua de Hermosillo no tiene publicaciones entre el 5 y el 19 de abril de 2024, en la frontera entre dos exportaciones del scraper (13 días según \cod{docs/eda.md}; 14 según \cod{docs/cinco_v_datos.md}).
+  \item 911 sin colonia de la ciudad: 19.6\% de las llamadas (818: 814 sin \cod{colonia_id} y 4 con una colonia del municipio fuera de la ciudad), 57 con el texto ``SIN COLONIA''. Mecanismo: nombre libre del operador, nombres genéricos y localidades fuera de la ciudad. Tratamiento: fuera de los análisis por colonia.
+  \item Cambio de catálogo: \cod{fenomeno_hidrometeorologico} tiene 0 llamadas de 2018 a 2024 y 27 en 2025 (tabla~\ref{tab:anual-grupo}). Es un catálogo nuevo, no un fenómeno nuevo; no se compara entre años.
+  \item Baches sin colonia: 599 de 39,018 (sección~\ref{sec:prep}). Lluvia: sin nulos.
+\end{itemize}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Llamadas al 911 por año y grupo (salida \cod{calls_by_year}, notebook 08). 2025 llega a septiembre.}
+  \label{tab:anual-grupo}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Año & Ahogamiento & Drenaje & Fenómeno hidromet. & Inundación & Terreno \\
+    \midrule
+    2018 & 11 & 108 & 0 & 153 & 232 \\
+    2019 & 10 & 110 & 0 & 63 & 242 \\
+    2020 & 7 & 53 & 0 & 3 & 168 \\
+    2021 & 19 & 154 & 0 & 71 & 327 \\
+    2022 & 15 & 205 & 0 & 90 & 515 \\
+    2023 & 10 & 157 & 0 & 7 & 271 \\
+    2024 & 5 & 135 & 0 & 17 & 381 \\
+    2025 & 7 & 144 & 27 & 50 & 409 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Esquema de datos}
+\label{sec:esquema}
+
+Los datos procesados no viven en un motor de base de datos sino en archivos CSV y GeoPackage dentro de \cod{data/processed/}, pero sus relaciones forman un esquema (figura~\ref{fig:er}, tomada del reporte hidrográfico; la misma definición está en Mermaid en \cod{references/esquema_datos.md}). La entidad integradora es \cod{colonias_hermosillo}: su llave \cod{colonia_id} es el puerto al que llegan todas las fuentes de reportes.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.78\textwidth]{img/esquema_er.png}
+  \caption{Esquema entidad-relación de los datos procesados, del reporte técnico hidrográfico. Línea continua: llave real; línea punteada: relación espacial que se resuelve en jobs y libretas. No incluye la precipitación ni el contexto hidrográfico; ver el texto.}
+  \label{fig:er}
+\end{figure}
+
+Lo que agrega este reporte al esquema de la figura:
+
+\begin{itemize}
+  \item \cod{precipitacion_hermosillo} (una fila por día, llave \cod{date}) se une por fecha con \cod{llamadas_911_hermosillo.fecha}, \cod{baches.date} y la fecha de \cod{publicaciones_aguah.published_at}. Es una relación 1:N sin columna de colonia: la lluvia es la misma para toda la ciudad.
+  \item \cod{llamadas_911_hermosillo} lleva \cod{colonia_id} (llave foránea hacia \cod{colonias_hermosillo}) y \cod{colonia_source} (\cod{catalogo}, \cod{equivalencia} o vacío), que escribe \cod{add_colonia_llamada_job}.
+  \item Los baches con \cod{colonia_id} viven en \cod{baches_hermosillo_filled.csv}, con \cod{colonia_source} (\cod{spatial_within}, \cod{spatial_nearest} o \cod{contexto_ubicacion}), \cod{distance_to_colonia_m} y \cod{contexto_ubicacion}; \cod{baches_hermosillo.csv} no tiene colonia.
+  \item \cod{colonias_contexto_hidrografico} (una fila por colonia de la ciudad) tiene \cod{colonia_id} como llave primaria y foránea 1:1 hacia \cod{colonias_hermosillo}; guarda los tres tramos más cercanos (\cod{id_seg_1} a \cod{id_seg_3}, llaves hacia \cod{hl.ID}), sus distancias, el nivel de cercanía, los cuatro atributos de orden y nivel, y \cod{context} y \cod{context_name}. Con esa tabla, la relación colonia y red deja de ser solo geométrica.
+\end{itemize}
+
+\section{Pipeline}
+\label{sec:pipeline}
+
+\texttt{make data} ejecuta el pipeline completo (figura~\ref{fig:pipeline}): \texttt{make download} corre en paralelo los seis jobs de ingesta de \cod{download_job} (Bachómetro, DCAH, Marco Geoestadístico, subcuencas, 911 y precipitación), cada uno con su \cod{FUENTE.txt} y sha256; después corren los jobs de procesamiento en el orden de la tabla~\ref{tab:jobs} y, al final, \cod{validate_data_job} revisa \cod{data/processed/} con las reglas Pandera. Las fuentes que no se pueden regenerar (Facebook, imágenes y OCR, el CSV del PDU y las equivalencias del 911) viven en \cod{data/external/} con sus checksums.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{img/pipeline.png}
+  \caption{Flujo de \texttt{make data}, del reporte técnico hidrográfico. Faltan los jobs agregados después: \cod{process_precipitacion_job} y \cod{process_contexto_hidrografico_job} (tabla~\ref{tab:jobs}); la ingesta incluye también la precipitación.}
+  \label{fig:pipeline}
+\end{figure}
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Jobs de procesamiento del target \texttt{data} del \cod{Makefile}, en orden de ejecución.}
+  \label{tab:jobs}
+  \begin{tabularx}{\textwidth}{r L{5.6cm} Y}
+    \toprule
+    \# & Job & Produce o modifica \\
+    \midrule
+    1 & \cod{process_publicaciones_aguah_job} & \cod{publicaciones_aguah.csv} \\
+    2 & \cod{process_colonias_hermosillo_job} & \cod{colonias_hermosillo.csv} y \cod{.gpkg} \\
+    3 & \cod{process_ubicaciones_aviso_job} & \cod{ubicaciones_aviso.csv} (geocodificación de avisos) \\
+    4 & \cod{process_baches_job} & \cod{baches_hermosillo.csv} \\
+    5 & \cod{add_colonia_name_to_bache_job} & cruce por nombre; su salida no se usa (sección~\ref{sec:decisiones}) \\
+    6 & \cod{add_colonia_bache_id_with_gpkg} & \cod{baches_hermosillo_filled.csv} (colonia por geometría) \\
+    7 & \cod{process_subcuencas_job} & \cod{subc_*.gpkg} y \cod{subc_hermosillo.gpkg} \\
+    8 & \cod{process_hidrografia_cd_hermosillo_job} & \cod{hidrografia_cd_hermosillo.gpkg} \\
+    9 & \cod{process_contexto_hidrografico_job} & \cod{colonias_contexto_hidrografico.csv} (nuevo) \\
+    10 & \cod{process_llamadas_911_job} & \cod{llamadas_911_hermosillo.csv} \\
+    11 & \cod{add_colonia_llamada_job} & agrega \cod{colonia_id} y \cod{colonia_source} a las llamadas \\
+    12 & \cod{process_precipitacion_job} & \cod{precipitacion_hermosillo.csv} \\
+    13 & \cod{validate_data_job} & validación Pandera; no escribe datos \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El reporte hidrográfico cuenta once jobs de procesamiento y una corrida de unos 52~s (\cod{docs/cinco_v_datos.md}, corte del 28 de septiembre); hoy son doce más la validación, y la duración no se volvió a medir.
+
+\section{Preprocesamiento por fuente}
+\label{sec:prep}
+
+\subsection{Llamadas al 911}
+
+\begin{enumerate}
+  \item Carga: \cod{load_llamadas_911} (\cod{project_name/features.py}) concatena las 8 hojas del Excel con el lector \cod{calamine}: 2,297,081 filas $\times$ 4 columnas (\cod{COLONIA}, \texttt{TIPO DE INCIDENTE}, \cod{FECHA}, \cod{HORA}).
+  \item Nulos: \cod{clean_llamadas_911} quita las filas con algún nulo; hay 7 nulos por columna y quedan 2,297,074 filas.
+  \item Selección de tipos: se conservan los tipos de \cod{GRUPOS_INCIDENTE_911}, 34 cadenas del catálogo de 475, elegidas a mano en \cod{notebooks/AAMM/00} y agrupadas en 5 grupos: \cod{inundacion_directa} (4 cadenas), \cod{fenomeno_hidrometeorologico} (10), \cod{drenaje_y_red_de_agua} (7), \cod{ahogamiento_acuaticos} (5) y \cod{terreno} (8). Quedan 4,176 llamadas, el 0.2\% de las crudas. Motivo: la pregunta trata de emergencias urbanas ligadas al agua y al terreno, no del total de la demanda del 911.
+  \item Unificación por ortografía: \cod{process_llamadas_911_job} reemplaza ``ÁRBOL CAÍDO O POR CAER'' (45 llamadas) por ``ARBOL CAÍDO O POR CAER'', ``VIALIDAD EN MAL ESTADO-BACHES'' (28) por ``VIALIDAD EN MAL ESTADO'', ``INUNDACIÓN'' (24) por ``INUNDACIONES'' (399), ``ALCANTARILLA-REGISTRO SIN TAPA'' (16) por ``ALCANTARILLA SIN TAPA'' (990), ``AHOGAMIENTO-SUMERSIÓN'' (4) por ``AHOGAMIENTO'' (74) y la variante de hundimientos ``EN SUELO'' (2) por la mayoritaria (365). Cada par pertenece al mismo grupo, así que los totales por grupo no cambian. Las 34 cadenas quedan en 28 tipos: inundación 3, fenómeno hidrometeorológico 10, drenaje 6, ahogamiento 4 y terreno 5 (verificación de solo lectura). ``HURACANES-CAÍDA DE ÁRBOL'' no se unifica con árbol caído: es una categoría del protocolo de huracanes. La función es \cod{unify_tipos_incidente}, con pruebas en \cod{tests/test_process_llamadas_911_job.py}.
+  \item Columnas: se renombran a \cod{colonia}, \cod{tipo_incidente}, \cod{fecha}, \cod{hora} (entero de 0 a 23) y se agrega \cod{grupo_incidente}. Resultado por grupo: terreno 2,545; drenaje 1,066; inundación 454; ahogamiento 84; fenómeno hidrometeorológico 27.
+  \item Exclusión de ahogamientos: \cod{rain_related_calls} (\cod{project_name/water_events.py}) quita el grupo \cod{ahogamiento_acuaticos} en el notebook 09, y el notebook 10 usa los otros cuatro grupos, porque esos incidentes no dependen de la lluvia en la ciudad. Quedan 4,092 llamadas de 24 tipos. El notebook 08 trabaja por grupo y no necesita esa exclusión.
+\end{enumerate}
+
+\subsection{Colonia de las llamadas al 911}
+\label{sec:colonia911}
+
+El 911 no trae coordenadas ni identificador de evento: la colonia es texto libre del operador. \cod{add_colonia_llamada_job} asigna \cod{colonia_id} en dos pasos.
+
+\begin{enumerate}
+  \item Catálogo. \cod{normalize_name} (\cod{project_name/text.py}) quita acentos con NFKD, pasa a mayúsculas, sustituye por espacio todo lo que no sea letra A a Z, dígito o espacio, y colapsa espacios; se aplica igual al nombre del 911 y al nombre del INEGI. El catálogo son los 783 asentamientos del municipio en \cod{colonias_hermosillo.csv}; un nombre normalizado que corresponde a más de un \cod{colonia_id} se considera ambiguo y no se asigna, para no repartir una llamada entre colonias homónimas.
+  \item Equivalencias. Los nombres que no emparejan se buscan en \cod{data/external/equivalencias_colonias_911.csv}: 294 nombres del 911 con hasta tres sugerencias y una columna \cod{OK} con el nombre correcto del catálogo, decidida a mano; 144 tienen equivalencia y los demás quedan como ``NA''.
+\end{enumerate}
+
+Resultado: 3,362 de 4,176 llamadas con colonia (2,800 por catálogo y 562 por equivalencia) y 814 sin colonia. Los análisis restringen a la ciudad (\cod{locality_code} 0001) en \cod{load_calls}: quedan 3,358 llamadas, el 80.4\% (salida \cod{quality_table} del notebook 08), en 378 colonias. Antes de las equivalencias, el emparejamiento por nombre único dentro de la ciudad (\cod{match_colonia}, hoy solo respaldo cuando el CSV no trae \cod{colonia_id}) ubicaba el 67.0\%. Los análisis temporales usan todas las llamadas; los análisis por colonia y por contexto, solo las ubicadas.
+
+\subsection{Bachómetro}
+
+\cod{process_baches_job} concatena los seis JSON anuales, convierte latitud, longitud y fecha, agrega \cod{year} (el archivo de origen), \cod{date_mx} e \cod{id_row}. No depura filas. La exploración midió tres anomalías (salida \cod{quality_table}, notebook 08):
+
+\begin{itemize}
+  \item \cod{year} distinto del año de \cod{date} en 1,584 filas: \cod{year} es el archivo de descarga, no la fecha del reporte. Decisión: usar \cod{date}.
+  \item 511 reportes fuera del recuadro de la ciudad (latitud 28.8 a 29.3, longitud $-111.2$ a $-110.8$). Decisión: excluir de mapas. \cod{docs/cinco_v_datos.md} cuenta 266 con otro recuadro (\cod{HERMOSILLO_BOUNDS}: latitud 27.5 a 30.5, longitud $-113.0$ a $-110.0$).
+  \item 152 reportes repetidos en coordenada, fecha y texto (doble envío). Decisión: no depurar.
+\end{itemize}
+
+Fecha de atención. La fecha del Bachómetro es la de atención del bache, no la de su aparición ni la del reporte ciudadano. Verificación de solo lectura sobre los 39,018 registros: solo 8 caen en domingo (1,025 en sábado), y entre 44.9\% (2026) y 90.3\% (2023) de las descripciones de cada año empiezan con ``Bacheo''. En consecuencia, el Bachómetro no puede medir si la lluvia produce más baches: solo sirve para comparar lugares.
+
+Colonia por geometría. \cod{add_colonia_bache_id_with_gpkg} reproyecta los puntos y los polígonos del DCAH a EPSG:6372 y asigna \cod{colonia_id} en tres pasos: punto dentro de un polígono (\cod{within}); si cae fuera, el asentamiento más cercano cuando está a 500~m o menos (\cod{MAX_NEAREST_DISTANCE_M}); a más de 1~km (\cod{DISTANCE_TO_SETTLEMENT_M}) se marca como probable carretera o zona rural. Resultado: 35,025 dentro de un polígono, 3,394 por vecino más cercano y 599 sin colonia (88 entre 500~m y 1~km de un asentamiento y 511 a más de 1~km), de los cuales 38,249 caen en colonias de la ciudad. Al portar el job desde la rama \cod{main} se corrigió una incompatibilidad con pandas 3: la columna \cod{colonia_id_method} se crea como texto, porque una columna inicial toda nula no admite después valores de texto. El cruce por nombre (\cod{add_colonia_name_to_bache_job}) sigue en el \cod{Makefile}, pero su salida no se usa.
+
+\subsection{Agua de Hermosillo}
+
+Clasificación. \cod{process_publicaciones_aguah_job} une cada publicación con su OCR (1:1 por \cod{postId}), convierte la hora a \cod{America/Hermosillo} y clasifica el tipo de evento con \cod{classify_events} (\cod{project_name/text.py}) sobre el texto y el OCR en minúsculas. Reglas, en orden de prioridad creciente (gana la última que coincide): \cod{pipas} (``pipa''), \cod{emergencia} (fuga, ruptura, emergencia, falla eléctrica, desabasto), \cod{corte_programado} (programad, suspensión o corte del servicio) y \cod{restablecimiento} (restablecido, se normalizó, reanudó, concluyó la reparación, entre otras). Antes de clasificar se borran las promesas de restablecimiento futuro (``será restablecido''). Lo que no coincide queda como \cod{otro}. Resultado: 3,919 \cod{otro}, 811 \cod{emergencia}, 295 \cod{corte_programado}, 134 \cod{restablecimiento} y 41 \cod{pipas}. Ventana útil: \cod{COVERAGE} fija enero de 2021 a julio de 2026; diciembre de 2020 está incompleto, y agosto y septiembre de 2026 tienen 36 y 16 publicaciones contra 120 a 132 en los meses previos (\cod{docs/eda.md}).
+
+Geocodificación de avisos. \cod{process_ubicaciones_aviso_job}, con \cod{project_name/geocoding.py}, extrae de cada publicación dos tipos de lugar. Nombres de colonia: busca el catálogo normalizado en el texto y el OCR, con filtros contra ruido (nombres que vienen como calle, nombres cortos ambiguos e instituciones quedan fuera). Cruces de calles (``calle A entre B y C''): localiza las calles por nombre normalizado entre los 41,538 tramos del Marco Geoestadístico de la ciudad, con tolerancia a errores de OCR (similitud mínima 0.85, \cod{OCR_SIMILARITY}); el cruce es el punto medio de la línea más corta entre los tramos más cercanos, aceptado si mide 50~m o menos (\cod{CROSSING_TOLERANCE_M}), y se asigna a la colonia más cercana. Resultado (verificación de solo lectura, igual a lo publicado): 16,261 menciones, 97.6\% con colonia; por método, 12,031 \cod{colonia_en_catalogo}, 2,380 \cod{colonia_con_marcador}, 1,467 \cod{cruce_geocodificado} y 383 \cod{unmatched}. Las menciones no son incidentes confirmados: reflejan lo que el organismo decide publicar.
+
+\subsection{Red hidrográfica}
+
+Consolidación y recorte. Las cuatro subcuencas se descargan como ZIP independientes con cinco capas cada uno: cauces \cod{hl}, puntos de drenaje \cod{dr}, cuerpos de agua \cod{ha}, unidad de captación \cod{subc} y topónimos \cod{to}. \cod{process_subcuencas_job} las consolida en un GeoPackage por subcuenca y luego en \cod{subc_hermosillo.gpkg} (EPSG:4019), con una columna de procedencia. \cod{process_hidrografia_cd_hermosillo_job} recorta todas las capas a la unión de los 762 asentamientos de la localidad 0001: quedan 437 tramos de \cod{hl} que cruzan la zona urbana (unos 189~km de cauces, cifra publicada en el reporte hidrográfico).
+
+Tramos que usa el análisis. Ni la distancia al cauce (\cod{stream_distance}) ni el contexto hidrográfico (\cod{nearest_segments}) usan el recorte urbano, porque dejaría fuera los cauces que corren justo afuera del borde: reproyectan la capa \cod{hl} a EPSG:6372 (metros), forman la unión de las 762 colonias, la amplían con un buffer de 5~km y conservan los tramos que la intersecan: 1,932 de 46,518. Es el criterio de \cod{notebooks/AAMM/07} a \cod{09}.
+
+Control de calidad de atributos. En la capa \cod{hl}, \cod{ORDER_1} es el orden de Strahler (4 o más: colector principal), \cod{LEVEL_1} el nivel de corriente (1: cauce principal) y \cod{ARBSUM_1} la longitud acumulada aguas arriba. Los valores $-1$ y 0 no son datos: son el código de ``no disponible'' que el INEGI asigna a los tramos deshabilitados (\cod{ENABLED} igual a 0), excluidos de la red lógica por ciclos o bifurcaciones. Entre los 427 tramos que resultan cercanos a alguna colonia hay 3 deshabilitados, que aparecen en 10 de las $762\times 3=2{,}286$ filas colonia-tramo y afectan a 7 colonias (verificación de solo lectura; el reporte hidrográfico publicó las mismas cifras sobre 428 tramos). Esas filas se quitan antes de resumir atributos (\cod{segment_features}); ninguna colonia se queda sin tramos habilitados. \cod{ORDER_1} y \cod{ARBSUM_1} tienen Spearman 0.862 entre los 425 tramos habilitados de la corrida publicada (salida guardada de \cod{AAMM/09}), y \cod{ARBSUM_1} tiene una escala dos órdenes de magnitud mayor con cola larga (mediana 3.4~km, máximo 139.8~km): por eso los contextos no usan \cod{ARBSUM_1} y resumen orden y nivel con mediana y extremos.
+
+\subsection{Precipitación}
+
+\cod{ingest_precipitacion_job} arma la URL con los parámetros de \cod{params.yml} (\cod{sources.open_meteo}) y descarga todo el rango en una petición: latitud 29.0892, longitud $-110.9613$, del 2018-01-01 al 2026-09-30, variables diarias \cod{precipitation_sum} y \cod{precipitation_hours}, zona \cod{America/Hermosillo}. \cod{process_precipitacion_job} produce una fila por día con \cod{date}, \cod{precipitation_mm}, \cod{precipitation_hours}, \cod{year}, \cod{month} e \cod{is_rain_day} ($\geq 1$~mm). No hay nulos ni días faltantes: 3,195 días, 309 con 1~mm o más, 63 con 10~mm o más y 30 con 20~mm o más; el máximo es 65.6~mm (2025-09-05). Las pruebas del job están en \cod{tests/test_precipitacion_jobs.py}.
+
+No se confirmó qué modelo usa la API de archivo de Open-Meteo para este punto. Se describe como la combinación por defecto de reanálisis de Open-Meteo; es una malla, no una estación, y no se afirma un tamaño de celda. ERA5-Land \cite{munozsabater2021} es uno de los reanálisis que combina Open-Meteo, pero no se confirmó que sea el de este punto.
+
+\section{Definiciones operativas}
+\label{sec:defs}
+
+\subsection{Lluvia y respuesta}
+
+Notación común. Sea $t$ un día y $R_t$ la precipitación de ese día en mm. Sea $Y^{(s)}_t$ el número de registros de la serie $s$ (un grupo o tipo del 911, las llamadas de un contexto, baches o emergencias de Agua de Hermosillo) con fecha $t$; los días sin registros valen 0 dentro de la ventana de cobertura de la serie (tabla~\ref{tab:cobertura}). $\operatorname{mes}(t)$ y $\text{año}(t)$ son el mes y el año calendario de $t$.
+
+\begin{description}
+  \item[Temporada.] $\mathcal{T}=\{t:\operatorname{mes}(t)\in\{6,7,8,9,10\}\}$, junio a octubre (\cod{RAINY_MONTHS}). En la ventana del 911 son 1,193 días.
+  \item[Ventana de respuesta.] Con $W=8$ días (\cod{RESPONSE_DAYS}),
+  \[ M_t=\max_{0\le j\le W-1} R_{t-j}, \]
+  donde $M_t$ es la lluvia máxima del día y los siete anteriores (\cod{response_window}). Un día está en la ventana de respuesta de una lluvia si $M_t\geq\tau$.
+  \item[Umbral y día seco.] $\tau=10$~mm (\cod{RAIN_EVENT_MM}) y $\delta=1$~mm (\cod{DRY_MM}). Día húmedo: $M_t\ge\tau$. Día seco: $M_t<\delta$, sin lluvia de 1~mm en los 8 días. En la tabla de intensidad, el día seco es en cambio $R_t<\delta$ el mismo día; la sección~\ref{sec:limites} discute la diferencia.
+  \item[Razón de temporada.] Con $H=\{t\in\mathcal{T}:M_t\ge\tau\}$ y $S=\{t\in\mathcal{T}:M_t<\delta\}$,
+  \[ Q^{(s)}=\frac{\bar{Y}^{(s)}_H}{\bar{Y}^{(s)}_S},\qquad \bar{Y}^{(s)}_A=\frac{1}{|A|}\sum_{t\in A}Y^{(s)}_t, \]
+  donde $Q^{(s)}$ es cuántas veces el conteo medio tras lluvia supera al de días secos de la misma temporada (\cod{event_study}). No se define si $\bar{Y}^{(s)}_S=0$.
+  \item[Control dentro del mismo mes.] Para cada mes calendario $m$ de cada año, $H_m=\{t\in m:M_t\ge\tau\}$ y $S_m=\{t\in m:M_t<\delta\}$, sobre todos los meses del año y no solo la temporada. Sea $\mathcal{M}$ el conjunto de meses con $H_m$ y $S_m$ no vacíos (meses comparables). Se reportan $|\mathcal{M}|$, el número de meses con $\bar{Y}_{H_m}>\bar{Y}_{S_m}$ y con $\bar{Y}_{H_m}<\bar{Y}_{S_m}$, y
+  \[ Q_{\text{mes}}=\frac{\sum_{m\in\mathcal{M}}\bar{Y}_{H_m}}{\sum_{m\in\mathcal{M}}\bar{Y}_{S_m}}, \]
+  el cociente de las medias de los promedios mensuales (\cod{within_month_ratio}). Se cuentan meses en lugar de promediar razones porque muchos meses secos tienen 0 llamadas por inundación.
+  \item[Intervalo bootstrap por meses.] Para $Q_{\text{mes}}$ por contexto (notebook 10, \cod{within_month_interval}): se toman $B=2000$ muestras $\mathcal{M}^{*}_b$ de $|\mathcal{M}|$ meses con reemplazo de $\mathcal{M}$ (semilla 42) y
+  \[ Q^{*}_b=\frac{\sum_{m\in\mathcal{M}^{*}_b}\bar{Y}_{H_m}}{\sum_{m\in\mathcal{M}^{*}_b}\bar{Y}_{S_m}}; \]
+  el intervalo del 90\% son los percentiles 5 y 95 de los $Q^{*}_b$ definidos (se descartan las muestras con denominador 0). La unidad que se remuestrea es el mes completo porque los días de un mismo mes comparten tormenta y temporada.
+  \item[Spearman con rezagos.] $r_s(k)$ es la correlación de Spearman, la de Pearson entre los rangos, entre $R_t$ y $Y^{(s)}_{t+k}$, para $k\in\{0,1,2,3,7,14,30\}$, sobre los días con ambas series definidas (\cod{lagged_spearman}).
+  \item[Participación de julio a septiembre.] Con $N_{y,m}$ los registros del año $y$ en el mes $m$,
+  \[ \pi_y=100\,\frac{\sum_{m=7}^{9}N_{y,m}}{\sum_{m=1}^{12}N_{y,m}}, \]
+  solo para años completos (\cod{monthly_share}). Una serie sin estacionalidad da $\pi_y\approx 25.0\%$.
+  \item[Categorías de intensidad.] Por la lluvia del mismo día $R_t$: seco ($R_t<1$), 1 a 10~mm, 10 a 20~mm, 20 a 40~mm y 40~mm o más, con cortes en 0.99, 9.99, 19.99 y 39.99 (\cod{INTENSITY_BINS}); la lluvia viene con resolución de 0.1~mm. Solo días de $\mathcal{T}$ en la ventana del 911 (\cod{calls_by_intensity}).
+  \item[Día malo.] Para la categoría $c$, el percentil 90 de $Y_t$ entre sus días, $P_{90}(c)$, con interpolación lineal (\cod{quantile(0.9)} de pandas): solo 1 de cada 10 días de la categoría lo supera.
+  \item[Evento aislado.] Con $\tau_E=20$~mm (\cod{EVENT_MM}),
+  \[ E=\{t:R_t\ge\tau_E,\ \max(R_{t-1},R_{t-2},R_{t-3})<\tau\}, \qquad C(k)=\frac{1}{|E|}\sum_{e\in E}Y_{e+k},\quad k=-3,\dots,7, \]
+  donde $C(k)$ es la curva de evento (\cod{event_curve}). $E$ no se restringe a la temporada (7 de los 13 eventos caen fuera de junio a octubre, salida \cod{eventos_en_temporada}), así que la referencia es el día seco de todo el año, $\bar{Y}$ sobre $\{t:R_t<\delta\}$, con valor 1.04.
+  \item[Llamadas extra por tipo.] Para el tipo $j$, $x_j=\bar{Y}^{(j)}_H-\bar{Y}^{(j)}_S$, con $H$ y $S$ de la razón de temporada (\cod{extra_calls_by_type}).
+  \item[Perfil por hora.] Con $h_i\in\{0,\dots,23\}$ la hora de la llamada $i$ y $t_i$ su día, $p_h=100\,|\{i:h_i=h,\ R_{t_i}\ge\tau\}|\,/\,|\{i:R_{t_i}\ge\tau\}|$ para el día de lluvia, y lo mismo con $M_{t_i}<\delta$ para el día seco; ambos sobre todos los meses (\cod{hour_profile}). Madrugada: $\sum_{h=1}^{5}p_h$, de la 1:00 a las 5:59.
+  \item[Persistencia entre años.] Con $n_{c,a}$ las llamadas ubicadas de la colonia $c$ en el año $a$ (tras lluvia, $M_t\ge\tau$, o todas), la persistencia entre los años $a$ y $b$ es $r_s$ entre los vectores $(n_{c,a})_c$ y $(n_{c,b})_c$, sobre las colonias con al menos una llamada en el conjunto, para los pares 2018-2019, 2019-2021, 2021-2022 y 2022-2025.
+  \item[Temporadas con llamadas por colonia.] Con $\mathcal{L}_c$ las llamadas ubicadas en la colonia $c$ y $M_{t_i}\ge\tau$,
+  \[ T_c=\bigl|\{\text{año}(t_i):i\in\mathcal{L}_c\}\bigr|,\qquad n_c=|\mathcal{L}_c|, \]
+  donde $T_c$ cuenta los años con al menos una llamada tras lluvia (\cod{seasons_with_calls}). Colonias recurrentes: $T_c\ge 3$, con participación $100\sum_{c:T_c\ge3}n_c/\sum_c n_c$. ``Temporada'' significa año calendario: la ventana $M_t\ge\tau$ no se limita a junio a octubre.
+\end{description}
+
+\subsection{Contexto hidrográfico}
+\label{sec:defs-contexto}
+
+Método de \cod{notebooks/AAMM/09} portado sin cambios de criterio a \cod{project_name/hydro_context.py} y escrito por \cod{process_contexto_hidrografico_job}. Sea $\mathcal{C}$ el conjunto de las 762 colonias de la ciudad, $g_c$ el centroide de la colonia $c$ en EPSG:6372 y $L$ los 1,932 tramos de \cod{hl} que intersecan la unión de las colonias ampliada 5~km.
+
+\begin{description}
+  \item[Distancia al cauce.] $d_c=\min_{\ell\in L}\operatorname{dist}(g_c,\ell)$, en metros (\cod{stream_distance}).
+  \item[Tramos cercanos.] Para cada $c$, los tres tramos $\ell_{c,1},\ell_{c,2},\ell_{c,3}\in L$ más cercanos a $g_c$, con distancias $d_{c,1}\le d_{c,2}\le d_{c,3}$ (\cod{nearest_segments}); $d_{c,1}=d_c$. Los candidatos salen del índice espacial dentro de 5~km del centroide, o de 15~km si no hay tres; en la corrida actual todas las colonias resuelven sus tres tramos dentro de 5~km.
+  \item[Nivel de cercanía.] K-Means con $k=4$ sobre los vectores $(d_{c,1},d_{c,2},d_{c,3})$ sin estandarizar; los grupos se reetiquetan por la media de $d_{c,1}$ como Muy cercano, Cercano, Lejano y Muy lejano, y se codifican como ordinal $p_c\in\{0,1,2,3\}$ (\cod{proximity_level}).
+  \item[Atributos.] Sea $J_c=\{j\in\{1,2,3\}:\text{ENABLED}(\ell_{c,j})=1\}$, y $o(\ell)$ y $v(\ell)$ el orden de Strahler (\cod{ORDER_1}) y el nivel de corriente (\cod{LEVEL_1}) del tramo $\ell$. El vector de la colonia es
+  \[ x_c=\Bigl(\operatorname*{med}_{j\in J_c}o(\ell_{c,j}),\ \max_{j\in J_c}o(\ell_{c,j}),\ \operatorname*{med}_{j\in J_c}v(\ell_{c,j}),\ \min_{j\in J_c}v(\ell_{c,j}),\ p_c\Bigr)\in\mathbb{R}^5, \]
+  y $X\in\mathbb{R}^{762\times 5}$ apila los $x_c$ (\cod{segment_features}; columnas \cod{order_median}, \cod{order_max}, \cod{level_median}, \cod{level_min}, \cod{proximity_ord}).
+  \item[Estandarización.] $z_{cf}=(x_{cf}-\bar{x}_f)/s_f$, donde $\bar{x}_f$ y $s_f$ son la media y la desviación estándar poblacional de la columna $f$ de $X$ (\cod{StandardScaler}). No hay partición de entrenamiento y prueba: el agrupamiento es descriptivo y se ajusta sobre todas las colonias.
+  \item[K-Means.] Con $k$ centroides $\mu_1,\dots,\mu_k\in\mathbb{R}^5$ y $\kappa(c)$ el grupo de la colonia $c$, K-Means minimiza la inercia
+  \[ J(k)=\sum_{c\in\mathcal{C}}\bigl\lVert z_c-\mu_{\kappa(c)}\bigr\rVert^2 , \]
+  la suma de distancias cuadradas de cada colonia al centroide de su grupo; \cod{n_init=10}, \cod{random_state=42}.
+  \item[Método del codo.] En \cod{AAMM/09} se calculó $J(k)$ para $k=2,\dots,8$ y se eligió el $k$ con mayor distancia a la cuerda entre $(2,J(2))$ y $(8,J(8))$:
+  \[ \hat{k}=\arg\max_k \frac{\bigl|6\,(J(k)-J(2))-(J(8)-J(2))\,(k-2)\bigr|}{\sqrt{6^2+(J(8)-J(2))^2}} , \]
+  con resultado $\hat{k}=4$. \cod{hydro_context.py} fija $k=4$ (\cod{N_CONTEXTS}) y no recalcula el codo.
+  \item[Reetiquetado.] El número que asigna K-Means es arbitrario; \cod{relabel_by_profile} lo vuelve estable con las medias de cada grupo: el de mayor $p_c$ medio es el contexto 0 (lejos de la red); entre los restantes, el de mayor orden mediano es el 1 (junto a colectores); luego, el de mayor nivel mediano es el 2 (arroyos menores muy cerca); el que queda es el 3 (los más cercanos).
+  \item[Área y tasa.] El área del contexto $k$ es $A_k=\sum_{c:\kappa(c)=k}\operatorname{área}(c)$ en km$^2$, en EPSG:6372 (\cod{context_area}). La tasa de la fuente $s$ es $r^{(s)}_k=N^{(s)}_k/A_k$, donde $N^{(s)}_k$ es el número de registros de $s$ ubicados en colonias del contexto $k$, en todo el periodo o solo en julio a septiembre (\cod{context_rates}). Avisos: menciones de colonia más cruces geocodificados que caen dentro de un polígono (\cod{aviso_counts}); llamadas: por defecto los grupos de superficie, \cod{inundacion_directa} y \cod{fenomeno_hidrometeorologico} (\cod{SURFACE_GROUPS}); baches: los de \cod{baches_hermosillo_filled.csv}.
+  \item[Respuesta por contexto.] $Y^{(k)}_t$ es el conteo diario de llamadas ubicadas en colonias del contexto $k$ de los grupos indicados (\cod{context_daily_series}); con él se calculan $Q^{(k)}$, $Q^{(k)}_{\text{mes}}$ y su intervalo bootstrap.
+\end{description}
+
+\section{Análisis}
+\label{sec:analisis}
+
+\subsection{Temporal: cuándo}
+\label{sec:temporal}
+
+El notebook 08 hace ocho exploraciones, cada una con un criterio fijado antes de ver el resultado (tabla~\ref{tab:criterios}); el notebook 09 traduce E2 en resultados operativos. Las cifras de esta sección son las salidas guardadas de esos notebooks; los nombres entre paréntesis son las variables que las guardan.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Exploraciones del notebook 08, criterio de conservación y resultado.}
+  \label{tab:criterios}
+  \begin{tabularx}{\textwidth}{L{0.7cm} L{3.6cm} Y L{2.6cm}}
+    \toprule
+    Id & Pregunta & Se conserva si & Resultado \\
+    \midrule
+    E8 & ¿Qué cobertura real tiene cada fuente? & Siempre: define ventana y limitaciones & Limitación declarada \\
+    E1 & ¿Las fuentes comparten calendario? & El pico de julio a septiembre aparece cada año & Se cumple solo para el 911 \\
+    E2 & ¿Es la lluvia? & La respuesta tras lluvia supera a los días secos del mismo mes & Se cumple para el 911 \\
+    E3 & ¿Hay una temporada de agua que falta? & El pico seco aparece en al menos 3 de 5 años & No se cumple \\
+    E4 & ¿Son siempre las mismas colonias? & Persistencia mayor a 0.5, o diferencia por cauce con control & Solo descriptivo \\
+    E5 & ¿Qué días son anómalos? & Los días marcados coinciden con lluvia o episodios conocidos & Parcial \\
+    E6 & ¿Hay perfiles de colonia? & PC1 separa colonias de perfil lluvioso & No se cumple \\
+    E7 & ¿El texto confirma la causa? & La mención de lluvia sube en los mismos meses & Solo en Agua de Hermosillo \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\FloatBarrier
+\subsubsection*{E8. Cobertura y calidad}
+
+Las tablas~\ref{tab:cobertura} y \ref{tab:anual-grupo} y la sección~\ref{sec:prep} contienen las salidas de E8: cobertura, huecos (ninguno), 80.4\% de llamadas con colonia de la ciudad, 57 ``SIN COLONIA'', 511 baches fuera del recuadro, 1,584 con \cod{year} distinto y 152 repetidos.
+
+\subsubsection*{E1. Calendario}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Participación de julio a septiembre en el total anual, $\pi_y$ en \% (salida \cod{jas_share}). Vacío: año incompleto o sin la fuente.}
+  \label{tab:e1}
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Año & Lluvia (mm) & 911 inundación & 911 terreno & 911 drenaje & Baches & Emergencias AguaH \\
+    \midrule
+    2018 & 59.9 & 92.2 & 67.2 & 41.7 & & \\
+    2019 & 44.3 & 77.8 & 71.0 & 32.8 & & \\
+    2020 & 36.4 & 33.3 & 67.2 & 24.5 & & \\
+    2021 & 78.3 & 88.7 & 74.3 & 47.4 & & 25.0 \\
+    2022 & 91.8 & 92.3 & 63.5 & 28.7 & 24.8 & 45.1 \\
+    2023 & 34.3 & 71.5 & 57.2 & 25.5 & 25.6 & 26.4 \\
+    2024 & 43.3 & 29.4 & 62.8 & 25.2 & 27.3 & 24.3 \\
+    2025 & 70.2 & & & & 24.4 & 25.5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Terreno concentra entre 57.2\% y 74.3\% del año en julio a septiembre en los 7 años completos. Inundación concentra entre 71.5\% y 92.3\% en 2018, 2019, 2021, 2022 y 2023; en 2020 y 2024 el porcentaje no es informativo porque hubo 3 y 17 llamadas en el año. Las atenciones de baches (24.4\% a 27.3\%) y las emergencias de Agua de Hermosillo (24.3\% a 26.4\%, salvo 45.1\% en 2022) quedan en el valor de una serie plana. El salto de julio a agosto en baches que señalaba \cod{docs/cinco_v_datos.md} se explica porque julio es el mes más bajo, no por un pico en agosto.
+
+\FloatBarrier
+\subsubsection*{E2. Respuesta a la lluvia}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Spearman $r_s(k)$ entre la lluvia del día $t$ y el conteo del día $t+k$ (salida \cod{lag_table}).}
+  \label{tab:e2-lags}
+  \begin{tabular}{lrrrrrrr}
+    \toprule
+    Serie & $k=0$ & 1 & 2 & 3 & 7 & 14 & 30 \\
+    \midrule
+    911 inundación & 0.299 & 0.239 & 0.231 & 0.181 & 0.143 & 0.113 & 0.057 \\
+    911 terreno & 0.312 & 0.260 & 0.247 & 0.234 & 0.194 & 0.178 & 0.123 \\
+    911 drenaje & 0.108 & 0.119 & 0.098 & 0.082 & 0.067 & 0.065 & 0.035 \\
+    Baches (atención) & $-0.004$ & $-0.017$ & 0.032 & 0.025 & 0.035 & 0.021 & 0.068 \\
+    Emergencias AguaH & 0.008 & 0.058 & 0.039 & 0.059 & $-0.002$ & $-0.015$ & $-0.015$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Estudio de evento en junio a octubre (salida \cod{event_table}): días húmedos $|H|$ y secos $|S|$, conteo diario medio en cada uno y razón $Q^{(s)}$. Los días difieren por la ventana de cobertura de cada serie.}
+  \label{tab:e2-evento}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Serie & $|H|$ & $\bar{Y}_H$ & $|S|$ & $\bar{Y}_S$ & $Q^{(s)}$ \\
+    \midrule
+    911 inundación & 167 & 1.41 & 586 & 0.06 & 21.70 \\
+    911 terreno & 167 & 3.14 & 586 & 0.86 & 3.66 \\
+    911 drenaje & 167 & 0.74 & 586 & 0.30 & 2.47 \\
+    Baches (atención) & 118 & 28.70 & 343 & 20.15 & 1.42 \\
+    Emergencias AguaH & 122 & 0.47 & 409 & 0.47 & 0.99 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Control dentro del mismo mes (salida \cod{within_month}): meses comparables $|\mathcal{M}|$, meses con más y con menos conteo en días húmedos, y $Q_{\text{mes}}$.}
+  \label{tab:e2-mes}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Serie & $|\mathcal{M}|$ & Húmedo $>$ seco & Húmedo $<$ seco & $Q_{\text{mes}}$ \\
+    \midrule
+    911 inundación & 26 & 14 & 2 & 31.24 \\
+    911 terreno & 26 & 17 & 9 & 1.52 \\
+    911 drenaje & 26 & 17 & 9 & 1.52 \\
+    Baches (atención) & 12 & 5 & 7 & 0.97 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Lluvia anual y llamadas por año (salida \cod{annual}); Spearman entre años con la lluvia: inundación 0.57, terreno 0.05. La lluvia de 2025 cubre el año completo, porque la serie llega a 2026; las llamadas de 2025 llegan a septiembre.}
+  \label{tab:e2-anual}
+  \begin{tabular}{lrrr}
+    \toprule
+    Año & Lluvia (mm) & 911 inundación & 911 terreno \\
+    \midrule
+    2018 & 348 & 153 & 232 \\
+    2019 & 417 & 63 & 242 \\
+    2020 & 162 & 3 & 168 \\
+    2021 & 279 & 71 & 327 \\
+    2022 & 327 & 90 & 515 \\
+    2023 & 78 & 7 & 271 \\
+    2024 & 148 & 17 & 381 \\
+    2025 & 379 & 50 & 409 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{../img/hallazgo_principal.pdf}
+  \caption{Lluvia mensual y llamadas al 911 por inundación y terreno, 2018 a 2025 (izquierda), y razón $Q^{(s)}$ por serie (derecha), de \cod{scripts/figura_hallazgo.py} con las mismas funciones de \cod{water_events.py}. La serie de baches cuenta atenciones, no apariciones.}
+  \label{fig:hallazgo}
+\end{figure}
+
+Lectura. La correlación es máxima el mismo día y decae en una semana. La razón de temporada separa al 911 (21.70, 3.66 y 2.47) de las fuentes de contraste. El control dentro del mismo mes sostiene la respuesta del 911 (inundación más alta en 14 de 26 meses y más baja en 2; terreno y drenaje en 17 de 26) y borra la de la serie de baches: la razón de 1.42 baja a 0.97, con más atenciones en días húmedos solo en 5 de 12 meses. La razón global de baches reflejaba la tendencia de largo plazo (más atenciones cada año) combinada con años recientes más lluviosos. Ese resultado dice que el ritmo de atención no sigue a la lluvia; no dice si la lluvia produce más baches, porque la fecha registrada es la de atención (sección~\ref{sec:prep}). Terreno y drenaje coinciden en la tabla~\ref{tab:e2-mes} en meses y en $Q_{\text{mes}}$ a dos decimales; una verificación de solo lectura con la misma función da 1.522 y 1.524, así que no es un error de copia. A escala anual, los tres años más secos (2020, 2023 y 2024) tienen las cifras más bajas de inundación.
+
+\FloatBarrier
+\subsubsection*{E3. Temporada seca}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Emergencias de Agua de Hermosillo por año, porcentaje en abril a junio y publicaciones de pipas (salida \cod{dry_season}).}
+  \label{tab:e3}
+  \begin{tabular}{lrrr}
+    \toprule
+    Año & Emergencias & \% en abril a junio & Pipas \\
+    \midrule
+    2021 & 88 & 29.5 & 2 \\
+    2022 & 82 & 22.0 & 0 \\
+    2023 & 167 & 48.5 & 0 \\
+    2024 & 194 & 17.0 & 29 \\
+    2025 & 215 & 22.3 & 6 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Solo 2023 concentra emergencias en abril a junio; el criterio de 3 de 5 años no se cumple. De las 41 publicaciones de pipas, 28 caen en julio (9) y agosto (19) de 2024 (salida \cod{pipas_months}), después de los dos años más secos de la serie. La escasez aparece como episodio de varios años de sequía, no como temporada anual, y Agua de Hermosillo queda como contexto.
+
+\FloatBarrier
+\subsubsection*{E4. Colonias y cauces}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Llamadas ubicadas en la ciudad por grupo y mediana de la distancia $d_c$ al cauce (salida \cod{distance_by_group}).}
+  \label{tab:e4-grupo}
+  \begin{tabular}{lrr}
+    \toprule
+    Grupo & Llamadas ubicadas & Mediana al cauce (m) \\
+    \midrule
+    Ahogamiento & 11 & 732 \\
+    Drenaje & 869 & 428 \\
+    Fenómeno hidrometeorológico & 18 & 168 \\
+    Inundación & 351 & 347 \\
+    Terreno & 2,109 & 511 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Cuartiles de distancia al cauce sobre las 378 colonias con llamadas (salida \cod{distance_quartiles}). Spearman por colonia entre el porcentaje de inundación y $d_c$: 0.043 (\cod{share_vs_distance}).}
+  \label{tab:e4-cuartil}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Cuartil de $d_c$ (m) & Colonias & Llamadas & Inundación & \% inundación \\
+    \midrule
+    1.1 a 112.4 & 95 & 468 & 58 & 12.4 \\
+    112.4 a 259.6 & 94 & 567 & 89 & 15.7 \\
+    259.6 a 583.4 & 94 & 856 & 86 & 10.0 \\
+    583.4 a 2,188.4 & 95 & 1,467 & 118 & 8.0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Persistencia entre años: Spearman de las llamadas por colonia (salida \cod{persistence}).}
+  \label{tab:e4-persistencia}
+  \begin{tabular}{lrr}
+    \toprule
+    Par de años & Tras lluvia ($M_t\ge\tau$) & Todas las llamadas \\
+    \midrule
+    2018-2019 & 0.03 & 0.37 \\
+    2019-2021 & 0.13 & 0.44 \\
+    2021-2022 & 0.16 & 0.51 \\
+    2022-2025 & 0.20 & 0.42 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lectura. En conjunto, la llamada por inundación viene de una colonia más cercana al cauce que la de terreno (347~m contra 511~m), como en \cod{notebooks/AAMM/07}. Colonia por colonia la relación casi desaparece ($r_s=0.043$) y solo el cuartil más lejano queda claramente abajo. Las llamadas tras lluvia no persisten entre años (0.03 a 0.20), mientras que el total sí persiste (0.37 a 0.51) porque sigue al tamaño de la colonia. El criterio de persistencia no se cumple: con la distancia al cauce como única variable espacial, la parte de dónde queda como descripción. La sección~\ref{sec:espacial} retoma la pregunta con otra variable: no qué tan cerca está el cauce, sino qué cauce es.
+
+\FloatBarrier
+\subsubsection*{E5. Días anómalos}
+
+Serie: $Y_t$, total diario de inundación, terreno y drenaje del 2018-01-01 al 2025-09-30. Residuo contra la mediana móvil centrada de 29 días,
+\[ e_t=Y_t-\operatorname{mediana}(Y_{t-14},\dots,Y_{t+14}), \]
+que quita la estacionalidad. Detectores, ninguno con la lluvia como entrada para que el cotejo con la lluvia sea independiente:
+
+\begin{itemize}
+  \item Tukey sobre $e_t$, solo del lado alto: anómalo si $e_t>Q_3+k\,(Q_3-Q_1)$ con $k=3$, donde $Q_1$ y $Q_3$ son los cuartiles de $e_t$ (\cod{iqr_outliers}).
+  \item IForest \cite{liu2008}, ECOD \cite{li2022} y LOF \cite{breunig2000} de PyOD \cite{zhao2019} (\cod{pyod_outliers}) sobre cuatro variables sin estandarizar: $Y_t$, $e_t$, $\sin(2\pi d/365.25)$ y $\cos(2\pi d/365.25)$, con $d$ el día del año. Parámetros: \cod{contamination=0.01} en los tres; IForest con \cod{random_state=42}; LOF con \cod{n_neighbors=20}; ECOD sin parámetros adicionales.
+  \item Votos: número de detectores que marcan el día, de 0 a 4; se revisan los días con 2 votos o más. La coincidencia entre detectores se mide con el índice de Jaccard $J(A,B)=|A\cap B|/|A\cup B|$, con $A$ y $B$ los conjuntos de días marcados.
+\end{itemize}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Jaccard entre los conjuntos de días marcados (salida de \cod{agreement_table}).}
+  \label{tab:e5-jaccard}
+  \begin{tabular}{lrrrr}
+    \toprule
+     & IForest & ECOD & LOF & Tukey \\
+    \midrule
+    IForest & 1.00 & 0.61 & 0.04 & 0.33 \\
+    ECOD & 0.61 & 1.00 & 0.04 & 0.33 \\
+    LOF & 0.04 & 0.04 & 1.00 & 0.02 \\
+    Tukey & 0.33 & 0.33 & 0.02 & 1.00 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Cotejo de los días con 2 votos o más con la lluvia (salida \cod{anomaly_check}).}
+  \label{tab:e5-cotejo}
+  \begin{tabular}{lr}
+    \toprule
+    Medida & Valor \\
+    \midrule
+    Días con 2 votos o más & 36 \\
+    \% en julio a septiembre & 83.3 \\
+    \% con lluvia de 1~mm o más en los 8 días previos ($M_t\ge\delta$) & 91.7 \\
+    \% con lluvia de 10~mm o más en los 8 días previos ($M_t\ge\tau$) & 36.1 \\
+    \% de todos los días con $M_t\ge\tau$ & 9.5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Los 12 días anómalos con más llamadas (salida \cod{top_days}).}
+  \label{tab:e5-top}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Fecha & Llamadas & $R_t$ (mm) & $M_t$ (mm) & Votos \\
+    \midrule
+    2018-08-12 & 66 & 27.2 & 27.2 & 4 \\
+    2022-07-16 & 61 & 12.5 & 12.5 & 4 \\
+    2019-07-23 & 47 & 0.1 & 0.8 & 3 \\
+    2022-06-29 & 47 & 2.4 & 5.7 & 3 \\
+    2021-07-03 & 46 & 4.0 & 4.0 & 3 \\
+    2018-10-12 & 46 & 52.4 & 52.4 & 3 \\
+    2018-08-18 & 43 & 0.0 & 27.2 & 3 \\
+    2023-07-29 & 42 & 1.1 & 1.1 & 3 \\
+    2025-09-03 & 40 & 20.3 & 20.3 & 3 \\
+    2022-08-18 & 39 & 51.6 & 51.6 & 3 \\
+    2025-08-14 & 36 & 4.7 & 4.7 & 3 \\
+    2021-07-07 & 35 & 3.2 & 16.1 & 3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lectura. IForest, ECOD y Tukey coinciden entre sí (Jaccard 0.33 a 0.61); LOF marca otros días (0.02 a 0.04) porque busca baja densidad local y no valores extremos. La proporción de días anómalos con $M_t\ge\tau$ (36.1\%) es 3.8 veces la base (9.5\%), pero 63.9\% de los días anómalos no tiene 10~mm en su ventana. Varios días extremos casi no tienen lluvia en la malla (2019-07-23 con 0.1~mm y 2023-07-29 con 1.1~mm), lo esperable si tormentas convectivas locales del monzón \cite{adams1997} no quedan en una malla. E5 valida la relación con la lluvia y a la vez mide el límite principal de la fuente de lluvia.
+
+\FloatBarrier
+\subsubsection*{E6. Perfiles de colonia}
+
+Cada colonia con 5 o más llamadas ubicadas (168 colonias) se describe por la participación de cada mes en sus llamadas: una matriz $P\in\mathbb{R}^{168\times 12}$ cuyas filas suman 1. Se ajustó PCA con 4 componentes (\cod{random_state=42}) y se proyectó a 2D con PCA, t-SNE \cite{vandermaaten2008} (perplejidad 20, inicialización PCA, \cod{random_state=42}) y UMAP \cite{mcinnes2018} (\cod{n_neighbors=15}, \cod{min_dist=0.1}, \cod{random_state=42}), con \cod{embed_2d}. La calidad de cada proyección se mide con la confiabilidad (trustworthiness) con $K=10$ vecinos:
+\[ T(K)=1-\frac{2}{nK(2n-3K-1)}\sum_{i=1}^{n}\sum_{j\in U_K(i)}\bigl(r(i,j)-K\bigr), \]
+donde $n$ es el número de colonias, $U_K(i)$ son los puntos que están entre los $K$ vecinos de $i$ en 2D pero no en el espacio original, y $r(i,j)$ es el rango de $j$ entre los vecinos de $i$ en el espacio original. $T=1$ significa que la proyección no inventa vecinos.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Varianza explicada, cargas principales y confiabilidad de las proyecciones (salidas \cod{pca_variance}, \cod{pca_loadings}, \cod{profile_summary} y \cod{embedding_quality}).}
+  \label{tab:e6}
+  \begin{tabular}{lr}
+    \toprule
+    Medida & Valor \\
+    \midrule
+    Varianza explicada PC1, PC2, PC3, PC4 & 0.330, 0.209, 0.115, 0.067 \\
+    Cargas de PC1: julio, agosto, septiembre & $-0.49$, 0.84, $-0.20$ \\
+    Cargas de PC2: julio, agosto, septiembre & 0.69, 0.25, $-0.65$ \\
+    Spearman de PC1 con la participación de julio a septiembre & 0.11 \\
+    Spearman de PC1 con la distancia al cauce & $-0.18$ \\
+    Trustworthiness PCA, t-SNE, UMAP & 0.838, 0.886, 0.868 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lectura. PC1 no separa colonias lluviosas de colonias planas: contrasta julio con agosto, y PC2 julio con septiembre. Las proyecciones forman una nube continua sin grupos y PC1 apenas se relaciona con la distancia al cauce. Confirma E4: la temporada pega en toda la ciudad y la colonia que llama depende en buena parte de dónde cayó cada tormenta.
+
+\FloatBarrier
+\subsubsection*{E7. Texto}
+
+Se busca la siguiente expresión regular en las descripciones de baches y en el texto más el OCR de Agua de Hermosillo, en minúsculas:
+\begin{verbatim}
+\bllov|\blluvi|\btormenta|\bchubasc|\baguacer|\bencharc|\binund
+\end{verbatim}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Porcentaje de textos de cada mes que mencionan la lluvia (salida \cod{text_by_month}).}
+  \label{tab:e7}
+  \begin{tabular}{lrrrrrrrrrrrr}
+    \toprule
+    Mes & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+    \midrule
+    Baches & 0.6 & 0.7 & 1.1 & 0.7 & 0.5 & 0.7 & 0.7 & 1.5 & 1.2 & 1.1 & 1.5 & 1.0 \\
+    AguaH & 1.6 & 0.2 & 0.0 & 0.8 & 0.0 & 1.0 & 7.0 & 7.5 & 1.9 & 0.7 & 0.6 & 0.0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+En baches la mención queda entre 0.5\% y 1.5\% sin pico en temporada: las descripciones registran la atención (``Bacheo en...'') y no la causa. En Agua de Hermosillo sube a 7.0\% y 7.5\% en julio y agosto; leídas a mano en el notebook 08, esas publicaciones atribuyen a las tormentas apagones que detienen el bombeo, salidas de operación en El Novillo y pipas de apoyo. La lectura manual no tiene salida tabulada.
+
+\FloatBarrier
+\subsubsection*{Resultados operativos del notebook 09}
+
+El notebook 09 traduce E2 a lo que el 911 puede esperar un día de lluvia, con las 4,092 llamadas sin ahogamientos y en la ventana del 911.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Días con 10~mm o más y lluvia anual en la ventana del 911 (salida \cod{rain_days}); 2025 llega a septiembre.}
+  \label{tab:n9-dias}
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Año & 2018 & 2019 & 2020 & 2021 & 2022 & 2023 & 2024 & 2025 \\
+    \midrule
+    Días con $R_t\ge 10$~mm & 10 & 10 & 4 & 9 & 8 & 1 & 2 & 7 \\
+    Lluvia (mm) & 348 & 417 & 162 & 279 & 327 & 78 & 148 & 273 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Salida \cod{summer_share}: 65.3\% de la lluvia y 62.1\% de las llamadas de enero de 2018 a septiembre de 2025 caen en julio a septiembre; hay 51 días con 10~mm o más en ese periodo, 34 de ellos en julio a septiembre, y el promedio de 2018 a 2024 es 6.3 por año.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Llamadas del mismo día según la lluvia de ese día, junio a octubre de 2018 a 2025 (salida \cod{intensity}). Día malo: $P_{90}$.}
+  \label{tab:n9-intensidad}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Categoría de $R_t$ & Días & Promedio & Día malo & Máximo \\
+    \midrule
+    Seco ($<1$~mm) & 1,001 & 1.7 & 4.0 & 47 \\
+    1 a 10~mm & 155 & 5.1 & 11.0 & 47 \\
+    10 a 20~mm & 21 & 9.0 & 18.0 & 61 \\
+    20 a 40~mm & 10 & 16.8 & 50.7 & 66 \\
+    40~mm o más & 6 & 18.7 & 42.5 & 46 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Curva de evento $C(k)$ alrededor de los 13 eventos aislados de 20~mm o más (salida \cod{curve}); 6 de los 13 caen en junio a octubre. Día seco de todo el año: 1.04. Con solo los 6 de temporada la curva es demasiado ruidosa para leer una duración.}
+  \label{tab:n9-curva}
+  \begin{tabular}{lrrrrrrrrrrr}
+    \toprule
+    $k$ & $-3$ & $-2$ & $-1$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+    \midrule
+    $C(k)$ & 3.69 & 0.69 & 1.77 & 5.77 & 5.77 & 1.92 & 2.69 & 1.31 & 1.08 & 1.38 & 1.54 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Llamadas por día de cada tipo tras lluvia ($H$) y en días secos ($S$) de junio a octubre, con los nombres cortos de la gráfica (salida de la celda de \cod{type_chart}, que resta los valores redondeados de \cod{by_type}; en \cod{by_type} el extra de árbol caído es 1.23).}
+  \label{tab:n9-tipos}
+  \begin{tabular}{lrrr}
+    \toprule
+    Tipo & Tras lluvia & Días secos & Extra $x_j$ \\
+    \midrule
+    Inundación & 1.30 & 0.06 & 1.24 \\
+    Árbol caído & 1.92 & 0.70 & 1.22 \\
+    Hundimiento & 0.54 & 0.07 & 0.47 \\
+    Alcantarilla sin tapa & 0.60 & 0.29 & 0.31 \\
+    Derrumbe & 0.29 & 0.02 & 0.27 \\
+    Calle en mal estado & 0.28 & 0.07 & 0.21 \\
+    Encharcamiento & 0.10 & 0.00 & 0.10 \\
+    Socavón & 0.10 & 0.00 & 0.10 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Perfil por hora (salidas \cod{hours}, \cod{night} y \cod{hour_counts}): 554 llamadas en días con $R_t\ge 10$~mm y 1,496 en días secos. La madrugada (1:00 a 5:59) reúne 11.6\% de las llamadas en días de lluvia y 2.7\% en días secos. La hora con más llamadas es las 21:00 en días de lluvia (9.7\%) y las 18:00 en días secos (7.9\%).
+
+Colonias recurrentes (salida \cod{core_summary}): 245 colonias tienen alguna llamada tras lluvia y 60 la tienen en 3 años calendario o más; esas 60 reúnen 60.2\% de las llamadas ubicadas tras lluvia. Su área mediana es 0.55~km$^2$, contra 0.08~km$^2$ de todas las colonias. Las cinco con más llamadas (salida \cod{core_list}) son San Benito (44 llamadas, 6 años), Balderrama (26, 6), Olivares (25, 4), Centro (23, 6) y Sahuaro (19, 6).
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Razón por serie: toda la temporada ($Q^{(s)}$) y dentro del mismo mes ($Q_{\text{mes}}$) (salida \cod{not_rain}). En inundación y Agua de Hermosillo no se calcula $Q_{\text{mes}}$ en este notebook; el de inundación está en la tabla~\ref{tab:e2-mes}.}
+  \label{tab:n9-nolluvia}
+  \begin{tabular}{lrr}
+    \toprule
+    Serie & Temporada & Mismo mes \\
+    \midrule
+    911 inundación & 21.70 & \\
+    911 terreno & 3.66 & 1.52 \\
+    911 drenaje & 2.47 & 1.52 \\
+    Baches atendidos & 1.42 & 0.97 \\
+    Emergencias AguaH & 0.99 & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.36\textwidth]{../img/historia/3_dos_dias.pdf}
+  \caption{Curva de evento $C(k)$ de la tabla~\ref{tab:n9-curva}, del notebook 09; punteado: día seco del año.}
+  \label{fig:curva}
+\end{figure}
+
+\FloatBarrier
+\subsection{Espacial: dónde}
+\label{sec:espacial}
+
+\subsubsection*{Primera sectorización: macro-sectores del PDU}
+
+La línea B empezó con una división administrativa (\cod{notebooks/AAMM/05}). El PDU de Hermosillo 2025+ \cite{implanpdu} divide la ciudad en nueve sectores, pero solo publica listas de colonias por distrito, sin geometría. Se transcribió la Tabla III.1 a CSV (74 distritos) y los sectores se agruparon en tres macro-sectores: Norte (NW, NN, NE), Centro (WW, C, EE) y Sur (SW, SS, SE). El nombre normalizado de cada colonia se emparejó con las listas del PDU, exacto (272 colonias) y por prefijo (95); los nombres que el PDU lista en más de un macro-sector quedaron fuera del lookup (6). Como hay homónimas en sectores distintos, el sector final lo decidió la banda de latitud que cubre la mayor parte del área de la colonia (cortes en $y=1{,}920{,}000$ y $1{,}916{,}200$~m en EPSG:6372), y el match del PDU quedó como diagnóstico: Norte 398, Sur 186 y Centro 178 colonias, con 21 colonias cuyo match contradice la banda (salidas guardadas de \cod{AAMM/09}). La etiqueta de latitud de esas bandas en el código (27.3 N) es errónea: Hermosillo está cerca de 29.1 N.
+
+Con los macro-sectores, el reporte hidrográfico publicó que el Norte concentra 112~km de cauces dentro de sus colonias y la menor distancia media al primer cauce (unos 346~m), y el Centro 11~km con distancias unas 3 veces mayores. Esas cifras salen de \cod{AAMM/05} y no se recalcularon aquí, porque el CSV del PDU no está en la máquina del corte. El reporte también encontró la señal estacional que la línea A midió después: los grupos de superficie se concentran en la temporada del monzón y caen en colonias más cercanas al cauce (medianas publicadas de 168~m y 338~m; hoy 168~m y 347~m, tabla~\ref{tab:e4-grupo}).
+
+El problema conceptual de los macro-sectores es que cada uno mezcla colonias ribereñas con alejadas; además, la distancia sola discrimina poco: 706 de las 762 colonias (92.7\%) tienen un cauce a menos de 1~km de su centroide (verificación de solo lectura; la mayor distancia es 2,188.4~m). La línea B cambió entonces la unidad: describir cada colonia por qué cauces tiene cerca.
+
+\subsubsection*{Contextos hidrográficos}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Tamaño de los contextos: corrida actual (\cod{context_summary}, notebook 10) y lo publicado en el reporte hidrográfico. Nivel de cercanía actual, igual al publicado: Muy cercano 417, Cercano 188, Lejano 116, Muy lejano 41 colonias.}
+  \label{tab:ctx-tam}
+  \begin{tabular}{llrrrr}
+    \toprule
+     & & \multicolumn{2}{c}{Actual} & \multicolumn{2}{c}{Publicado} \\
+    \cmidrule(lr){3-4}\cmidrule(lr){5-6}
+    Contexto & Nombre & Colonias & km$^2$ & Colonias & km$^2$ \\
+    \midrule
+    0 & Lejos de la red & 183 & 45.5 & 186 & 47.0 \\
+    1 & Junto a colectores & 160 & 29.2 & 161 & 29.2 \\
+    2 & Arroyos menores muy cerca & 173 & 26.9 & 180 & 28.1 \\
+    3 & Los más cercanos & 246 & 30.9 & 235 & 28.1 \\
+    \midrule
+    Total & & 762 & 132.5 & 762 & 132.4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Perfil de cada contexto: media por grupo de las cinco variables de $x_c$ en escala original (\cod{profile}, notebook 10) y, entre paréntesis, la corrida publicada (salida guardada de \cod{AAMM/09}). Cercanía: 0 muy cercano a 3 muy lejano.}
+  \label{tab:ctx-perfil}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Contexto & Orden mediano & Orden máximo & Nivel mediano & Nivel mínimo & Cercanía \\
+    \midrule
+    0 Lejos de la red & 1.09 (1.09) & 1.14 (1.15) & 3.23 (3.23) & 2.98 (2.98) & 1.90 (1.89) \\
+    1 Junto a colectores & 3.30 (3.30) & 3.48 (3.49) & 1.91 (1.91) & 1.76 (1.76) & 0.54 (0.53) \\
+    2 Arroyos menores & 1.29 (1.28) & 1.61 (1.62) & 4.74 (4.72) & 4.25 (4.21) & 0.34 (0.32) \\
+    3 Los más cercanos & 1.35 (1.34) & 2.31 (2.31) & 2.74 (2.69) & 2.15 (2.11) & 0.21 (0.20) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.48\textwidth]{../img/contexto/mapa_contextos.pdf}
+  \caption{Colonias de Hermosillo por contexto hidrográfico ($k=4$) con los cauces de la capa \cod{hl} (notebook 10).}
+  \label{fig:mapa-ctx}
+\end{figure}
+
+Lectura. Los perfiles reproducen los publicados a dos decimales o con diferencias de 0.01 a 0.05 (tabla~\ref{tab:ctx-perfil}). El contexto 1 tiene tramos de orden alto (mediana 3.30) y nivel bajo (cauce principal) a distancia media; el 0 es el más lejano; el 2 tiene el nivel de corriente más alto, arroyos de cabecera, y está pegado a la colonia; el 3 es la franja más cercana al cauce. En la corrida publicada, el contexto 0 reunía 98 de las 178 colonias del Centro, y el 1 y el 3 eran mayoritariamente del Norte (113 de 161 y 184 de 235): los contextos no repiten el macro-sector (salida guardada de \cod{AAMM/09}). Los tamaños actuales difieren en pocas colonias de los publicados; la sección~\ref{sec:reconc} explica por qué. El código original de \cod{AAMM/09}, corrido sobre los datos actuales, da la misma asignación colonia por colonia que \cod{hydro_context.py}.
+
+Robustez con $k=3$ (salidas guardadas de \cod{AAMM/09}, corrida publicada). Al bajar a tres grupos, ``junto a colectores'' (161 colonias) y la mayor parte de ``los más cercanos'' (124 de 235) se funden en un contexto ribereño de 285 colonias; ``lejos de la red'' se conserva casi igual (185 de sus 186 colonias) y ``arroyos menores'' recibe otras 102 colonias de ``los más cercanos''. El contexto ribereño lidera las tres tasas en el año (177.3 avisos, 4.10 llamadas y 332.4 baches por km$^2$) y en julio a septiembre (55.0, 3.59 y 91.9): la señal se concentra, no cambia de sentido. $k=4$ conserva la separación de la franja más pegada al cauce.
+
+\subsubsection*{Tasas por km$^2$}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Reportes por km$^2$ de cada contexto: corrida actual (\cod{rates_year} y \cod{rates_jas}, notebook 10) y, entre paréntesis, la tabla~3 del reporte hidrográfico (\cod{aamm_table3} y salidas guardadas de \cod{AAMM/09}). Llamadas: grupos de superficie. Baches: fecha de atención, solo comparación por lugar.}
+  \label{tab:tasas}
+  \begin{tabular}{llrrrr}
+    \toprule
+    Fuente & Periodo & Ctx 0 & Ctx 1 & Ctx 2 & Ctx 3 \\
+    \midrule
+    Avisos & año & 97.9 (95) & 175.1 (175) & 78.9 (83) & 130.9 (136) \\
+    Llamadas & año & 3.21 (3.2) & 4.25 (4.3) & 1.00 (1.0) & 2.33 (2.4) \\
+    Baches & año & 324.4 (317) & 305.3 (305) & 211.1 (210) & 288.6 (301) \\
+    Avisos & julio a septiembre & 29.8 (29.0) & 55.8 (55.7) & 25.5 (26.7) & 38.7 (40.0) \\
+    Llamadas & julio a septiembre & 2.97 (2.9) & 3.60 (3.6) & 0.97 (0.9) & 2.13 (2.2) \\
+    Baches & julio a septiembre & 84.0 (81.8) & 88.7 (88.4) & 55.4 (54.0) & 77.1 (81.5) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{../img/contexto/tasas_contexto.pdf}
+  \caption{Reportes por km$^2$ de cada contexto, año completo y julio a septiembre, con los colores del mapa (notebook 10).}
+  \label{fig:tasas}
+\end{figure}
+
+Lectura. La réplica reproduce la tabla~3 del reporte hidrográfico con diferencias de décimas en llamadas y de unidades en avisos y baches, por los tamaños de los contextos. El contexto 1 lidera avisos y llamadas por km$^2$ en el año y en julio a septiembre; en baches el 0 lidera el año y el 1 los meses de julio a septiembre, igual que en lo publicado. El contexto 2 es el más bajo en las tres fuentes y los dos periodos. Sensibilidad: con solo \cod{inundacion_directa}, sin el grupo que existe solo en 2025, las llamadas por km$^2$ son 3.21, 4.11, 0.78 y 2.07 (\cod{rates_flood_only}) y el orden se mantiene. Estas tasas dicen dónde hay más reportes, no si responden a la lluvia, y no consideran población.
+
+\FloatBarrier
+\subsection{Lluvia y contexto: ¿la red o solo la geografía?}
+\label{sec:puente}
+
+El notebook 10 aplica el estudio de evento y el control dentro del mismo mes de la sección~\ref{sec:temporal} a las llamadas ubicadas de cada contexto, con el intervalo bootstrap por meses de la sección~\ref{sec:defs}. Si la tasa más alta junto a colectores fuera solo un efecto de posición (colonias más densas o con más reportes en cualquier día), su razón tras lluvia sería parecida a la de los demás contextos.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Respuesta a la lluvia por contexto (salidas \cod{response_all}, \cod{response_ground} y \cod{response_flood}, notebook 10): llamadas ubicadas en el periodo, $Q^{(k)}$ de temporada, $Q^{(k)}_{\text{mes}}$ e intervalo bootstrap del 90\%. n.d.: el conteo medio de días secos es 0 y la razón no se define.}
+  \label{tab:respuesta}
+  \begin{tabular}{lrrrl}
+    \toprule
+    Contexto & Llamadas & $Q^{(k)}$ & $Q^{(k)}_{\text{mes}}$ & Intervalo 90\% \\
+    \midrule
+    \multicolumn{5}{l}{Inundación, terreno, drenaje y fenómeno hidrometeorológico} \\
+    \quad 1 Junto a colectores & 827 & 5.24 & 3.49 & 1.72 a 7.18 \\
+    \quad 3 Los más cercanos & 531 & 5.14 & 2.12 & 1.27 a 3.68 \\
+    \quad 0 Lejos de la red & 1,598 & 4.02 & 1.45 & 0.98 a 2.18 \\
+    \quad 2 Arroyos menores muy cerca & 391 & 3.02 & 0.89 & 0.50 a 2.23 \\
+    \midrule
+    \multicolumn{5}{l}{Solo terreno} \\
+    \quad 1 Junto a colectores & 463 & 4.84 & 3.06 & 1.43 a 7.56 \\
+    \quad 3 Los más cercanos & 349 & 4.73 & 1.49 & 0.79 a 2.97 \\
+    \quad 0 Lejos de la red & 1,055 & 3.41 & 1.07 & 0.67 a 1.86 \\
+    \quad 2 Arroyos menores muy cerca & 242 & 1.97 & 0.74 & 0.39 a 1.80 \\
+    \midrule
+    \multicolumn{5}{l}{Solo inundación} \\
+    \quad 1 Junto a colectores & 120 & 18.50 & n.d. & n.d. \\
+    \quad 3 Los más cercanos & 64 & 7.02 & 10.66 & 1.36 a 20.52 \\
+    \quad 0 Lejos de la red & 146 & 29.24 & 43.66 & 5.62 a 78.55 \\
+    \quad 2 Arroyos menores muy cerca & 21 & n.d. & n.d. & n.d. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.62\textwidth]{../img/contexto/respuesta_contexto.pdf}
+  \caption{$Q^{(k)}_{\text{mes}}$ por contexto con su intervalo bootstrap del 90\%, todas las llamadas ligadas a la lluvia (notebook 10); escala logarítmica, punteado en 1. Las etiquetas redondean a un decimal.}
+  \label{fig:respuesta}
+\end{figure}
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Llamadas ubicadas ligadas a la lluvia por día y por 100~km$^2$ de cada contexto, de junio a octubre, según la lluvia del mismo día (\cod{intensity_by_context}, notebook 10).}
+  \label{tab:intensidad-ctx}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Categoría de $R_t$ & Ctx 0 & Ctx 1 & Ctx 2 & Ctx 3 \\
+    \midrule
+    Seco ($<1$~mm) & 1.48 & 1.15 & 0.65 & 0.79 \\
+    1 a 10~mm & 4.65 & 3.25 & 2.11 & 2.07 \\
+    10 a 20~mm & 4.82 & 8.65 & 2.30 & 6.16 \\
+    20 a 40~mm & 16.72 & 9.26 & 2.23 & 7.12 \\
+    40~mm o más & 13.93 & 14.29 & 4.96 & 11.32 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lectura.
+\begin{itemize}
+  \item Con todas las llamadas ligadas a la lluvia, dentro del mismo mes, junto a colectores suben 3.49 veces (1.72 a 7.18), los más cercanos 2.12 (1.27 a 3.68), lejos de la red 1.45 (0.98 a 2.18) y en los arroyos menores no suben (0.89; 0.50 a 2.23). El orden es el de las tasas por km$^2$ y se repite con solo terreno.
+  \item La red explica algo más que la geografía: el contexto de los colectores no solo tiene más llamadas por km$^2$, sus llamadas responden más a la lluvia. La evidencia es moderada: los intervalos de colectores y de lejos de la red apenas se tocan (1.72 contra 2.18), y los intervalos son anchos porque la unidad del bootstrap es el mes.
+  \item La inundación urbana cae sobre todo lejos de la red: 146 de las 351 llamadas por inundación ubicadas están en el contexto 0, que concentra el Centro denso, y ahí la razón dentro del mes es la más alta (43.66). La red del INEGI es drenaje natural, no drenaje pluvial; la inundación del centro depende de este último, que ningún dataset del proyecto incluye.
+  \item En la tabla~\ref{tab:intensidad-ctx}, el contexto 0 tiene la carga más alta por área en días secos y con lluvia ligera; con 10 a 20~mm la del contexto 1 casi duplica a la del 0 (8.65 contra 4.82). Los días de cada categoría son los de la tabla~\ref{tab:n9-intensidad} (21 días de 10 a 20~mm, 10 de 20 a 40~mm y 6 de 40~mm o más), así que las tres últimas filas son inestables.
+  \item Los baches no entran en esta parte: su fecha es de atención.
+\end{itemize}
+
+\section{Decisiones y descartes}
+\label{sec:decisiones}
+
+\subsection{Por qué la línea A se centró en el 911}
+
+Los EDA por dataset (notebooks 05 a 07 y \cod{notebooks/AAMM/}) cumplieron las secciones del curso pero no compartían una pregunta. La pregunta candidata del notebook 08 preguntaba cuándo y dónde se concentran las afectaciones ligadas al agua y cuánto explican la lluvia y los cauces. Las exploraciones decidieron su forma:
+
+\begin{itemize}
+  \item E1 y E2 se cumplen para el 911: concentración en julio a septiembre todos los años y respuesta a la lluvia que sobrevive al control dentro del mismo mes. El 911 pasa a ser la serie principal y la parte diagnóstica es el estudio de evento.
+  \item E1 y E2 no se cumplen para las emergencias de Agua de Hermosillo (0.99) ni para la serie de atenciones de baches (0.97 dentro del mismo mes), y E3 no encuentra temporada seca recurrente. Agua de Hermosillo queda como contraste. Para los baches el contraste está mal planteado: la fecha es de atención, así que el resultado solo dice que el ritmo de atención no sigue a la lluvia.
+  \item E4 y E6 no sostienen un diagnóstico espacial con la distancia al cauce como variable: la parte de dónde quedó descriptiva en la línea A.
+  \item E5 y E7 aportan validación y evidencia cualitativa, y exponen el límite de la fuente de lluvia.
+\end{itemize}
+
+\subsection{Cómo se integró la línea B}
+
+\begin{itemize}
+  \item Los macro-sectores del PDU quedan superados por los contextos hidrográficos: un macro-sector mezcla colonias ribereñas con alejadas, depende de bandas de latitud ajustadas a ojo y de un CSV transcrito a mano. Se conservan solo como diagnóstico histórico.
+  \item Los contextos se conservan y pasan a ser un dataset procesado (\cod{colonias_contexto_hidrografico.csv}) con su job, su módulo y pruebas (\cod{tests/test_hydro_context.py}).
+  \item La colonia de las llamadas de la línea B (catálogo más equivalencias) reemplaza al emparejamiento por nombre único de la línea A, y todas las cifras por colonia de los notebooks 08 y 09 se recalcularon con ella.
+  \item La asignación de colonia a baches por geometría de la línea B se conserva para comparar lugares; la lectura temporal de baches de la línea A se reformula como atención, no aparición.
+  \item El notebook 10 responde la pregunta abierta de la línea B con el método de la línea A.
+\end{itemize}
+
+\FloatBarrier
+\subsection{Qué se consolidó y qué se desechó de los EDA previos}
+
+La tabla~\ref{tab:descartes} actualiza la de \cod{docs/redefinicion.md}. La fila de K-Means sobre distancias se refiere a la versión anterior de \cod{AAMM/08} y \cod{AAMM/09}, que agrupaba las colonias solo por sus distancias al cauce, dividía entre el área de todo el sector y daba grupos que repetían el sector. La versión actual de \cod{AAMM/09} (orden, nivel y cercanía, con el área propia de cada contexto) se conserva.
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Elementos de los EDA previos y su destino.}
+  \label{tab:descartes}
+  \begin{tabularx}{\textwidth}{L{4.4cm} L{3.4cm} Y}
+    \toprule
+    Elemento & Origen & Decisión y motivo \\
+    \midrule
+    Estacionalidad del 911 por grupo & \cod{notebooks/AAMM/07} & Se consolida; el notebook dice agosto a octubre y el código usa julio a septiembre \\
+    Distancia al cauce por grupo de incidente & \cod{notebooks/AAMM/07} & Se consolida; reproducida en E4 (347~m contra 511~m) \\
+    Contextos hidrográficos (orden, nivel y cercanía, K-Means $k=4$) & versión actual de \cod{notebooks/AAMM/09} & Se conserva: portado a \cod{hydro_context.py}, misma asignación colonia por colonia \\
+    Tasas por km$^2$ con el área de cada contexto & \cod{notebooks/AAMM/09} & Se conserva; réplica en la tabla~\ref{tab:tasas} \\
+    Cruce espacial de baches a colonia & \cod{add_colonia_bache_id_with_gpkg.py} & Se conserva para comparar lugares; los baches salen de la parte temporal \\
+    Colonia del 911 por catálogo más equivalencias & \cod{add_colonia_llamada_job.py} & Se conserva; reemplaza al nombre único (67.0\% a 80.4\%) \\
+    Macro-sectores Norte, Centro y Sur del PDU & \cod{notebooks/AAMM/05} & Superados por los contextos; solo diagnóstico; la etiqueta de latitud (27.3 N) es errónea \\
+    ``Los baches no responden a la lluvia'' & notebook 08, E2 & Se reformula: el Bachómetro fecha la atención; no mide aparición \\
+    Salto de julio a agosto en baches & \cod{docs/cinco_v_datos.md} & Se desecha como señal de lluvia: julio es el mes más bajo \\
+    Hipótesis de lluvia para emergencias de Agua de Hermosillo & \cod{notebooks/AAMM/06} & Se desecha: razón 0.99 \\
+    Episodios de interacción en Agua de Hermosillo & \cod{notebooks/05}, celda 27 & Contexto para etiquetar eventos en el tablero \\
+    Correlaciones por construcción (\cod{likes_count} con \cod{reactions_total}, \cod{n_posts} con \cod{n_mentions}, \cod{ORDER_1} con \cod{ARBSUM_1}) & notebooks 05 a 07, AAMM 06 y 09 & Se desechan: miden la misma cantidad; por eso los contextos no usan \cod{ARBSUM_1} \\
+    t-SNE y UMAP de interacción y de huella & notebooks 05 y 07 & Se desechan: los grupos los define la codificación de entrada \\
+    Tasa por clase de cercanía & \cod{notebooks/AAMM/08}, celda 25 & Se desecha: divide entre el área de todo el sector \\
+    K-Means solo sobre distancias, como agrupamiento final & \cod{notebooks/AAMM/08} y versión anterior de \cod{09} & Se desecha: distancias colineales (Spearman 0.77 a 0.93 entre $d_{c,1}$, $d_{c,2}$ y $d_{c,3}$, verificación de solo lectura); el grupo repetía el sector. Sobrevive solo como el ordinal de cercanía $p_c$ \\
+    Kruskal-Wallis sobre llamadas & \cod{notebooks/AAMM/07} & Se desecha: filas no independientes \\
+    Cruce de baches por nombre de colonia & \cod{add_colonia_name_to_bache_job.py} & Se desecha: salida nula en todas las filas (\cod{docs/redefinicion.md}) \\
+    Tukey sobre \cod{top_comment_likes} & \cod{notebooks/05} & Se desecha: dos de cada tres valores son cero \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Reconciliación de cifras entre las dos líneas}
+\label{sec:reconc}
+
+La tabla~\ref{tab:reconc} lista cada cifra que difería entre el reporte técnico anterior de la línea A, el reporte hidrográfico y los datos actuales, con el valor que este reporte adopta.
+
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{3.0cm} L{2.6cm} L{2.6cm} L{2.5cm} L{4.6cm}}
+  \caption{Reconciliación de cifras. A: reporte técnico anterior de la línea A; B: reporte hidrográfico; consolidado: corte actual.}\label{tab:reconc}\\
+  \toprule
+  Cifra & A & B & Consolidado & Motivo \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Cifra & A & B & Consolidado & Motivo \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  Llamadas con colonia & 67.0\% (nombre único en la ciudad; 314 colonias) & unos 80\% (``unos 20\% sin colonia'') & 80.4\%: 3,358 de 4,176 en 378 colonias & A no usaba las equivalencias; ahora las usan las dos líneas \\
+  Mediana de distancia al cauce, inundación & 357~m & 338~m & 347~m (351 llamadas) & Cambia el conjunto de llamadas ubicadas; mismo $d_c$ \\
+  Mediana, terreno y fenómeno hidrometeorológico & terreno 519~m & terreno unos 500~m; fenómeno 168~m & terreno 511~m; fenómeno 168~m & Igual que la fila anterior \\
+  Spearman colonia contra distancia & 0.029 & unos 0.2 & 0.043 (métrica de A) & Métricas distintas: A correlaciona el porcentaje de inundación de cada colonia con $d_c$; B, el número de llamadas por colonia con la distancia. La de B no se recalculó \\
+  Volumen crudo & sin total & 351~MB & 403.7~MB & B no contó el Excel del 911 (52.8~MB) ni la lluvia (0.1~MB) \\
+  Volumen procesado & sin total & unos 47~MB (9 artefactos) & 94.00~MB (11 artefactos) & Se agregan \cod{subc_hermosillo.gpkg}, \cod{hidrografia_cd_hermosillo.gpkg}, baches con colonia, llamadas, lluvia y contexto \\
+  Fuentes & 7 & 6 & 8 & A no contaba el PDU; B no contaba la precipitación \\
+  Tipos del 911 & 28; 27 sin ahogamientos & no reporta & 28; 24 sin ahogamientos & Los notebooks 08 y 09 aún dicen 32 en su texto; la cifra correcta, verificada, es 28 tipos y 24 sin ahogamientos \\
+  Llamadas de superficie & no usa el grupo & inundación más fenómeno hidrometeorológico & se reporta igual que B, con sensibilidad & \cod{fenomeno_hidrometeorologico} solo existe en 2025 (27 llamadas, 18 ubicadas); sin él el orden de las tasas se mantiene (tabla~\ref{tab:tasas}) \\
+  Colonias por contexto & no aplica & 186, 161, 180, 235 & 183, 160, 173, 246 & B se calculó sobre una corrida anterior de la red: 428 tramos cercanos únicos contra 427 hoy; un empate de distancias resuelto distinto basta para mover colonias en un K-Means sobre variables discretas \\
+  km$^2$ por contexto & no aplica & 47.0, 29.2, 28.1, 28.1 & 45.5, 29.2, 26.9, 30.9 & Igual que la fila anterior \\
+  Nivel de cercanía & no aplica & 417, 188, 116, 41 & 417, 188, 116, 41 & Se reproduce exacto \\
+  Tasas por km$^2$ & no aplica & tabla 3 de B & tabla~\ref{tab:tasas} & Diferencias por el tamaño de los contextos; el orden se mantiene \\
+  Baches con colonia & sin colonia & 598 sin colonia; 38,209 con contexto & 599 sin colonia; 38,249 en colonias de la ciudad & Corrida del job sobre el mismo procesado de baches; la diferencia no se rastreó \\
+  Respuesta de baches a la lluvia & ``no responden'' (0.97) & fecha de reparación, sin patrón esperable & la fecha es de atención; solo comparación por lugar & 8 de 39,018 registros en domingo; ``Bacheo'' al inicio de 44.9\% a 90.3\% de las descripciones por año \\
+  Cifras por colonia de la línea A & persistencia 0.01 a 0.23; 50 colonias recurrentes con 61.8\%; 138 colonias en E6 & no aplica & 0.03 a 0.20; 60 con 60.2\%; 168 colonias & Recalculadas con la colonia del 911 por catálogo más equivalencias \\
+  Distancia máxima a un cauce & 2,188.4~m (cuartiles) & ``toda la ciudad a menos de unos 1~km'' & 92.7\% de las colonias a menos de 1~km; máximo 2,188.4~m & La frase de B es una aproximación \\
+  Baches fuera de la ciudad & 511 (recuadro de 28.8 a 29.3 N) & no reporta & 511, y 266 con \cod{HERMOSILLO_BOUNDS} & Dos recuadros distintos \\
+  Jobs de \texttt{make data} & no reporta & 11 de procesamiento, unos 52~s & 12 de procesamiento más validación; duración no medida & Se agregó \cod{process_contexto_hidrografico_job} \\
+\end{longtable}
+\setlength{\tabcolsep}{6pt}
+\normalsize
+
+\section{Trazabilidad de las cifras de los reportes ejecutivos}
+\label{sec:traza}
+
+Cada fila de la tabla~\ref{tab:traza} es una cifra o afirmación cuantitativa de \cod{docs/reporte/reporte.tex} en su versión del corte, con el notebook, la variable que guarda la salida y la función que la calcula. Estado: ``rastreada'' si la cifra está en una salida guardada; ``derivada'' si es una operación simple sobre salidas guardadas; las demás filas explican qué falta. La segunda columna cita el ejecutivo con su propio redondeo.
+
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{0.4cm} L{4.2cm} L{3.8cm} L{2.8cm} L{3.8cm}}
+  \caption{Trazabilidad de las cifras del reporte ejecutivo \cod{docs/reporte/reporte.tex}.}\label{tab:traza}\\
+  \toprule
+  \# & Cifra en el ejecutivo & Origen & Valor en la salida & Estado \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \# & Cifra en el ejecutivo & Origen & Valor en la salida & Estado \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  1 & Lluvia de 10~mm o más unas seis veces al año & nb09, \cod{summer_share}; \cod{rain_days} & 6.3 (promedio 2018 a 2024) & Rastreada \\
+  2 & Dos de cada tres veces de julio a septiembre (días de 10~mm o más) & nb09, \cod{summer_share} & 34 de 51 días (2018-01 a 2025-09) & Rastreada \\
+  3 & Día seco de temporada: 1.7 llamadas de los tipos ligados al agua y al terreno & nb09, \cod{intensity} (\cod{calls_by_intensity}) & 1.7 (1,001 días) & Rastreada; todos los tipos del filtro salvo ahogamientos \\
+  4 & Con 10 a 20~mm llegan 9 & nb09, \cod{intensity} & 9.0 (21 días) & Rastreada \\
+  5 & Con más de 20~mm entre 17 y 19 & nb09, \cod{intensity} & 16.8 (10 días) y 18.7 (6 días) & Rastreada \\
+  6 & Días malos de más de 40 & nb09, \cod{intensity}, columna \cod{dia_malo} & 50.7 y 42.5 & Rastreada; vale para más de 20~mm \\
+  7 & La carga sigue alta al día siguiente & nb09, \cod{curve} (\cod{event_curve}) & $C(0)=C(1)=5.77$, $C(2)=1.92$ & Rastreada \\
+  8 & Sobre todo árboles e inundaciones & nb09, celda de \cod{type_chart}; \cod{by_type} & extra 1.22 (1.23 en \cod{by_type}) y 1.24 & Rastreada \\
+  9 & Crece de madrugada & nb09, \cod{night} (\cod{hour_profile}) & 11.6\% contra 2.7\% & Rastreada \\
+  10 & Ante 20~mm o más, unas diez veces un día seco, y alta también al día siguiente & nb09, \cod{intensity} y \cod{curve} & 16.8/1.7 = 9.9 y 18.7/1.7 = 11.0; $C(1)=5.77$ & Derivada \\
+  11 & 60 colonias que reinciden en tres años o más y reúnen 60\% de las llamadas ubicadas & nb09, \cod{core_summary} (\cod{seasons_with_calls}) & 60; 60.2\% & Rastreada; proporción de las llamadas ubicadas tras lluvia \\
+  12 & San Benito, Balderrama, Olivares, Centro y Sahuaro & nb09, \cod{core_list} & 44, 26, 25, 23 y 19 llamadas & Rastreada \\
+  13 & En especial las que están junto a los cauces principales & nb10, \cod{response_all}; \cod{rates_year} & $Q_{\text{mes}}$ 3.49; 4.25 llamadas por km$^2$ & Rastreada; es lectura de contexto, no de colonia \\
+  14 & Las fallas de agua potable no aumentan con la lluvia & nb08, \cod{event_table}; nb09, \cod{not_rain} & 0.99 & Rastreada \\
+  15 & Figura 1: un día malo, 1 de cada 10 días lo supera & nb09, \cod{calls_by_intensity} & $P_{90}$ & Rastreada (definición) \\
+  16 & Tabla 1: llamadas al 911, 2018 a 2025 & nb08, \cod{coverage_table} & 2018-01-05 a 2025-09-30 & Rastreada \\
+  17 & Dos tercios de la lluvia del año de julio a septiembre & nb09, \cod{summer_share} & 65.3\% & Rastreada \\
+  18 & En esos meses entra la mayor parte de las llamadas & nb09, \cod{summer_share} & 62.1\% & Rastreada \\
+  19 & En 2023 y 2024 las llamadas por inundación casi desaparecen & nb08, \cod{calls_by_year}; \cod{annual} & 7 y 17 & Rastreada \\
+  20 & Cada escalón de lluvia sube el promedio & nb09, \cod{intensity} & 1.7, 5.1, 9.0, 16.8, 18.7 & Rastreada \\
+  21 & Hasta unas diez veces un día seco cuando pasan de 20~mm & nb09, \cod{intensity} & 16.8/1.7 = 9.9; 18.7/1.7 = 11.0 & Derivada \\
+  22 & Tras una tormenta fuerte, el día siguiente recibe tantas llamadas como el de la lluvia, unas cinco veces un día seco & nb09, \cod{curve} & $C(0)=C(1)=5.77$; día seco del año 1.04 & Rastreada y derivada: 5.77/1.04 = 5.5 \\
+  23 & Figura del calendario: enero de 2018 a septiembre de 2025 & nb09, \cod{monthly} & ventana del 911 & Rastreada \\
+  24 & Siguen hundimientos, alcantarillas sin tapa y derrumbes & nb09, celda de \cod{type_chart} & extra: 0.47, 0.31 y 0.27 & Rastreada \\
+  25 & El pico pasa de las 18:00 a las 21:00 & nb09, \cod{hours} & 7.9\% a las 18:00 seco; 9.7\% a las 21:00 lluvia & Rastreada \\
+  26 & La madrugada recibe 12\%, cuatro veces lo de un día seco & nb09, \cod{night} & 11.6\% contra 2.7\%; 11.6/2.7 = 4.3 & Rastreada y derivada \\
+  27 & Se ubicaron cuatro de cada cinco llamadas & nb08, \cod{quality_table} & 80.4\% & Rastreada \\
+  28 & Las colonias afectadas cambian de un año a otro & nb08, \cod{persistence} & 0.03 a 0.20 & Rastreada \\
+  29 & 60 se repiten en tres años o más y reúnen 60\% & nb09, \cod{core_summary} & 60; 60.2\% & Rastreada \\
+  30 & Son colonias grandes & nb09, \cod{core_summary} & 0.55 contra 0.08~km$^2$ & Rastreada \\
+  31 & Junto a los colectores principales unas 3.5 veces, contra 1.4 en las alejadas, dentro del mismo mes & nb10, \cod{response_all} (\cod{within_month_interval}) & 3.49 y 1.45 & Rastreada; la salida muestra 1.45 y la figura y la lectura del notebook la redondean a 1.4 \\
+  32 & Inundación sube 21.7 veces & nb08, \cod{event_table}; nb09, \cod{not_rain} & 21.70 & Rastreada \\
+  33 & Las emergencias de agua potable no cambian & nb08, \cod{event_table}; nb09, \cod{not_rain} & 0.99 & Rastreada \\
+  34 & El Bachómetro registra la fecha en que se atiende un bache & verificación de solo lectura de \cod{baches_hermosillo_filled.csv}; lectura del notebook 10 & 8 de 39,018 en domingo; ``Bacheo'' al inicio de 44.9\% a 90.3\% por año & Sin salida guardada en un notebook; la cifra sale de la verificación de este reporte \\
+  35 & La lluvia aparece en el texto de Agua de Hermosillo como causa de apagones, en episodios aislados & nb08, \cod{text_by_month} y lectura manual & 7.0\% y 7.5\% en julio y agosto & Porcentajes rastreados; la atribución a apagones es lectura manual sin salida tabulada \\
+  36 & Una de cada cinco llamadas no se ubicó & nb08, \cod{quality_table} & 100 $-$ 80.4 = 19.6\% & Derivada \\
+  37 & No hay población por colonia & sin salida & no aplica & Limitación declarada \\
+\end{longtable}
+\setlength{\tabcolsep}{6pt}
+\normalsize
+
+La tabla~\ref{tab:traza-hidro} rastrea las cifras principales del ejecutivo hidrográfico (\cod{references/reporte_sectores_hidrograficos.pdf}). Ese documento se publicó con una corrida anterior; la columna ``Actual'' da el valor de este corte.
+
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{0.4cm} L{4.4cm} L{3.6cm} L{2.8cm} L{3.8cm}}
+  \caption{Trazabilidad de las cifras del ejecutivo hidrográfico.}\label{tab:traza-hidro}\\
+  \toprule
+  \# & Cifra publicada & Origen & Actual & Estado \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \# & Cifra publicada & Origen & Actual & Estado \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  1 & 762 colonias de la ciudad & \cod{load_colonias}; \cod{AAMM/09} & 762 & Rastreada \\
+  2 & Contexto 0: 186 colonias, 47.0~km$^2$ & nb10, \cod{context_summary} & 183; 45.5 & Cambió (sección~\ref{sec:reconc}) \\
+  3 & Contexto 1: 161 colonias, 29.2~km$^2$ & nb10, \cod{context_summary} & 160; 29.2 & Cambió en una colonia \\
+  4 & Contexto 2: 180 colonias, 28.1~km$^2$ & nb10, \cod{context_summary} & 173; 26.9 & Cambió \\
+  5 & Contexto 3: 235 colonias, 28.1~km$^2$ & nb10, \cod{context_summary} & 246; 30.9 & Cambió \\
+  6 & Contexto 1: 174.7 avisos por km$^2$ & nb10, \cod{rates_year}; \cod{AAMM/09}, \cod{avisos_ctx} & 175.05 & Rastreada; publicada 174.68 \\
+  7 & Contexto 1: 4.3 llamadas por inundaciones por km$^2$ & nb10, \cod{rates_year} & 4.25 & Rastreada; son grupos de superficie, no solo inundación (4.11 con solo inundación) \\
+  8 & ``El doble o más que en los demás contextos'' & nb10, \cod{rates_year} & avisos 175.1 contra 97.9, 78.9 y 130.9; llamadas 4.25 contra 3.21, 1.00 y 2.33 & No se sostiene: solo frente al contexto 2 la razón es 2 o más; frente al 0 es 1.8 en avisos y 1.3 en llamadas, y frente al 3 es 1.3 y 1.8 \\
+  9 & Julio a septiembre: el contexto 1 lidera las tres métricas, baches 88.4 por km$^2$ & nb10, \cod{rates_jas} & 55.8, 3.60 y 88.7 (contexto 0: 84.0 baches) & Rastreada; el liderazgo se mantiene \\
+  10 & En el año completo los baches los domina el Centro & nb10, \cod{rates_year} & contexto 0: 324.4 por km$^2$ & Rastreada; ``Centro'' se refiere al contexto 0, que concentra el Centro \\
+  11 & Contexto 2: el de menos reportes por km$^2$ en las tres fuentes & nb10, \cod{rates_year} y \cod{rates_jas} & 78.9, 1.00 y 211.1 en el año & Rastreada \\
+  12 & Pregunta abierta: ¿es la red o solo la geografía? & nb10, \cod{response_all} & 3.49 contra 1.45 dentro del mismo mes & Respondida en la sección~\ref{sec:puente} \\
+  13 & Fechas del Bachómetro de reparación, no de ocurrencia & verificación de solo lectura & 8 domingos de 39,018 & Consistente \\
+\end{longtable}
+\setlength{\tabcolsep}{6pt}
+\normalsize
+
+\section{Limitaciones y amenazas a la validez}
+\label{sec:limites}
+
+\begin{itemize}
+  \item Resolución de la lluvia. Es un punto de una malla de reanálisis, no una estación, y no se confirmó el modelo; la misma lluvia se asigna a toda la ciudad y a los cuatro contextos. 63.9\% de los días anómalos de E5 no tiene 10~mm en su ventana, y hay días con más de 40 llamadas y casi 0~mm. Las razones y promedios por categoría tienden a quedarse cortos, y la comparación entre contextos no puede separar la red de una lluvia que cae distinto en el norte y en el centro.
+  \item Ubicación de las llamadas. 19.6\% no se ubica en una colonia de la ciudad. La ubicación es el nombre que captura el operador: 562 llamadas dependen de equivalencias decididas a mano y los nombres ambiguos se excluyen aunque la llamada sea de una de esas colonias. La distancia y el contexto son del centroide de la colonia, no del lugar de la llamada: una colonia grande atravesada por un cauce puede quedar lejana. Si las llamadas que no se ubican difieren de las que sí, el mapa, la lista de colonias recurrentes y las tasas por contexto tienen sesgo.
+  \item Sin identificador de evento en el 911: varias filas pueden ser el mismo incidente reportado por varias personas.
+  \item Sin población por colonia. Los conteos por colonia no son tasas por habitante y las tasas por km$^2$ no consideran lotes baldíos: las colonias recurrentes tienen área mediana 0.55~km$^2$ contra 0.08~km$^2$, y el total por colonia persiste entre años porque sigue al tamaño.
+  \item Pocos días de lluvia fuerte. En junio a octubre de 2018 a 2025 hay 21 días de 10 a 20~mm, 10 de 20 a 40~mm y 6 de 40~mm o más; la curva de evento usa 13 eventos. El percentil 90 sobre 6 o 10 días es inestable (en la tabla~\ref{tab:n9-intensidad} el día malo de 20 a 40~mm supera al de 40~mm o más), y lo mismo pasa con las filas altas de la tabla~\ref{tab:intensidad-ctx}.
+  \item Filas no independientes. Los conteos diarios tienen autocorrelación y las ventanas de 8 días se traslapan. Solo la respuesta por contexto del notebook 10 lleva intervalo (bootstrap por meses); las demás razones son descriptivas y no se reportan pruebas de hipótesis. Por la misma razón se desechó el Kruskal-Wallis de los EDA previos.
+  \item Definiciones que no se limitan a la temporada. La curva de evento usa eventos de todo el año (7 de 13 fuera de junio a octubre); \cod{seasons_with_calls} y \cod{hour_profile} usan todos los meses; el control dentro del mismo mes compara todos los meses del año. Hay dos definiciones de día seco: $R_t<\delta$ el mismo día (tabla~\ref{tab:n9-intensidad}, 1,001 días) y $M_t<\delta$ en la ventana de 8 días (tabla~\ref{tab:e2-evento}, 586 días); el 1.7 del ejecutivo usa la primera.
+  \item Catálogo del 911. Selección manual de 34 cadenas de 475, unificadas en 28 tipos; la selección es un juicio del equipo; \cod{fenomeno_hidrometeorologico} solo existe en 2025 y entra en las llamadas de superficie.
+  \item Red hidrográfica. Escala 1:50\,000, segmentos de 1998 a 2010, en su mayoría intermitentes, sin drenaje pluvial urbano: el contexto 0 concentra la inundación del centro, que depende del drenaje pluvial.
+  \item Estabilidad de los contextos. K-Means sobre variables casi discretas es sensible a empates: un tramo cercano de diferencia entre corridas movió colonias de grupo (183 contra 186 en el contexto 0). $k=4$ viene del codo de una corrida y \cod{hydro_context.py} no lo recalcula; con $k=3$ el orden de las tasas se mantiene.
+  \item Confusor no medido. Las colonias con más afectación junto a colectores podrían ser también las de menor inversión en infraestructura; la marginación no se midió.
+  \item Bachómetro. La fecha es de atención, no de aparición, y la descarga del año en curso cambia los conteos; los conteos incluyen 511 puntos fuera del recuadro de la ciudad y 152 repetidos.
+  \item Avisos de Agua de Hermosillo. Las menciones de colonia no son incidentes confirmados: reflejan lo que el organismo decide publicar.
+  \item PDU. El CSV transcrito no está en la máquina del corte; las cifras de macro-sectores se citan como publicadas y no se pudieron reproducir aquí.
+\end{itemize}
+
+\section{Reproducibilidad}
+\label{sec:repro}
+
+Comandos, desde la raíz del repositorio:
+
+\begin{enumerate}
+  \item \texttt{uv sync} instala el entorno de \cod{pyproject.toml} y \cod{uv.lock}.
+  \item Descargar el snapshot de \cod{data/external} (\cod{data/SNAPSHOT.md}), que incluye \cod{equivalencias_colonias_911.csv}, descomprimirlo en \cod{data/} y correr \texttt{make verify-data}. Sin las equivalencias, \cod{add_colonia_llamada_job} se detiene con un error. El CSV del PDU se descarga aparte; si falta, \texttt{make verify-data} lo reporta en el grupo PDU, pero ningún job de \texttt{make data} lo necesita.
+  \item \texttt{make data}: corre \texttt{make download} (los seis jobs de ingesta en paralelo, cada uno con su \cod{FUENTE.txt} y sha256), los doce jobs de procesamiento de la tabla~\ref{tab:jobs} y \cod{validate_data_job}.
+  \item \texttt{make nb NOTEBOOK=08-exploracion-redefinicion}, \texttt{make nb NOTEBOOK=09-historia-lluvia-911} y \texttt{make nb NOTEBOOK=10-lluvia-contexto-hidrografico}: exportan los notebooks marimo de \cod{notebooks/marimo/} a \cod{.ipynb} con salidas; el 09 escribe las figuras de \cod{docs/img/historia/} y el 10 las de \cod{docs/img/contexto/}.
+  \item \texttt{uv run python scripts/figura\_hallazgo.py}: figura~\ref{fig:hallazgo}.
+  \item \texttt{make test}: pruebas, incluidas las de los jobs de precipitación, la unificación de tipos del 911 y el contexto hidrográfico (\cod{tests/test_hydro_context.py}: orden de los tramos por distancia, exclusión de tramos deshabilitados y reetiquetado estable).
+\end{enumerate}
+
+Parámetros. En \cod{params.yml}: URL, punto, periodo, variables y zona horaria de Open-Meteo (\cod{sources.open_meteo.datasets.precipitacion_hermosillo.query}); URL y rutas del 911 (\cod{sources.llamadas911}); años del Bachómetro; rutas de cada dataset, incluido \cod{colonias_contexto_hidrografico}. En \cod{project_name/water_events.py}: \cod{COVERAGE}, \cod{RAIN_EVENT_MM} = 10, \cod{RESPONSE_DAYS} = 8, \cod{DRY_MM} = 1, \cod{RAINY_MONTHS} = 6 a 10, \cod{EVENT_MM} = 20, \cod{INTENSITY_BINS}, \cod{METRIC_CRS} = EPSG:6372, \cod{CITY_LOCALITY} = 0001, \cod{SURFACE_GROUPS} y el buffer de 5~km. En \cod{project_name/hydro_context.py}: \cod{CITY_BUFFER_M} = 5000, \cod{SEARCH_RADII_M} = (5000, 15000), \cod{N_CONTEXTS} = 4 y \cod{FEATURES}. En \cod{project_name/features.py}: \cod{GRUPOS_INCIDENTE_911}. En \cod{add_colonia_bache_id_with_gpkg}: 500~m y 1~km. En \cod{project_name/geocoding.py}: 50~m y similitud 0.85.
+
+Semillas. \cod{RANDOM_STATE} = 42 en \cod{project_name/eda.py} para IForest, PCA, t-SNE y UMAP; el PCA de E6 usa \cod{random_state=42}; los dos K-Means de \cod{hydro_context.py} usan \cod{random_state=42} y \cod{n_init=10}; el bootstrap de \cod{within_month_interval} usa semilla 42 y 2000 muestras. ECOD, LOF y Tukey son deterministas.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Versiones de software (\cod{uv.lock} y \cod{.venv}).}
+  \label{tab:versiones}
+  \begin{tabular}{llll}
+    \toprule
+    Paquete & Versión & Paquete & Versión \\
+    \midrule
+    Python & 3.13.12 & scipy & 1.18.1 \\
+    pandas & 3.0.5 & geopandas & 1.1.4 \\
+    numpy & 2.3.5 & shapely & 2.1.2 \\
+    scikit-learn & 1.9.1 & pyproj & 3.8.0 \\
+    pyod & 3.6.7 & pyogrio & 0.13.0 \\
+    umap-learn & 0.5.12 & python-calamine & 0.9.0 \\
+    marimo & 0.24.0 & pandera & 0.33.1 \\
+    matplotlib & 3.11.1 & ydata-profiling (entorno aislado) & 4.18.4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Advertencias de reproducción:
+
+\begin{itemize}
+  \item \cod{schemas.py} no tiene reglas para el 911, la precipitación, los baches ni el contexto hidrográfico; \texttt{make validate} no los revisa.
+  \item La política de descarga es \cod{skip}: si el archivo crudo existe no se vuelve a bajar. El Bachómetro vuelve a bajar el año en curso: el crudo actual (descarga del 3 de octubre de 2026) tiene 39,106 reportes y el \cod{baches_hermosillo.csv} procesado (28 de septiembre de 2026), con el que se calcularon las salidas, tiene 39,018; correr \texttt{make data} hoy cambia las cifras de baches.
+  \item El snapshot de Facebook no se puede regenerar (scraper de paga, URLs que expiran, OCR dependiente de hardware); solo se verifica con sus checksums. Las equivalencias del 911 y el CSV del PDU son decisiones y transcripciones manuales.
+  \item El contexto depende de empates de distancia entre tramos; una red procesada en otra corrida puede mover algunas colonias de contexto (sección~\ref{sec:reconc}).
+\end{itemize}
+
+\begin{thebibliography}{99}
+\raggedright
+
+\bibitem{adams1997}
+Adams, D. K. y Comrie, A. C. (1997). The North American Monsoon. Bulletin of the American Meteorological Society, 78(10), 2197-2213. \url{https://doi.org/10.1175/1520-0477(1997)078<2197:TNAM>2.0.CO;2}
+
+\bibitem{aguah}
+Agua de Hermosillo. Publicaciones de la página oficial de Facebook, diciembre de 2020 a septiembre de 2026. Snapshot descrito en \cod{data/SNAPSHOT.md}. \url{https://www.facebook.com/AguaDeHermosillo}
+
+\bibitem{breunig2000}
+Breunig, M. M., Kriegel, H.-P., Ng, R. T. y Sander, J. (2000). LOF: Identifying Density-Based Local Outliers. Proceedings of the ACM SIGMOD International Conference on Management of Data, 93-104. \url{https://doi.org/10.1145/342009.335388}
+
+\bibitem{bachometro}
+H. Ayuntamiento de Hermosillo. Bachómetro Hermosillo: reportes de baches atendidos, 2021 a 2026. \url{https://bachometro.hermosillo.gob.mx}
+
+\bibitem{implanpdu}
+IMPLAN Hermosillo (2025). Programa de Desarrollo Urbano del Centro de Población de Hermosillo 2025+ (PDU), Tabla III.1. \url{https://implanhermosillo.gob.mx/}
+
+\bibitem{inegidcah}
+INEGI (2025). Delimitación de colonias y otros asentamientos humanos (DCAH) 2025, Sonora. \url{https://www.inegi.org.mx/programas/dcah/}
+
+\bibitem{inegimg}
+INEGI (2025). Marco Geoestadístico 2025, capa de ejes de vialidad (26e), Sonora. \url{https://www.inegi.org.mx/temas/mg/}
+
+\bibitem{inegired}
+INEGI (2010). Red Hidrográfica escala 1:50 000, edición 2.0: subcuencas La Manga (RH09Eb), La Poza (RH09Di), R. San Miguel (RH09De) y R. Sonora-Hermosillo (RH09Da). \url{https://www.inegi.org.mx/temas/hidrografia/}
+
+\bibitem{li2022}
+Li, Z., Zhao, Y., Hu, X., Botta, N., Ionescu, C. y Chen, G. H. (2022). ECOD: Unsupervised Outlier Detection Using Empirical Cumulative Distribution Functions. IEEE Transactions on Knowledge and Data Engineering. \url{https://doi.org/10.1109/TKDE.2022.3159580}
+
+\bibitem{liu2008}
+Liu, F. T., Ting, K. M. y Zhou, Z.-H. (2008). Isolation Forest. IEEE International Conference on Data Mining, 413-422. \url{https://doi.org/10.1109/ICDM.2008.17}
+
+\bibitem{marcelinux2025}
+Marcelinux (2025). Llamadas de emergencia 911 por colonia, Hermosillo 2018-2025. Hugging Face, CC-BY-4.0. \url{https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025}
+
+\bibitem{mcinnes2018}
+McInnes, L., Healy, J. y Melville, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction. arXiv:1802.03426.
+
+\bibitem{munozsabater2021}
+Muñoz-Sabater, J. et al. (2021). ERA5-Land: a state-of-the-art global reanalysis dataset for land applications. Earth System Science Data, 13, 4349-4383. \url{https://doi.org/10.5194/essd-13-4349-2021}. Es uno de los reanálisis que combina Open-Meteo; no se confirmó que sea el que usa para el punto de Hermosillo.
+
+\bibitem{vandermaaten2008}
+van der Maaten, L. y Hinton, G. (2008). Visualizing Data using t-SNE. Journal of Machine Learning Research, 9, 2579-2605.
+
+\bibitem{zhao2019}
+Zhao, Y., Nasrullah, Z. y Li, Z. (2019). PyOD: A Python Toolbox for Scalable Outlier Detection. Journal of Machine Learning Research, 20(96), 1-7.
+
+\bibitem{zippenfenig2023}
+Zippenfenig, P. (2023). Open-Meteo.com Weather API. Zenodo. \url{https://doi.org/10.5281/zenodo.7970649}
+
+\end{thebibliography}
+
+\end{document}
