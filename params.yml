@@ -209,6 +209,19 @@ sources:
           directory: "data/processed/inegi/hidrografia_hermosillo"
           filename: "hidrografia_cd_hermosillo.gpkg"
 
+      # Lo genera process_contexto_hidrografico_job con el método de
+      # notebooks/AAMM/09 (project_name/hydro_context.py); no se descarga.
+      colonias_contexto_hidrografico:
+        name: "Contexto hidrográfico de las colonias de Hermosillo"
+        description: >-
+          Una fila por colonia de la ciudad con los tres tramos de cauce más cercanos a
+          su centroide, su nivel de cercanía, el orden de Strahler y el nivel de
+          corriente de esos tramos, y el contexto hidrográfico que resulta de agruparlas
+          con KMeans (k=4).
+        processed:
+          directory: "data/processed/inegi/hidrografia_hermosillo"
+          filename: "colonias_contexto_hidrografico.csv"
+
   bachometro:
     name: "Bachómetro Hermosillo"
     base_url: "https://bachometro.hermosillo.gob.mx"

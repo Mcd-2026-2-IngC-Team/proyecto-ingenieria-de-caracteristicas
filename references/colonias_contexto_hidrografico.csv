@@ -1,0 +1,16 @@
+nombre,tipo,nulos_pct,distintos,rango,descripcion
+colonia_id,str,0.0,762,,Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria
+id_seg_1,int64,0.0,239,2984043 – 13228929,ID del tramo de cauce (capa hl) más cercano al centroide de la colonia
+dist_seg_1,float64,0.0,762,1.1173346118361205 – 2188.428699648786,Distancia en metros del centroide al tramo id_seg_1 (EPSG:6372)
+id_seg_2,int64,0.0,289,2983966 – 13228930,ID del segundo tramo de cauce más cercano
+dist_seg_2,float64,0.0,762,9.654406579094331 – 2702.0323356273375,Distancia en metros al tramo id_seg_2
+id_seg_3,int64,0.0,299,2983925 – 13228930,ID del tercer tramo de cauce más cercano
+dist_seg_3,float64,0.0,762,10.151053266674593 – 3192.2869763196636,Distancia en metros al tramo id_seg_3
+proximity_level,str,0.0,4,,"Nivel de cercanía a la red: Muy cercano, Cercano, Lejano o Muy lejano (KMeans k=4 sobre las tres distancias)"
+order_median,float64,0.0,4,1.0 – 4.0,Mediana del orden de Strahler (ORDER_1) de los tramos cercanos habilitados
+order_max,int64,0.0,4,1 – 4,Máximo del orden de Strahler de los tramos cercanos habilitados
+level_median,float64,0.0,7,1.0 – 6.0,Mediana del nivel de corriente (LEVEL_1; 1 = cauce principal)
+level_min,int64,0.0,6,1 – 6,Mínimo del nivel de corriente de los tramos cercanos habilitados
+proximity_ord,float64,0.0,4,0.0 – 3.0,proximity_level como ordinal: 0 = Muy cercano a 3 = Muy lejano
+context,int64,0.0,4,0 – 3,"Contexto hidrográfico (KMeans k=4 sobre las cinco variables estandarizadas): 0, 1, 2 o 3"
+context_name,str,0.0,4,,"Nombre del contexto: Lejos de la red, Junto a colectores, Arroyos menores muy cerca o Los más cercanos"

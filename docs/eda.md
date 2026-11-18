@@ -50,7 +50,7 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | colonias | sin menciones en avisos | 221 (28.2%), 206 en la ciudad | Fraccionamientos, residenciales y privadas sobre todo | Bandera `mentioned` |
 | ubicaciones | `lat`, `lon` | 14,794 (91.0%) | Estructural: solo `cruce_geocodificado` tiene punto | Sin imputar; centroide de la colonia |
 | ubicaciones | `colonia_id` | 383 (2.4%) | MAR: exactamente `unmatched`; 33% de los cruces del OCR, 20% del texto | Excluir de conteos por colonia |
-| llamadas 911 | colonia sin nombre único en la ciudad | 1,380 (33.0%); 57 "SIN COLONIA" | Nombre libre del operador; localidades fuera de la ciudad | Excluir de análisis por colonia; series temporales completas |
+| llamadas 911 | colonia sin nombre único en la ciudad | 818 (19.6%) sin colonia de la ciudad tras catálogo y equivalencias; 57 "SIN COLONIA" | Nombre libre del operador; localidades fuera de la ciudad | Excluir de análisis por colonia; series temporales completas |
 | llamadas 911 | `fenomeno_hidrometeorologico` antes de 2025 | 0 llamadas de 2018 a 2024 | Cambio de catálogo | No comparar entre años |
 | baches | `year` distinto al año de `date` | 1,584 | `year` es el archivo de origen | Usar `date` |
 | baches | fuera del recuadro de la ciudad | 511 | Coordenadas inválidas | Excluir de mapas |
@@ -114,7 +114,7 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | lluvia y 911 | lluvia del día, llamadas por drenaje el mismo día | Spearman | 0.11 |
 | lluvia y baches | lluvia del día, reportes de baches el mismo día | Spearman | 0.00 |
 | lluvia y aguah | lluvia del día, emergencias el mismo día | Spearman | 0.01 |
-| 911 por colonia | % de inundación, distancia al cauce | Spearman | 0.03 |
+| 911 por colonia | % de inundación, distancia al cauce | Spearman | 0.04 |
 
 ## Reducción de dimensión
 
@@ -124,15 +124,15 @@ Corte: 26 de octubre de 2026, sobre `data/processed/aguah/` del snapshot del 3 d
 | publicaciones | Texto (TF-IDF + SVD 50) | 5,200 × 50 | | 0.72 | 0.99 | 0.98 |
 | colonias | Área, centroide y menciones (ciudad) | 762 × 10 | 54% | 0.90 | 0.98 | 0.98 |
 | ubicaciones | Huella territorial por publicación | 3,788 × 11 | 49% | 0.95 | 1.00 | 1.00 |
-| llamadas 911 | Perfil mensual por colonia (5 o más llamadas) | 138 × 12 | 52% | 0.83 | 0.88 | 0.86 |
+| llamadas 911 | Perfil mensual por colonia (5 o más llamadas) | 168 × 12 | 54% | 0.84 | 0.89 | 0.87 |
 
 - Interacción: los grupos de t-SNE y UMAP los definen sobre todo las variables binarias de
   entrada; coloreados por `event_type` y por periodo (no son entrada) los colores se mezclan.
 - Texto: `corte_programado` y `restablecimiento` forman islas; "otro" se divide en muchas islas.
 - Colonias: las 206 colonias de la ciudad sin menciones forman un grupo aparte en los tres métodos.
 - Ubicaciones: el número de colonias distintas ordena las tres proyecciones.
-- Llamadas 911: PC1 (33%) contrasta julio (−0.48) con agosto (0.85); nube continua sin grupos;
-  Spearman de PC1 con la distancia al cauce −0.17.
+- Llamadas 911: PC1 (33%) contrasta julio (−0.49) con agosto (0.84); nube continua sin grupos;
+  Spearman de PC1 con la distancia al cauce −0.18.
 
 ## Consulta con los usuarios
 

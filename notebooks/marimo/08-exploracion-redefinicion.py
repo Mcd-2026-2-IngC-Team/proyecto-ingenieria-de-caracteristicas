@@ -26,7 +26,7 @@ def _(mo):
 
     Fuentes:
 
-    - Llamadas al 911 de 2018 a 2025, filtradas a 32 tipos de incidente ligados al agua y al
+    - Llamadas al 911 de 2018 a 2025, filtradas a 28 tipos de incidente ligados al agua y al
       terreno (`llamadas_911_hermosillo.csv`).
     - Precipitación diaria de Open-Meteo, estimación de reanálisis (`precipitacion_hermosillo.csv`),
       fuente nueva de esta exploración.
@@ -190,9 +190,10 @@ def _(mo):
       solo tiene sentido hasta septiembre de 2025, y los baches de 2021 empiezan en septiembre.
     - Agua de Hermosillo tiene un hueco del 5 al 19 de abril de 2024 (visto en el notebook 05)
       y agosto y septiembre de 2026 incompletos, por eso su serie se corta en julio de 2026.
-    - Una de cada tres llamadas al 911 no se puede ubicar en una colonia de la ciudad por
-      nombre. Los análisis por colonia trabajan con el 67% restante; los análisis temporales
-      usan todas las llamadas.
+    - Una de cada cinco llamadas al 911 no se puede ubicar en una colonia de la ciudad: la
+      colonia es texto libre y se resuelve por nombre contra el catálogo del INEGI más una
+      tabla de equivalencias revisada a mano (`add_colonia_llamada_job`). Los análisis por
+      colonia trabajan con el 80.4% ubicado; los análisis temporales usan todas las llamadas.
     - `fenomeno_hidrometeorologico` solo existe en 2025: es un cambio de catálogo, no un
       fenómeno nuevo, así que no se compara entre años.
     - Los baches usan `date`, no `year`, porque `year` es el archivo de origen y no coincide en
@@ -579,13 +580,13 @@ def _(mo):
     Lectura:
 
     - La llamada por inundación típica viene de una colonia más cercana al cauce que la
-      llamada por terreno (mediana 357 m contra 519 m), lo mismo que encontró
+      llamada por terreno (mediana 347 m contra 511 m), lo mismo que encontró
       `notebooks/AAMM/07`.
     - Colonia por colonia el efecto casi desaparece: la participación de inundación y la
-      distancia al cauce tienen Spearman 0.03, y solo el cuartil más lejano está claramente
+      distancia al cauce tienen Spearman 0.04, y solo el cuartil más lejano está claramente
       por debajo.
-    - Las colonias con llamadas tras lluvia cambian de un año a otro (persistencia de 0.01 a
-      0.23), mientras que el total de llamadas sí persiste (0.4 a 0.5), porque sigue al tamaño
+    - Las colonias con llamadas tras lluvia cambian de un año a otro (persistencia de 0.03 a
+      0.20), mientras que el total de llamadas sí persiste (0.4 a 0.5), porque sigue al tamaño
       de la colonia.
     - Resultado: la parte espacial queda como descripción (mapa de dónde cayeron las llamadas
       cada temporada), no como diagnóstico. El criterio de persistencia no se cumple.
@@ -770,13 +771,13 @@ def _(mo):
     Lectura:
 
     - PC1 explica 33% de la varianza, pero no separa colonias lluviosas de colonias planas: sus
-      cargas son julio (−0.48) contra agosto (+0.85). Separa colonias según en qué mes del
+      cargas son julio (−0.49) contra agosto (+0.84). Separa colonias según en qué mes del
       monzón cayeron sus llamadas; PC2 hace lo mismo con julio contra septiembre.
-    - PC1 apenas se relaciona con la participación de julio a septiembre (Spearman 0.15) y con
-      la distancia al cauce (−0.17). Las proyecciones muestran una nube continua, sin grupos.
+    - PC1 apenas se relaciona con la participación de julio a septiembre (Spearman 0.11) y con
+      la distancia al cauce (−0.18). Las proyecciones muestran una nube continua, sin grupos.
     - Confirma E4: la temporada pega en toda la ciudad, y cuál colonia llama depende de dónde
       cayó cada tormenta, no de un rasgo fijo visible en la red hidrográfica 1:50k.
-    - Confiabilidad de las proyecciones: PCA 0.83, t-SNE 0.88, UMAP 0.86.
+    - Confiabilidad de las proyecciones: PCA 0.84, t-SNE 0.89, UMAP 0.87.
     """)
     return
 
@@ -842,7 +843,7 @@ def _(mo):
 
     | Exploración | Resultado | Decisión |
     |---|---|---|
-    | E8 cobertura | Ventana común de enero 2022 a septiembre 2025; 67% de llamadas con colonia | Limitaciones del reporte |
+    | E8 cobertura | Ventana común de enero 2022 a septiembre 2025; 80.4% de llamadas con colonia | Limitaciones del reporte |
     | E1 calendario | 911 se concentra en julio a septiembre cada año; baches y AguaH no | Se conserva para 911 |
     | E2 lluvia | 911 inundación 21.7 veces, terreno 3.7, drenaje 2.5; baches y AguaH sin respuesta | Hallazgo principal |
     | E3 temporada seca | Solo 2023; pipas concentradas en julio y agosto de 2024 | Se descarta como temporada; AguaH queda como contexto |

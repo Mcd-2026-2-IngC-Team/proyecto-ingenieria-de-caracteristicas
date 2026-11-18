@@ -17,6 +17,7 @@ PROCESSED = PROJECT_ROOT / "data" / "processed"
 RAIN_FILE = PROCESSED / "precipitacion" / "precipitacion_hermosillo.csv"
 CALLS_FILE = PROCESSED / "llamadas_911" / "llamadas_911_hermosillo.csv"
 BACHES_FILE = PROCESSED / "bachometro" / "baches_hermosillo.csv"
+BACHES_LOCATED_FILE = PROCESSED / "bachometro" / "baches_hermosillo_filled.csv"
 POSTS_FILE = PROCESSED / "aguah" / "publicaciones_aguah.csv"
 COLONIAS_FILE = PROCESSED / "aguah" / "colonias_hermosillo.gpkg"
 SUBCUENCAS_FILE = PROCESSED / "inegi" / "hidrografia_hermosillo" / "subc_hermosillo.gpkg"
@@ -57,14 +58,38 @@ def match_colonia(names: pd.Series, colonias: pd.DataFrame) -> pd.Series:
 
 
 def load_calls(colonias: pd.DataFrame | None = None) -> pd.DataFrame:
-    calls = pd.read_csv(CALLS_FILE, parse_dates=["fecha"]).rename(columns={"fecha": "date"})
+    """Llamadas al 911; con `colonias`, cada llamada queda con su colonia de la ciudad.
+
+    La colonia viene de `add_colonia_llamada_job` (nombre normalizado contra el catálogo
+    del INEGI más la tabla de equivalencias revisada a mano). Si el CSV procesado aún no
+    la trae, se usa el emparejamiento por nombre único como respaldo. Las colonias fuera
+    de la localidad 0001 (la ciudad) quedan sin asignar.
+    """
+    calls = pd.read_csv(CALLS_FILE, parse_dates=["fecha"], dtype={"colonia_id": str}).rename(
+        columns={"fecha": "date"}
+    )
     if colonias is not None:
-        calls["colonia_id"] = match_colonia(calls["colonia"], colonias)
+        if "colonia_id" not in calls:
+            calls["colonia_id"] = match_colonia(calls["colonia"], colonias)
+        city = set(colonias["colonia_id"])
+        calls["colonia_id"] = calls["colonia_id"].where(calls["colonia_id"].isin(city))
     return calls
 
 
 def load_baches() -> pd.DataFrame:
     return pd.read_csv(BACHES_FILE, parse_dates=["date"])
+
+
+def load_baches_located(colonias: pd.DataFrame) -> pd.DataFrame:
+    """Baches con colonia de la ciudad (`add_colonia_bache_id_with_gpkg`).
+
+    La fecha del Bachómetro es la de atención del bache, no la de su aparición: sirve
+    para comparar lugares, no para medir la respuesta a la lluvia.
+    """
+    baches = pd.read_csv(BACHES_LOCATED_FILE, parse_dates=["date"], dtype={"colonia_id": str})
+    city = set(colonias["colonia_id"])
+    baches["colonia_id"] = baches["colonia_id"].where(baches["colonia_id"].isin(city))
+    return baches
 
 
 def load_posts() -> pd.DataFrame:
@@ -278,3 +303,117 @@ def stream_distance(colonias: gpd.GeoDataFrame, buffer_m: float = 5000) -> pd.Se
     )
     # sjoin_nearest repite la colonia si dos tramos empatan en distancia.
     return nearest.groupby(level=0)["distance_m"].min().rename("stream_distance_m")
+
+
+# ---------------------------------------------------------------------------------
+# Contexto hidrográfico (notebook 10): dónde, cruzado con cuándo.
+# ---------------------------------------------------------------------------------
+
+CONTEXT_FILE = (
+    PROCESSED / "inegi" / "hidrografia_hermosillo" / "colonias_contexto_hidrografico.csv"
+)
+UBICACIONES_FILE = PROCESSED / "aguah" / "ubicaciones_aviso.csv"
+# Grupos del 911 que el reporte hidrográfico llama "de superficie".
+SURFACE_GROUPS = ["inundacion_directa", "fenomeno_hidrometeorologico"]
+
+
+def load_contexts() -> pd.DataFrame:
+    return pd.read_csv(CONTEXT_FILE, dtype={"colonia_id": str})
+
+
+def context_area(colonias: gpd.GeoDataFrame, contexts: pd.DataFrame) -> pd.Series:
+    """km² de cada contexto: suma del área de sus colonias (EPSG:6372)."""
+    area = colonias.to_crs(METRIC_CRS).set_index("colonia_id").geometry.area / 1e6
+    context = contexts.set_index("colonia_id")["context"]
+    return area.groupby(context.reindex(area.index)).sum().rename("km2")
+
+
+def aviso_counts(colonias: gpd.GeoDataFrame, months: list[int] | None = None) -> pd.Series:
+    """Avisos de Agua de Hermosillo por colonia: menciones de colonia más cruces.
+
+    Mismo criterio que el reporte hidrográfico: las menciones cuentan por su colonia y
+    los cruces geocodificados por el polígono en el que caen.
+    """
+    mentions = pd.read_csv(UBICACIONES_FILE, dtype={"colonia_id": str})
+    posts = pd.read_csv(POSTS_FILE, usecols=["post_id", "month"])
+    mentions = mentions.merge(posts, on="post_id", how="left")
+    if months is not None:
+        mentions = mentions[mentions["month"].isin(months)]
+    by_name = mentions[mentions["location_type"] == "colonia"].groupby("colonia_id").size()
+    crossings = mentions[mentions["match_method"] == "cruce_geocodificado"]
+    points = gpd.GeoDataFrame(
+        geometry=gpd.points_from_xy(crossings["lon"], crossings["lat"]), crs="EPSG:4326"
+    ).to_crs(METRIC_CRS)
+    inside = gpd.sjoin(
+        points, colonias.to_crs(METRIC_CRS)[["colonia_id", "geometry"]], predicate="within"
+    )
+    inside = inside[~inside.index.duplicated(keep="first")]
+    by_point = inside.groupby("colonia_id").size()
+    return by_name.add(by_point, fill_value=0)
+
+
+def context_rates(
+    colonias: gpd.GeoDataFrame,
+    contexts: pd.DataFrame,
+    calls: pd.DataFrame,
+    baches: pd.DataFrame,
+    months: list[int] | None = None,
+    call_groups: list[str] = SURFACE_GROUPS,
+) -> pd.DataFrame:
+    """Reportes por km² de cada contexto: avisos, llamadas de los grupos dados y baches."""
+    context = contexts.set_index("colonia_id")["context"]
+    area = context_area(colonias, contexts)
+
+    def per_km2(counts_by_colonia: pd.Series) -> pd.Series:
+        by_context = counts_by_colonia.groupby(context.reindex(counts_by_colonia.index)).sum()
+        return by_context / area
+
+    selected_calls = calls[calls["grupo_incidente"].isin(call_groups)]
+    selected_baches = baches
+    if months is not None:
+        selected_calls = selected_calls[selected_calls["date"].dt.month.isin(months)]
+        selected_baches = baches[baches["date"].dt.month.isin(months)]
+    return pd.DataFrame(
+        {
+            "avisos": per_km2(aviso_counts(colonias, months)),
+            "llamadas": per_km2(selected_calls.groupby("colonia_id").size()),
+            "baches": per_km2(selected_baches.groupby("colonia_id").size()),
+        }
+    )
+
+
+def context_daily_series(
+    calls: pd.DataFrame, contexts: pd.DataFrame, groups: list[str]
+) -> dict[str, pd.Series]:
+    """Conteo diario de llamadas ubicadas de los grupos dados, una serie por contexto."""
+    context = contexts.set_index("colonia_id")["context_name"]
+    located = calls[calls["grupo_incidente"].isin(groups)].copy()
+    located["context_name"] = located["colonia_id"].map(context)
+    return {
+        name: daily_counts(located[located["context_name"] == name], "911")
+        for name in sorted(context.dropna().unique())
+    }
+
+
+def within_month_interval(
+    table: pd.DataFrame, column: str, n_boot: int = 2000, seed: int = 42
+) -> dict:
+    """Razón dentro del mes con intervalo bootstrap del 90% remuestreando meses.
+
+    Los días de un mismo mes no son independientes (comparten la tormenta y la
+    temporada), así que la unidad que se remuestrea es el mes completo.
+    """
+    months = within_month_ratio(table, column)
+    rng = np.random.default_rng(seed)
+    wet, dry = months["húmedo"].to_numpy(), months["seco"].to_numpy()
+    draws = rng.integers(0, len(months), size=(n_boot, len(months)))
+    wet_sum, dry_sum = wet[draws].sum(axis=1), dry[draws].sum(axis=1)
+    ratios = np.divide(wet_sum, dry_sum, out=np.full(n_boot, np.nan), where=dry_sum > 0)
+    low, high = np.nanpercentile(ratios, [5, 95])
+    return {
+        "serie": column,
+        "meses": len(months),
+        "razón en el mes": round(wet.sum() / dry.sum(), 2) if dry.sum() else np.nan,
+        "intervalo 90% bajo": round(low, 2),
+        "intervalo 90% alto": round(high, 2),
+    }

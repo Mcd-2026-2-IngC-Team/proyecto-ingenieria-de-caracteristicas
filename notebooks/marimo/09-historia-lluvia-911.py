@@ -31,7 +31,7 @@ def _(mo):
     6. Dónde: un grupo de colonias que se repite cada temporada.
     7. Lo que la lluvia no explica: baches y agua potable.
 
-    Llamadas consideradas: los 32 tipos del filtro del 911 menos ahogamientos (que no
+    Llamadas consideradas: los 28 tipos del filtro del 911 menos los 4 de ahogamientos (24 tipos) (que no
     dependen de la lluvia en la ciudad), de enero de 2018 a septiembre de 2025.
     """)
     return
@@ -346,8 +346,8 @@ def _(mo):
     ## 6. Dónde
 
     Colonias de la ciudad según en cuántos años calendario tuvieron llamadas en los 8 días
-    posteriores a una lluvia de 10 mm o más. Solo cuenta el 67% de las llamadas que se
-    ubican en una colonia por su nombre.
+    posteriores a una lluvia de 10 mm o más. Solo cuenta el 80.4% de las llamadas que se
+    ubican en una colonia (catálogo del INEGI más equivalencias revisadas a mano).
     """)
     return
 
@@ -429,7 +429,7 @@ def _(pd, rain, we):
         "911 drenaje": we.daily_counts(
             _calls[_calls["grupo_incidente"] == "drenaje_y_red_de_agua"], "911"
         ),
-        "baches": we.daily_counts(we.load_baches(), "baches"),
+        "baches atendidos": we.daily_counts(we.load_baches(), "baches"),
         "emergencias Agua de Hermosillo": we.daily_counts(
             (_posts := we.load_posts())[_posts["event_type"] == "emergencia"], "aguah"
         ),
@@ -443,7 +443,7 @@ def _(pd, rain, we):
     not_rain = pd.DataFrame(
         {
             "temporada": {_n: we.event_study(_daily, _n)["razón"] for _n in _series},
-            "mismo mes": {_n: _within(_n) for _n in ["911 terreno", "911 drenaje", "baches"]},
+            "mismo mes": {_n: _within(_n) for _n in ["911 terreno", "911 drenaje", "baches atendidos"]},
         }
     ).round(2)
     not_rain
@@ -464,7 +464,7 @@ def _(CATEGORICAL, INK, MUTED, NEUTRAL, not_rain, plt, save):
     _ax.set_xticks([0.5, 1, 2, 5, 10, 20, 50], ["0.5", "1", "2", "5", "10", "20", "50"])
     for _i, (_name, _value) in enumerate(_order["temporada"].items()):
         _label = f"{_value:.1f} veces"
-        if _name == "baches":
+        if _name == "baches atendidos":
             _label += f" ({_order.loc[_name, 'mismo mes']:.1f} en el mismo mes)"
         _ax.text(_value * 1.12, _i, _label, va="center", fontsize=7.5, color=INK)
     _ax.tick_params(labelsize=8, colors=MUTED)

@@ -55,13 +55,13 @@ tipos de incidente responden y en qué colonias se concentran en cada temporada 
 
 | Id | Pregunta | Resultado | Decisión |
 |---|---|---|---|
-| E8 | Cobertura | Ventana común de 911 y lluvia: 2018-01 a 2025-09; 67% de llamadas con colonia única por nombre | Limitación declarada |
+| E8 | Cobertura | Ventana común de 911 y lluvia: 2018-01 a 2025-09; 80.4% de llamadas con colonia (catálogo y equivalencias) | Limitación declarada |
 | E1 | Calendario | 911 terreno: 57% a 74% del año en julio a septiembre, 7 de 7 años; baches: 24% a 27% | Se conserva para 911 |
-| E2 | Respuesta a la lluvia | 911 inundación 21.7 veces, terreno 3.7, drenaje 2.5; baches 0.97 dentro del mismo mes; emergencias de Agua de Hermosillo 0.99 | Hallazgo principal |
+| E2 | Respuesta a la lluvia | 911 inundación 21.7 veces, terreno 3.7, drenaje 2.5; baches 0.97 dentro del mismo mes, pero por fecha de atención; emergencias de Agua de Hermosillo 0.99 | Hallazgo principal |
 | E3 | Temporada seca | Abril a junio concentra emergencias solo en 2023 (48.5%); 28 de 41 publicaciones de pipas en julio y agosto de 2024 | Se descarta como temporada |
-| E4 | Colonias y cauces | Mediana de distancia al cauce: inundación 357 m, terreno 519 m; Spearman por colonia 0.03; persistencia entre años 0.01 a 0.23 | Solo descriptivo |
+| E4 | Colonias y cauces | Mediana de distancia al cauce: inundación 347 m, terreno 511 m; Spearman por colonia 0.04; persistencia entre años 0.03 a 0.20 | Solo descriptivo; el diagnóstico espacial pasa a los contextos (notebook 10) |
 | E5 | Anomalías | 36 días con 2 votos o más: 83% en julio a septiembre, 92% con lluvia previa de 1 mm o más, 36% con 10 mm o más | Validación y límite del reanálisis |
-| E6 | Perfiles de colonia | PC1 (33%) contrasta julio con agosto; Spearman con distancia al cauce −0.17 | Apoyo de E4 |
+| E6 | Perfiles de colonia | PC1 (33%) contrasta julio con agosto; Spearman con distancia al cauce −0.18 | Apoyo de E4 |
 | E7 | Texto | Lluvia en 0.5% a 1.5% de las descripciones de baches; en 7% de publicaciones de Agua de Hermosillo en julio y agosto | Evidencia cualitativa |
 
 ## Lo que se consolida y lo que se desecha de los EDA previos
@@ -69,8 +69,8 @@ tipos de incidente responden y en qué colonias se concentran en cada temporada 
 | Elemento | Origen | Decisión |
 |---|---|---|
 | Estacionalidad del 911 por grupo | `notebooks/AAMM/07` | Se consolida; el notebook dice agosto a octubre y el código usa julio a septiembre |
-| Distancia al cauce por grupo de incidente | `notebooks/AAMM/07` | Se consolida; reproducida en E4 (357 m contra 519 m) |
-| Cruce espacial de baches a colonia | `project_name/jobs/add_colonia_bache_with_gpkg.py` | Se conserva para el tablero; los baches salen de la pregunta |
+| Distancia al cauce por grupo de incidente | `notebooks/AAMM/07` | Se consolida; reproducida en E4 (347 m contra 511 m) |
+| Cruce espacial de baches a colonia | `project_name/jobs/add_colonia_bache_id_with_gpkg.py` | Se conserva para comparar lugares; los baches salen de la parte temporal porque su fecha es de atención |
 | Salto de julio a agosto en baches | `docs/cinco_v_datos.md` | Se desecha como señal de lluvia: julio es el mes más bajo |
 | Hipótesis de lluvia para emergencias de Agua de Hermosillo | `notebooks/AAMM/06` | Se desecha: razón 0.99 |
 | Episodios de interacción en Agua de Hermosillo | `notebooks/05`, celda 27 | Contexto para etiquetar eventos en el tablero |
@@ -78,7 +78,9 @@ tipos de incidente responden y en qué colonias se concentran en cada temporada 
 | Correlaciones por construcción (`likes_count` con `reactions_total`, `n_posts` con `n_mentions`, `ORDER_1` con `ARBSUM_1`) | notebooks 05 a 07, AAMM 06 y 09 | Se desechan |
 | t-SNE y UMAP de interacción y de huella | notebooks 05 y 07 | Se desechan: los grupos los define la codificación de entrada |
 | Tasa por clase de cercanía | `notebooks/AAMM/08`, celda 25 | Se desecha: divide entre el área de todo el sector |
-| K-Means sobre distancias | `notebooks/AAMM/08` y `09` | Se desecha: distancias colineales; el grupo repite el sector |
+| K-Means sobre las tres distancias como único criterio | versión anterior de `notebooks/AAMM/08` y `09` | Se desecha: distancias colineales; el grupo repite el sector |
+| Contextos hidrográficos (K-Means sobre orden de Strahler, nivel de corriente y cercanía) | `notebooks/AAMM/09`, portado a `project_name/hydro_context.py` | Se consolida: es el "dónde"; con la lluvia, junto a colectores las llamadas suben 3.5 veces dentro del mes contra 1.4 lejos de la red (notebook 10) |
+| Macro-sectores del PDU (Norte, Centro, Sur) | `notebooks/AAMM/05` | Superados por los contextos hidrográficos |
 | Kruskal-Wallis sobre llamadas | `notebooks/AAMM/07` | Se desecha: filas no independientes |
 | Cruce de baches por nombre de colonia | `project_name/jobs/add_colonia_name_to_bache_job.py` | Se desecha: salida 100% nula |
 | Tukey sobre `top_comment_likes` | `notebooks/05` | Se desecha: 66% de ceros |

@@ -1,0 +1,61 @@
+{
+  "dataset": "precipitacion_hermosillo",
+  "archivo": "data/processed/precipitacion/precipitacion_hermosillo.csv",
+  "una_fila_es": "un día de lluvia estimada para un punto de la ciudad",
+  "filas": 3195,
+  "columnas": [
+    {
+      "nombre": "date",
+      "tipo": "datetime64[us]",
+      "nulos_pct": 0.0,
+      "distintos": 3195,
+      "rango": "2018-01-01 – 2026-09-30",
+      "descripcion": "Día, en hora local de Hermosillo; llave primaria"
+    },
+    {
+      "nombre": "precipitation_mm",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 139,
+      "rango": "0.0 – 65.6",
+      "descripcion": "Lluvia acumulada del día en mm, estimada por Open-Meteo para el punto 29.0892, -110.9613; no es una medición de estación"
+    },
+    {
+      "nombre": "precipitation_hours",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 25,
+      "rango": "0.0 – 24.0",
+      "descripcion": "Horas del día con lluvia según la misma estimación"
+    },
+    {
+      "nombre": "year",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 9,
+      "rango": "2018 – 2026",
+      "descripcion": "Año de date"
+    },
+    {
+      "nombre": "month",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 12,
+      "rango": "1 – 12",
+      "descripcion": "Mes de date, de 1 a 12"
+    },
+    {
+      "nombre": "is_rain_day",
+      "tipo": "bool",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "False – True",
+      "descripcion": "Verdadero si precipitation_mm es de 1 mm o más"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-11-17 03:09 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  }
+}

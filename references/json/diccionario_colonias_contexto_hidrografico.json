@@ -1,0 +1,134 @@
+{
+  "dataset": "colonias_contexto_hidrografico",
+  "archivo": "data/processed/inegi/hidrografia_hermosillo/colonias_contexto_hidrografico.csv",
+  "una_fila_es": "una colonia de la ciudad (localidad 0001) con sus cauces cercanos y su contexto hidrográfico",
+  "filas": 762,
+  "columnas": [
+    {
+      "nombre": "colonia_id",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 762,
+      "rango": null,
+      "descripcion": "Clave geoestadística del asentamiento (cvegeo del INEGI); llave primaria"
+    },
+    {
+      "nombre": "id_seg_1",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 239,
+      "rango": "2984043 – 13228929",
+      "descripcion": "ID del tramo de cauce (capa hl) más cercano al centroide de la colonia"
+    },
+    {
+      "nombre": "dist_seg_1",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 762,
+      "rango": "1.1173346118361205 – 2188.428699648786",
+      "descripcion": "Distancia en metros del centroide al tramo id_seg_1 (EPSG:6372)"
+    },
+    {
+      "nombre": "id_seg_2",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 289,
+      "rango": "2983966 – 13228930",
+      "descripcion": "ID del segundo tramo de cauce más cercano"
+    },
+    {
+      "nombre": "dist_seg_2",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 762,
+      "rango": "9.654406579094331 – 2702.0323356273375",
+      "descripcion": "Distancia en metros al tramo id_seg_2"
+    },
+    {
+      "nombre": "id_seg_3",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 299,
+      "rango": "2983925 – 13228930",
+      "descripcion": "ID del tercer tramo de cauce más cercano"
+    },
+    {
+      "nombre": "dist_seg_3",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 762,
+      "rango": "10.151053266674593 – 3192.2869763196636",
+      "descripcion": "Distancia en metros al tramo id_seg_3"
+    },
+    {
+      "nombre": "proximity_level",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": null,
+      "descripcion": "Nivel de cercanía a la red: Muy cercano, Cercano, Lejano o Muy lejano (KMeans k=4 sobre las tres distancias)"
+    },
+    {
+      "nombre": "order_median",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": "1.0 – 4.0",
+      "descripcion": "Mediana del orden de Strahler (ORDER_1) de los tramos cercanos habilitados"
+    },
+    {
+      "nombre": "order_max",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": "1 – 4",
+      "descripcion": "Máximo del orden de Strahler de los tramos cercanos habilitados"
+    },
+    {
+      "nombre": "level_median",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 7,
+      "rango": "1.0 – 6.0",
+      "descripcion": "Mediana del nivel de corriente (LEVEL_1; 1 = cauce principal)"
+    },
+    {
+      "nombre": "level_min",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 6,
+      "rango": "1 – 6",
+      "descripcion": "Mínimo del nivel de corriente de los tramos cercanos habilitados"
+    },
+    {
+      "nombre": "proximity_ord",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": "0.0 – 3.0",
+      "descripcion": "proximity_level como ordinal: 0 = Muy cercano a 3 = Muy lejano"
+    },
+    {
+      "nombre": "context",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": "0 – 3",
+      "descripcion": "Contexto hidrográfico (KMeans k=4 sobre las cinco variables estandarizadas): 0, 1, 2 o 3"
+    },
+    {
+      "nombre": "context_name",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 4,
+      "rango": null,
+      "descripcion": "Nombre del contexto: Lejos de la red, Junto a colectores, Arroyos menores muy cerca o Los más cercanos"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-11-17 03:09 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}

@@ -17,8 +17,11 @@ Pregunta a contestar al final de los 3 proyectos: ¿cuánto aumentan las emergen
 urbanas reportadas al 911 en Hermosillo cuando llueve, qué tipos de incidente responden y
 en qué colonias se concentran en cada temporada de lluvias?
 
-Evidencia y criterios: [docs/redefinicion.md](docs/redefinicion.md). Hallazgos:
-[docs/reporte_hallazgos.md](docs/reporte_hallazgos.md).
+Evidencia y criterios: [docs/redefinicion.md](docs/redefinicion.md). Reportes:
+[ejecutivo](docs/reporte/reporte.pdf) (3 páginas), [técnico](docs/reporte_tecnico/reporte_tecnico.pdf)
+(une la parte temporal con los contextos hidrográficos) y el trabajo hidrográfico del
+equipo en [references/reporte_sectores_hidrograficos.pdf](references/reporte_sectores_hidrograficos.pdf)
+y [references/reporte_tecnico_hidrografico.pdf](references/reporte_tecnico_hidrografico.pdf).
 
 ## Público
 
@@ -27,8 +30,8 @@ ciudadanía.
 
 ## Fuentes primarias
 
-- Bachómetro de Hermosillo: reportes ciudadanos de baches desde 2021.
-  https://bachometro.hermosillo.gob.mx
+- Bachómetro de Hermosillo: baches atendidos desde 2021 (la fecha es la de atención, no la
+  de aparición del bache). https://bachometro.hermosillo.gob.mx
 - Página de Facebook de Agua de Hermosillo: avisos de cortes, reparaciones y
   restablecimientos, con el texto de sus volantes extraído por OCR (ver
   [data/SNAPSHOT.md](data/SNAPSHOT.md)).
@@ -40,6 +43,10 @@ ciudadanía.
   https://huggingface.co/datasets/Marcelinux/llamadas911_colonias_hermosillo_2018_2025
 - Open-Meteo, API de archivo histórico: precipitación diaria 2018 a 2026 (CC-BY-4.0).
   https://open-meteo.com/en/docs/historical-weather-api
+- IMPLAN Hermosillo, Programa de Desarrollo Urbano 2025+, tabla III.1 (sectores y
+  colonias), transcrita a CSV; solo para la sectorización inicial (ver data/SNAPSHOT.md).
+- Equivalencias de colonias del 911 revisadas a mano por el equipo
+  (`data/external/equivalencias_colonias_911.csv`, ver data/SNAPSHOT.md).
 
 [docs/cinco_v_datos.md](docs/cinco_v_datos.md) resume estas fuentes y los datos procesados
 con el marco de las cinco V (volumen, velocidad, variedad, veracidad y valor).
@@ -54,6 +61,11 @@ reducción de dimensión y preguntas para los usuarios:
 - [07, ubicaciones mencionadas en los avisos](notebooks/07-eda-ubicaciones-aviso.ipynb)
 - [08, exploración para redefinir la pregunta](notebooks/08-exploracion-redefinicion.ipynb):
   cruza lluvia, 911, baches y Agua de Hermosillo en el tiempo
+- [09, historia de la lluvia y el 911](notebooks/09-historia-lluvia-911.ipynb): cifras y
+  gráficas del reporte ejecutivo
+- [10, lluvia por contexto hidrográfico](notebooks/10-lluvia-contexto-hidrografico.ipynb):
+  cruza los contextos del trabajo hidrográfico (`notebooks/AAMM/09`, portado a
+  `project_name/hydro_context.py`) con la respuesta a la lluvia
 
 Los reportes de ydata-profiling están en [docs/eda/](docs/eda/) (`make profile`) y el
 resumen de hallazgos en [docs/eda.md](docs/eda.md).

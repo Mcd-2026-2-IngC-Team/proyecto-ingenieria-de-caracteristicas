@@ -10,30 +10,31 @@
 \usepackage{float}
 \usepackage[hidelinks]{hyperref}
 
-\hypersetup{pdftitle={Lluvia y emergencias urbanas en Hermosillo}}
+\hypersetup{pdftitle={Lluvia, cauces y emergencias urbanas en Hermosillo}}
 
-% Las cifras salen de notebooks/09-historia-lluvia-911.ipynb (historia y gráficas
-% de docs/img/historia/) y de notebooks/08-exploracion-redefinicion.ipynb.
+% Las cifras salen de notebooks/09-historia-lluvia-911.ipynb (cuándo, qué y a qué hora)
+% y de notebooks/10-lluvia-contexto-hidrografico.ipynb (dónde, por contexto hidrográfico).
+% El detalle y la trazabilidad de cada cifra están en docs/reporte_tecnico/.
 
 \begin{document}
 
 \begin{center}
-  {\LARGE Lluvia y emergencias urbanas en Hermosillo\par}
+  {\LARGE Lluvia, cauces y emergencias urbanas en Hermosillo\par}
   \vspace{0.3em}
-  {\large Qué puede esperar el 911 el día que llueve\par}
+  {\large Cuándo y dónde se carga el 911 cuando llueve\par}
   \vspace{0.8em}
-  Nombre del integrante 1 · correo@pendiente · LinkedIn o GitHub pendiente\\
-  Nombre del integrante 2 · correo@pendiente · LinkedIn o GitHub pendiente\\
-  Nombre del integrante 3 · correo@pendiente · LinkedIn o GitHub pendiente\\
-  Nombre del integrante 4 · correo@pendiente · LinkedIn o GitHub pendiente\\[0.5em]
-  Ingeniería de características, maestría en ciencia de datos. Corte: 15 de noviembre de 2026.
+  Jorge Gamez Lopez · a211205228@unison.mx\\
+  Enrique Alejandro Giottonini Herrera · a220212781@unison.mx\\
+  Ana Patricia Hoyos Lopez · a215206792@unison.mx\\
+  Andrea Angelica Manzanares Muciño · a226230014@unison.mx\\[0.5em]
+  Ingeniería de características, maestría en ciencia de datos. Corte: 16 de noviembre de 2026.
 \end{center}
 
 \section*{Resumen ejecutivo}
 
-En Hermosillo llueve fuerte (10~mm o más en un día) unas seis veces al año, dos de cada tres veces de julio a septiembre, y esos días cambian la carga del 911. Un día seco de temporada recibe 1.7 llamadas de los tipos ligados al agua y al terreno; con 10 a 20~mm llegan 9 y con más de 20~mm entre 17 y 19, con días malos de más de 40. La carga sigue alta al día siguiente, son sobre todo árboles e inundaciones, y crece de madrugada.
+En Hermosillo llueve fuerte (10~mm o más en un día) unas seis veces al año, dos de cada tres veces de julio a septiembre, y esos días cambian la carga del 911. Un día seco de temporada recibe 1.7 llamadas ligadas al agua y al terreno (inundaciones, árboles caídos, hundimientos y otras); con 10 a 20~mm llegan 9 y con más de 20~mm entre 17 y 19, con días malos de más de 40. La carga sigue alta al día siguiente y crece de madrugada. No pega igual en toda la ciudad: en las colonias junto a los cauces principales las llamadas suben unas 3.5 veces cuando llueve, contra 1.4 en las colonias alejadas de la red de arroyos, y en las que solo tienen arroyos pequeños cerca casi no cambian.
 
-Para el servicio esto se traduce en cuatro expectativas: usar el pronóstico de lluvia como aviso de demanda (ante 20~mm o más, unas diez veces un día seco, y alta también al día siguiente); reforzar los turnos de noche y madrugada después de una tormenta; coordinar antes de julio cuadrillas de retiro de árboles, bombeo y tapas de alcantarilla; y revisar 50 colonias que reinciden en tres años o más y reúnen 62\% de las llamadas ubicadas (San Benito, Balderrama, Sahuaro, Olivares y Centro, entre otras). Los baches y las fallas de agua potable no aumentan con la lluvia.
+Para el servicio esto se traduce en cuatro expectativas: usar el pronóstico de lluvia como aviso de demanda (ante 20~mm o más, unas diez veces un día seco, y alta también al día siguiente); reforzar los turnos de noche y madrugada después de una tormenta; tener listas antes de julio cuadrillas de retiro de árboles, bombeo y tapas de alcantarilla; y empezar la revisión de desagües y arbolado por las colonias junto a los cauces principales y por las 60 colonias que reinciden año con año.
 
 \begin{figure}[H]
   \centering
@@ -44,54 +45,46 @@ Para el servicio esto se traduce en cuatro expectativas: usar el pronóstico de 
 
 \begin{table}[H]
   \centering
-  \caption{Cómo se arma la historia: qué aporta cada fuente y a cuál de las cuatro preguntas responde.}
+  \caption{Qué aporta cada fuente.}
   \label{tab:fuentes}
-  \begin{tabular}{llc}
+  \begin{tabular}{ll}
     \toprule
-    Fuente & Qué aporta & Pregunta \\
+    Fuente & Qué aporta \\
     \midrule
-    Llamadas al 911, 2018 a 2025 \cite{marcelinux2025} & La afectación: qué, cuándo y dónde & 1 a 3 \\
-    Lluvia diaria, Open-Meteo \cite{zippenfenig2023} & Días tras lluvia frente a días secos & 1 a 4 \\
-    Colonias y cauces, INEGI \cite{inegidcah,inegired} & Ubicación y cercanía a un cauce & 3 \\
-    Bachómetro \cite{bachometro} & Contraste: calles dañadas & 4 \\
-    Agua de Hermosillo \cite{aguah} & Contraste: emergencias del agua potable & 4 \\
+    Llamadas al 911, 2018 a 2025 \cite{marcelinux2025} & Qué se reporta, cuándo y en qué colonia \\
+    Lluvia diaria, Open-Meteo \cite{zippenfenig2023} & Días tras lluvia frente a días secos \\
+    Colonias y red de arroyos, INEGI \cite{inegidcah,inegired} & Ubicación y contexto hidrográfico de cada colonia \\
+    Agua de Hermosillo y Bachómetro \cite{aguah,bachometro} & Contraste con otros servicios del agua y la calle \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\paragraph{1. ¿Cuándo llama la ciudad al 911 por la lluvia?} Casi solo en verano. De julio a septiembre cae dos tercios de la lluvia del año, la del monzón \cite{adams1997}, y en esos mismos meses entra la mayor parte de las llamadas (figura~\ref{fig:calendario}); en los años secos, como 2023 y 2024, las llamadas por inundación casi desaparecen. Dentro de la temporada, lo que decide la carga es cuánto llueve ese día: cada escalón de lluvia sube el promedio de llamadas, hasta unas diez veces un día seco cuando pasan de 20~mm (figura~\ref{fig:intensidad}). Tras una tormenta fuerte, el día siguiente recibe tantas llamadas como el de la lluvia, unas cinco veces un día seco (figura~\ref{fig:fila}, izquierda).
+\paragraph{1. Cuándo: casi solo en verano, y según cuánto llueve.} De julio a septiembre cae dos tercios de la lluvia del año, la del monzón \cite{adams1997}, y entra la mayor parte de las llamadas; en los años secos, como 2023 y 2024, las llamadas por inundación casi desaparecen. Dentro de la temporada, lo que decide la carga es cuánto llueve ese día: cada escalón de lluvia sube el promedio, hasta unas diez veces un día seco cuando pasan de 20~mm (figura~\ref{fig:intensidad}). Tras una tormenta fuerte, el día siguiente recibe tantas llamadas como el de la lluvia, unas cinco veces un día seco (figura~\ref{fig:fila}, izquierda).
 
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=0.68\textwidth]{../img/historia/1_calendario.pdf}
-  \caption{Lluvia por mes y llamadas al 911 por mes, enero de 2018 a septiembre de 2025.}
-  \label{fig:calendario}
-\end{figure}
-
-\paragraph{2. ¿Qué piden y a qué hora?} Saber cuándo llega la carga sirve si se sabe qué llega. Lo que más crece tras la lluvia son los árboles caídos y las inundaciones, seguidos de hundimientos, alcantarillas sin tapa y derrumbes (figura~\ref{fig:fila}, centro): trabajo de cuadrillas de poda, bombeo y obra, más que de ambulancias. Además, la carga cambia de horario: en días de lluvia el pico pasa de las 18:00 a las 21:00 y la madrugada recibe 12\% de las llamadas, cuatro veces lo de un día seco (figura~\ref{fig:fila}, derecha).
+\paragraph{2. Qué y a qué hora: árboles e inundaciones, de noche.} Lo que más crece tras la lluvia son los árboles caídos y las inundaciones, seguidos de hundimientos, alcantarillas sin tapa y derrumbes (figura~\ref{fig:fila}, centro): trabajo de cuadrillas de poda, bombeo y obra, más que de ambulancias. En días de lluvia el pico pasa de las 18:00 a las 21:00 y la madrugada recibe 12\% de las llamadas, cuatro veces lo de un día seco (figura~\ref{fig:fila}, derecha).
 
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=0.32\textwidth]{../img/historia/3_dos_dias.pdf}\hfill
   \includegraphics[width=0.34\textwidth]{../img/historia/4_tipos.pdf}\hfill
   \includegraphics[width=0.32\textwidth]{../img/historia/5_horas.pdf}
-  \caption{Izquierda: llamadas por día alrededor de una lluvia de 20~mm o más en cualquier mes (punteado: día seco del año). Centro: llamadas por día de cada tipo tras una lluvia de 10~mm o más (gris: día seco; azul: lo que agrega la lluvia). Derecha: porcentaje de las llamadas del día por hora.}
+  \caption{Izquierda: llamadas por día alrededor de una lluvia de 20~mm o más (punteado: día seco del año). Centro: llamadas por día de cada tipo tras una lluvia de 10~mm o más (gris: día seco; azul: lo que agrega la lluvia). Derecha: porcentaje de las llamadas del día por hora.}
   \label{fig:fila}
 \end{figure}
 
-\paragraph{3. ¿Dónde?} Al cruzar el nombre de colonia que captura el 911 con el catálogo del INEGI se ubicaron dos de cada tres llamadas. Las colonias afectadas cambian de un año a otro, pero 50 se repiten en tres años o más y reúnen 62\% de las llamadas ubicadas (figura~\ref{fig:final}, izquierda). Son colonias grandes (área mediana siete veces la del conjunto), así que parte de su peso es su tamaño; aun así son la lista natural para revisar desagües, arbolado y tapas antes de julio.
-
-\paragraph{4. ¿Pasa lo mismo con los otros servicios del agua?} Hasta aquí todo sale del 911. El proyecto empezó con otras dos fuentes: los reportes del Bachómetro y los avisos de Agua de Hermosillo. Si la lluvia también las moviera, el pronóstico serviría para esos servicios. No es así (figura~\ref{fig:final}, derecha): frente a días secos de la misma temporada, las llamadas por inundación suben 21.7 veces, pero los baches no cambian una vez que se compara dentro del mismo mes, y las emergencias de agua potable tampoco. En el texto de Agua de Hermosillo la lluvia sí aparece, como causa de apagones que detienen el bombeo, pero en episodios aislados. Por eso el tablero se centra en el 911.
+\paragraph{3. Dónde: junto a los cauces principales.} Las 762 colonias de la ciudad se agruparon en cuatro contextos según los tres arroyos más cercanos a cada una: qué tan grandes son y qué tan cerca pasan (figura~\ref{fig:donde}, izquierda). Las colonias junto a los colectores principales, sobre todo en el norte, concentran la mayor presión: 4.1 llamadas por inundación por km² y 175 avisos de Agua de Hermosillo por km², contra 3.2 y 98 en las colonias alejadas de la red. Y no es solo que haya más reportes ahí: cuando llueve, sus llamadas suben unas 3.5 veces frente a días secos del mismo mes, contra 2.1 en las colonias más pegadas a arroyos, 1.4 en las alejadas y 0.9 en las de arroyos pequeños (figura~\ref{fig:donde}, derecha). Las inundaciones del centro, lejos de los arroyos, apuntan a otra causa: el drenaje pluvial de la ciudad, que la red natural no incluye. De las colonias con llamadas tras la lluvia, 60 se repiten en tres años o más y reúnen 60\% de las llamadas ubicadas.
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.25\textwidth]{../img/historia/6_colonias.pdf}\hspace{2em}
-  \includegraphics[width=0.44\textwidth]{../img/historia/7_no_lluvia.pdf}
-  \caption{Izquierda: años con llamadas tras una lluvia de 10~mm o más por colonia, con los cauces en gris. Derecha: veces que sube cada serie tras una lluvia de 10~mm o más frente a días secos de junio a octubre (escala logarítmica).}
-  \label{fig:final}
+  \includegraphics[width=0.3\textwidth]{../img/contexto/mapa_contextos.pdf}\hspace{1.5em}
+  \includegraphics[width=0.52\textwidth]{../img/contexto/respuesta_contexto.pdf}
+  \caption{Izquierda: colonias por contexto hidrográfico, con los arroyos del INEGI \cite{inegidcah,inegired}. Derecha: veces que suben las llamadas tras una lluvia de 10~mm o más frente a días secos del mismo mes; la línea marca el rango probable (90\%).}
+  \label{fig:donde}
 \end{figure}
 
-\paragraph{Limitaciones.} La lluvia no viene de un pluviómetro en la ciudad sino de una estimación que promedia zonas de varios kilómetros y puede no registrar una tormenta local, así que las expectativas tienden a quedarse cortas. Una de cada tres llamadas no se ubicó en una colonia y no hay población por colonia. Detalle: notebooks 08 y 09.
+\paragraph{4. Lo que la lluvia no mueve.} Las emergencias de agua potable que publica Agua de Hermosillo no aumentan tras la lluvia (1.0 veces); la lluvia aparece en sus avisos como causa de apagones que detienen el bombeo, en episodios aislados. El Bachómetro registra la fecha en que se atiende un bache, no cuándo aparece, así que no permite saber si la lluvia produce más baches. Por eso el tablero se centra en el 911.
+
+\paragraph{Limitaciones.} La lluvia no viene de un pluviómetro en la ciudad sino de una estimación que promedia zonas de varios kilómetros y puede no registrar una tormenta local, así que las expectativas tienden a quedarse cortas. Una de cada cinco llamadas no se pudo ubicar en una colonia, no hay población por colonia (los conteos por km² no son tasas por habitante) y la diferencia entre contextos es clara junto a los colectores pero con pocos años de datos. Detalle: reporte técnico y notebooks 08 a 10.
 
 \begin{thebibliography}{10}
 \raggedright

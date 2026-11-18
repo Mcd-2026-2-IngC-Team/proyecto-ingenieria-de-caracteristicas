@@ -31,7 +31,7 @@ lluvia en los 8 días previos, ambos de junio a octubre de 2018 a 2025.
 - Los años más secos tienen menos llamadas por inundación: 2020 (162 mm, 3 llamadas), 2023
   (78 mm, 7) y 2024 (148 mm, 17), contra 2018 (348 mm, 153) y 2022 (327 mm, 90).
 
-## 2. Las llamadas se concentran en julio a septiembre; los baches no
+## 2. Las llamadas se concentran en julio a septiembre
 
 Participación de julio a septiembre en el total anual (25% en una serie sin estacionalidad).
 
@@ -47,6 +47,9 @@ Participación de julio a septiembre en el total anual (25% en una serie sin est
 - El salto de julio a agosto en baches (1.5 a 2.4 veces, 2022 a 2026, según
   `docs/cinco_v_datos.md`) no es un pico de lluvia: julio es de los meses con menos reportes
   del año (participaciones mensuales en notebook 08, sección E1).
+- La fecha del Bachómetro es la de atención del bache, no la de aparición: entre 43.3% y 87.9%
+  de las descripciones por año empiezan con "Bacheo en…" y hay 8 registros en domingo de
+  39,018. Los baches no miden si la lluvia produce más baches.
 - Las publicaciones de pipas son un episodio: 28 de 41 en julio y agosto de 2024, después de
   2023 y 2024 con 78 mm y 148 mm de lluvia.
 - Las emergencias de Agua de Hermosillo en abril a junio suman 48.5% en 2023 y entre 17% y
@@ -54,20 +57,20 @@ Participación de julio a septiembre en el total anual (25% en una serie sin est
 
 ## 3. Ubicación: cerca de los cauces en conjunto, sin colonias fijas
 
-Llamadas con colonia de la ciudad identificada por nombre (67% del total), con la distancia
+Llamadas con colonia de la ciudad identificada por nombre y equivalencias (80.4% del total), con la distancia
 del centroide de la colonia al tramo de cauce más cercano de la Red Hidrográfica 1:50k.
 
 | Medida | Valor |
 |---|---|
-| Mediana de distancia al cauce, inundación | 357 m (293 llamadas) |
-| Mediana de distancia al cauce, terreno | 519 m (1,752 llamadas) |
-| Mediana de distancia al cauce, drenaje | 452 m (730 llamadas) |
-| % de inundación por cuartil de distancia, del más cercano al más lejano | 11.7, 16.9, 9.8, 7.8 |
-| Spearman por colonia entre % de inundación y distancia al cauce | 0.03 (314 colonias) |
-| Persistencia entre años de llamadas tras lluvia por colonia (Spearman) | 0.01 a 0.23 |
-| Persistencia entre años de todas las llamadas por colonia (Spearman) | 0.36 a 0.51 |
-| PCA del perfil mensual de 138 colonias: PC1 | 33% de varianza; cargas julio −0.48, agosto 0.85 |
-| Spearman entre PC1 y distancia al cauce | −0.17 |
+| Mediana de distancia al cauce, inundación | 347 m (351 llamadas) |
+| Mediana de distancia al cauce, terreno | 511 m (2,109 llamadas) |
+| Mediana de distancia al cauce, drenaje | 428 m (869 llamadas) |
+| % de inundación por cuartil de distancia, del más cercano al más lejano | 12.4, 15.7, 10.0, 8.0 |
+| Spearman por colonia entre % de inundación y distancia al cauce | 0.04 (378 colonias) |
+| Persistencia entre años de llamadas tras lluvia por colonia (Spearman) | 0.03 a 0.20 |
+| Persistencia entre años de todas las llamadas por colonia (Spearman) | 0.37 a 0.51 |
+| PCA del perfil mensual de 168 colonias: PC1 | 33% de varianza; cargas julio −0.49, agosto 0.84 |
+| Spearman entre PC1 y distancia al cauce | −0.18 |
 
 ## 4. Días anómalos
 
