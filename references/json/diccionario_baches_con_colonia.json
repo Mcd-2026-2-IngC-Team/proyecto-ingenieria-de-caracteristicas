@@ -1,0 +1,142 @@
+{
+  "dataset": "baches_con_colonia",
+  "archivo": "data/processed/bachometro/baches_hermosillo_filled.csv",
+  "una_fila_es": "un bache atendido según el Bachómetro de Hermosillo, con el asentamiento del DCAH 2025 que le toca por ubicación",
+  "filas": 39018,
+  "columnas": [
+    {
+      "nombre": "id",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 39018,
+      "rango": "1 – 48655",
+      "descripcion": "Identificador del bache en el Bachómetro; une con baches"
+    },
+    {
+      "nombre": "latitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 36127,
+      "rango": "-38.9874506 – 50.937531",
+      "descripcion": "Latitud del bache atendido"
+    },
+    {
+      "nombre": "longitude",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 36091,
+      "rango": "-122.4194155 – 121.2755118",
+      "descripcion": "Longitud del bache atendido"
+    },
+    {
+      "nombre": "date",
+      "tipo": "datetime64[us]",
+      "nulos_pct": 0.0,
+      "distintos": 1369,
+      "rango": "2021-09-17 – 2026-09-28",
+      "descripcion": "Fecha de atención del bache"
+    },
+    {
+      "nombre": "date_mx",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1369,
+      "rango": null,
+      "descripcion": "Fecha de atención en formato mexicano (dd/mm/aaaa)"
+    },
+    {
+      "nombre": "year",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 6,
+      "rango": "2021 – 2026",
+      "descripcion": "Año del archivo de la fuente, según bachometro.hermosillo.gob.mx"
+    },
+    {
+      "nombre": "material",
+      "tipo": "int64",
+      "nulos_pct": 0.0,
+      "distintos": 2,
+      "rango": "1 – 2",
+      "descripcion": "Código del tipo de material/pavimento que registra el Bachómetro"
+    },
+    {
+      "nombre": "description",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 34367,
+      "rango": null,
+      "descripcion": "Descripción en texto libre del Bachómetro; la mayoría empieza con 'Bacheo en'"
+    },
+    {
+      "nombre": "neighborhoods",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 1253,
+      "rango": null,
+      "descripcion": "IDs de la(s) colonia(s) del Bachómetro asociadas al bache"
+    },
+    {
+      "nombre": "colonia",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 667,
+      "rango": null,
+      "descripcion": "Nombre del asentamiento asignado; si no hubo asentamiento, el valor de contexto_ubicacion"
+    },
+    {
+      "nombre": "colonia_id",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 680,
+      "rango": null,
+      "descripcion": "Clave geoestadística del asentamiento (cvegeo del INEGI); une con colonias_hermosillo. 0 si no se asignó asentamiento"
+    },
+    {
+      "nombre": "colonia_source",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 3,
+      "rango": null,
+      "descripcion": "Cómo se asignó la colonia: spatial_within (el punto cae dentro del polígono), spatial_nearest (asentamiento más cercano, a 500 m o menos) o contexto_ubicacion (sin asentamiento)"
+    },
+    {
+      "nombre": "settlement_type",
+      "tipo": "str",
+      "nulos_pct": 1.5351888871802757,
+      "distintos": 12,
+      "rango": null,
+      "descripcion": "Tipo del asentamiento asignado: COLONIA, FRACCIONAMIENTO, PRIVADA...; nulo si no hubo asentamiento"
+    },
+    {
+      "nombre": "distance_to_colonia_m",
+      "tipo": "float64",
+      "nulos_pct": 0.0,
+      "distintos": 3719,
+      "rango": "0.0 – 17082646.6891762",
+      "descripcion": "Distancia en metros del punto al polígono del asentamiento más cercano; 0 cuando cae dentro"
+    },
+    {
+      "nombre": "colonia_match",
+      "tipo": "float64",
+      "nulos_pct": 100.0,
+      "distintos": 0,
+      "rango": null,
+      "descripcion": "Si la colonia de origen del Bachómetro coincide con la asignada por ubicación; nulo cuando no hay colonia de origen para comparar"
+    },
+    {
+      "nombre": "contexto_ubicacion",
+      "tipo": "str",
+      "nulos_pct": 0.0,
+      "distintos": 3,
+      "rango": null,
+      "descripcion": "Relación del punto con los asentamientos: dentro_asentamiento, cerca_asentamiento o probable_carretera_o_zona_rural"
+    }
+  ],
+  "generado": {
+    "fecha": "2026-11-18 01:36 UTC",
+    "comando": "make dictionary",
+    "perfil": "pandas: dtype, isna(), nunique(), min()/max()"
+  },
+  "nota": "El rango de las columnas de texto no se publica: su mínimo y su máximo serían valores reales sin agregar."
+}
